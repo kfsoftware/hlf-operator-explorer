@@ -8,6 +8,10 @@ type Query {
     cas: [CA!]
     ca(input: NameAndNamespace!): CA
 
+    namespaces: [Namespace!]
+}
+type Namespace {
+    name: String!
 }
 input NameAndNamespace {
     name: String!

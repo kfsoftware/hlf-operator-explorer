@@ -25,6 +25,10 @@ type NameAndNamespace struct {
 	Namespace string `json:"namespace"`
 }
 
+type Namespace struct {
+	Name string `json:"name"`
+}
+
 type Orderer struct {
 	Name      string `json:"name"`
 	Namespace string `json:"namespace"`

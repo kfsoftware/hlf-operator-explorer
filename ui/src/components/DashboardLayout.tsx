@@ -1,5 +1,5 @@
 /* This example requires Tailwind CSS v2.0+ */
-import { Fragment, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import {
   CalendarIcon,
@@ -11,12 +11,16 @@ import {
   UsersIcon,
   XIcon,
 } from "@heroicons/react/outline";
-
+import { Link, useLocation } from "react-router-dom";
 const navigation = [
-  { name: "Orderer nodes", href: "#", icon: HomeIcon, current: true },
-  { name: "Peers", href: "#", icon: UsersIcon, current: false },
-  { name: "Certificate Authorities", href: "#", icon: FolderIcon, current: false },
-  { name: "Organizations", href: "#", icon: CalendarIcon, current: false },
+  { name: "Orderer nodes", href: "/orderers", icon: HomeIcon, current: false },
+  { name: "Peers", href: "/", icon: UsersIcon, current: false },
+  {
+    name: "Certificate Authorities",
+    href: "/cas",
+    icon: FolderIcon,
+    current: false,
+  },
 ];
 
 function classNames(...classes: string[]) {
@@ -28,6 +32,15 @@ interface DashboardLayoutProps {
 }
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+  const navigationWithCurrent = useMemo(() => {
+    return navigation.map(({ name, href, icon, current }) => ({
+      name,
+      href,
+      icon,
+      current: location.pathname === href,
+    }));
+  }, [location.pathname]);
 
   return (
     <>
@@ -99,10 +112,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     />
                   </div>
                   <nav className="mt-5 px-2 space-y-1">
-                    {navigation.map((item) => (
-                      <a
+                    {navigationWithCurrent.map((item) => (
+                      <Link
                         key={item.name}
-                        href={item.href}
+                        to={item.href}
                         className={classNames(
                           item.current
                             ? "bg-gray-900 text-white"
@@ -120,7 +133,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                           aria-hidden="true"
                         />
                         {item.name}
-                      </a>
+                      </Link>
                     ))}
                   </nav>
                 </div>
@@ -166,10 +179,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 />
               </div>
               <nav className="mt-5 flex-1 px-2 space-y-1">
-                {navigation.map((item) => (
-                  <a
+                {navigationWithCurrent.map((item) => (
+                  <Link
                     key={item.name}
-                    href={item.href}
+                    to={item.href}
                     className={classNames(
                       item.current
                         ? "bg-gray-900 text-white"
@@ -187,7 +200,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       aria-hidden="true"
                     />
                     {item.name}
-                  </a>
+                  </Link>
                 ))}
               </nav>
             </div>

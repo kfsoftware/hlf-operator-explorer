@@ -1,0 +1,7 @@
+query GetCAs {
+  cas {
+    name
+    namespace
+    yaml
+  }
+}

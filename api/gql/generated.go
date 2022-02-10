@@ -57,6 +57,10 @@ type ComplexityRoot struct {
 		UpdatePeer    func(childComplexity int, filter models.NameAndNamespace, input models.UpdateePeerInput) int
 	}
 
+	Namespace struct {
+		Name func(childComplexity int) int
+	}
+
 	Orderer struct {
 		Name      func(childComplexity int) int
 		Namespace func(childComplexity int) int
@@ -70,12 +74,13 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Ca       func(childComplexity int, input models.NameAndNamespace) int
-		Cas      func(childComplexity int) int
-		Orderer  func(childComplexity int, input models.NameAndNamespace) int
-		Orderers func(childComplexity int) int
-		Peer     func(childComplexity int, input models.NameAndNamespace) int
-		Peers    func(childComplexity int) int
+		Ca         func(childComplexity int, input models.NameAndNamespace) int
+		Cas        func(childComplexity int) int
+		Namespaces func(childComplexity int) int
+		Orderer    func(childComplexity int, input models.NameAndNamespace) int
+		Orderers   func(childComplexity int) int
+		Peer       func(childComplexity int, input models.NameAndNamespace) int
+		Peers      func(childComplexity int) int
 	}
 }
 
@@ -94,6 +99,7 @@ type QueryResolver interface {
 	Orderer(ctx context.Context, input models.NameAndNamespace) (*models.Orderer, error)
 	Cas(ctx context.Context) ([]*models.Ca, error)
 	Ca(ctx context.Context, input models.NameAndNamespace) (*models.Ca, error)
+	Namespaces(ctx context.Context) ([]*models.Namespace, error)
 }
 
 type executableSchema struct {
@@ -204,6 +210,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdatePeer(childComplexity, args["filter"].(models.NameAndNamespace), args["input"].(models.UpdateePeerInput)), true
 
+	case "Namespace.name":
+		if e.complexity.Namespace.Name == nil {
+			break
+		}
+
+		return e.complexity.Namespace.Name(childComplexity), true
+
 	case "Orderer.name":
 		if e.complexity.Orderer.Name == nil {
 			break
@@ -264,6 +277,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Cas(childComplexity), true
+
+	case "Query.namespaces":
+		if e.complexity.Query.Namespaces == nil {
+			break
+		}
+
+		return e.complexity.Query.Namespaces(childComplexity), true
 
 	case "Query.orderer":
 		if e.complexity.Query.Orderer == nil {
@@ -414,6 +434,10 @@ input UpdateeCAInput {
     cas: [CA!]
     ca(input: NameAndNamespace!): CA
 
+    namespaces: [Namespace!]
+}
+type Namespace {
+    name: String!
 }
 input NameAndNamespace {
     name: String!
@@ -1004,6 +1028,41 @@ func (ec *executionContext) _Mutation_updateCA(ctx context.Context, field graphq
 	return ec.marshalOCA2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐCa(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Namespace_name(ctx context.Context, field graphql.CollectedField, obj *models.Namespace) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Namespace",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Orderer_name(ctx context.Context, field graphql.CollectedField, obj *models.Orderer) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1425,6 +1484,38 @@ func (ec *executionContext) _Query_ca(ctx context.Context, field graphql.Collect
 	res := resTmp.(*models.Ca)
 	fc.Result = res
 	return ec.marshalOCA2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐCa(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_namespaces(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Namespaces(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*models.Namespace)
+	fc.Result = res
+	return ec.marshalONamespace2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐNamespaceᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2920,6 +3011,37 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 	return out
 }
 
+var namespaceImplementors = []string{"Namespace"}
+
+func (ec *executionContext) _Namespace(ctx context.Context, sel ast.SelectionSet, obj *models.Namespace) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, namespaceImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Namespace")
+		case "name":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Namespace_name(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var ordererImplementors = []string{"Orderer"}
 
 func (ec *executionContext) _Orderer(ctx context.Context, sel ast.SelectionSet, obj *models.Orderer) graphql.Marshaler {
@@ -3151,6 +3273,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_ca(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "namespaces":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_namespaces(ctx, field)
 				return res
 			}
 
@@ -3640,6 +3782,16 @@ func (ec *executionContext) unmarshalNNameAndNamespace2githubᚗcomᚋkfsoftware
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNNamespace2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐNamespace(ctx context.Context, sel ast.SelectionSet, v *models.Namespace) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Namespace(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNOrderer2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐOrderer(ctx context.Context, sel ast.SelectionSet, v *models.Orderer) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -4021,6 +4173,53 @@ func (ec *executionContext) marshalOCA2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoper
 		return graphql.Null
 	}
 	return ec._CA(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalONamespace2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐNamespaceᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Namespace) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNNamespace2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐNamespace(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalOOrderer2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐOrdererᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Orderer) graphql.Marshaler {
