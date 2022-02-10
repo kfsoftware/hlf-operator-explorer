@@ -1,0 +1,34 @@
+type Query {
+    peers: [Peer!]
+    peer(input: NameAndNamespace!): Peer
+
+    orderers: [Orderer!]
+    orderer(input: NameAndNamespace!): Orderer
+
+    cas: [CA!]
+    ca(input: NameAndNamespace!): CA
+
+}
+input NameAndNamespace {
+    name: String!
+    namespace: String!
+}
+type Peer {
+    name: String!
+    namespace: String!
+    yaml: String!
+}
+
+type Orderer {
+    name: String!
+    namespace: String!
+    yaml: String!
+}
+
+type CA {
+    name: String!
+    namespace: String!
+    yaml: String!
+}
+
+

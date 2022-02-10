@@ -1,0 +1,36 @@
+type Mutation {
+    createPeer(input: CreatePeerInput!): Peer
+    updatePeer(filter: NameAndNamespace!, input: UpdateePeerInput!): Peer
+
+    createOrderer(input: CreateOrdererInput!): Orderer
+    updateOrderer(filter: NameAndNamespace!, input: UpdateeOrdererInput!): Orderer
+
+    createCA(input: CreateCAInput!): CA
+    updateCA(filter: NameAndNamespace!, input: UpdateeCAInput!): CA
+}
+
+input CreatePeerInput {
+    yaml: String!
+}
+
+input UpdateePeerInput {
+    yaml: String
+}
+
+input CreateOrdererInput {
+    yaml: String!
+}
+
+input UpdateeOrdererInput {
+    yaml: String
+}
+
+input CreateCAInput {
+    yaml: String!
+}
+
+input UpdateeCAInput {
+    yaml: String
+}
+
+
