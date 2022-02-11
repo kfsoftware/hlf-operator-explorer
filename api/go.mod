@@ -6,9 +6,9 @@ require (
 	github.com/99designs/gqlgen v0.16.0
 	github.com/spf13/cobra v1.3.0
 	github.com/vektah/gqlparser/v2 v2.2.0
-	k8s.io/api v0.23.3 // indirect
-	k8s.io/apimachinery v0.23.3
-	k8s.io/client-go v0.23.3
+	k8s.io/api v0.20.2 // indirect
+	k8s.io/apimachinery v0.20.2
+	k8s.io/client-go v0.20.2
 )
 
 require (

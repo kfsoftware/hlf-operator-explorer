@@ -15,6 +15,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"net/http"
+	"os"
 )
 
 type serveConfig struct {
@@ -25,7 +26,7 @@ type serveCmd struct {
 }
 
 func (s serveCmd) run() error {
-	kubeConfigPath := "/Users/davidviejo/projects/kfs/hlf-operator-ui/api/.dev/kubeconfig.yaml"
+	kubeConfigPath := os.Getenv("KUBECONFIG")
 	kubeConfig, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
 	if err != nil {
 		return err
