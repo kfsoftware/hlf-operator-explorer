@@ -15,13 +15,16 @@
   ```
 */
 
-import { forwardRef, useEffect, useMemo } from "react";
+import { Listbox, RadioGroup, Transition } from "@headlessui/react";
+import { CheckIcon, SelectorIcon } from "@heroicons/react/solid";
+import { forwardRef, Fragment, useEffect, useMemo } from "react";
 import {
   FormProvider,
   RegisterOptions,
   useForm,
-  useFormContext,
+  useFormContext
 } from "react-hook-form";
+import { Namespace, useGetNamespacesQuery } from "../operations";
 
 /* This example requires Tailwind CSS v2.0+ */
 function Heading() {
@@ -35,8 +38,6 @@ function Heading() {
     </div>
   );
 }
-import yaml from "yaml";
-import { Namespace, useGetNamespacesQuery } from "../operations";
 /* This example requires Tailwind CSS v2.0+ */
 function SectionHeader({ title }: { title: string }) {
   return (
@@ -79,9 +80,6 @@ const InputText = forwardRef(
 interface InputTextProps {
   label: string;
 }
-import { Fragment, useState } from "react";
-import { Listbox, RadioGroup, Transition } from "@headlessui/react";
-import { CheckIcon, SelectorIcon } from "@heroicons/react/solid";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -342,7 +340,6 @@ export default function PeerCreate() {
 
   return (
     <FormProvider {...methods}>
-      {JSON.stringify(watch())}
       <div className="py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Heading />

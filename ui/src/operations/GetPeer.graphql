@@ -1,0 +1,7 @@
+query GetPeer($input: NameAndNamespace!) {
+  peer(input: $input) {
+    name
+    namespace
+    yaml
+  }
+}

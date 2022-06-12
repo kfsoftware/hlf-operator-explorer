@@ -1,0 +1,7 @@
+query GetCA($input: NameAndNamespace!) {
+  ca(input: $input) {
+    name
+    namespace
+    yaml
+  }
+}

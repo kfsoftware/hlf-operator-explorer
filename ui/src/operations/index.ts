@@ -138,6 +138,19 @@ export type UpdateePeerInput = {
   yaml?: Maybe<Scalars['String']>;
 };
 
+export type GetCaQueryVariables = Exact<{
+  input: NameAndNamespace;
+}>;
+
+
+export type GetCaQuery = (
+  { __typename?: 'Query' }
+  & { ca?: Maybe<(
+    { __typename?: 'CA' }
+    & Pick<Ca, 'name' | 'namespace' | 'yaml'>
+  )> }
+);
+
 export type GetCAsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -160,6 +173,19 @@ export type GetNamespacesQuery = (
   )>> }
 );
 
+export type GetOrdererQueryVariables = Exact<{
+  input: NameAndNamespace;
+}>;
+
+
+export type GetOrdererQuery = (
+  { __typename?: 'Query' }
+  & { orderer?: Maybe<(
+    { __typename?: 'Orderer' }
+    & Pick<Orderer, 'name' | 'namespace' | 'yaml'>
+  )> }
+);
+
 export type GetOrderersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -169,6 +195,19 @@ export type GetOrderersQuery = (
     { __typename?: 'Orderer' }
     & Pick<Orderer, 'name' | 'namespace' | 'yaml'>
   )>> }
+);
+
+export type GetPeerQueryVariables = Exact<{
+  input: NameAndNamespace;
+}>;
+
+
+export type GetPeerQuery = (
+  { __typename?: 'Query' }
+  & { peer?: Maybe<(
+    { __typename?: 'Peer' }
+    & Pick<Peer, 'name' | 'namespace' | 'yaml'>
+  )> }
 );
 
 export type GetPeersQueryVariables = Exact<{ [key: string]: never; }>;
@@ -183,6 +222,43 @@ export type GetPeersQuery = (
 );
 
 
+export const GetCaDocument = gql`
+    query GetCA($input: NameAndNamespace!) {
+  ca(input: $input) {
+    name
+    namespace
+    yaml
+  }
+}
+    `;
+
+/**
+ * __useGetCaQuery__
+ *
+ * To run a query within a React component, call `useGetCaQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetCaQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetCaQuery({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useGetCaQuery(baseOptions: Apollo.QueryHookOptions<GetCaQuery, GetCaQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetCaQuery, GetCaQueryVariables>(GetCaDocument, options);
+      }
+export function useGetCaLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetCaQuery, GetCaQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetCaQuery, GetCaQueryVariables>(GetCaDocument, options);
+        }
+export type GetCaQueryHookResult = ReturnType<typeof useGetCaQuery>;
+export type GetCaLazyQueryHookResult = ReturnType<typeof useGetCaLazyQuery>;
+export type GetCaQueryResult = Apollo.QueryResult<GetCaQuery, GetCaQueryVariables>;
 export const GetCAsDocument = gql`
     query GetCAs {
   cas {
@@ -253,6 +329,43 @@ export function useGetNamespacesLazyQuery(baseOptions?: Apollo.LazyQueryHookOpti
 export type GetNamespacesQueryHookResult = ReturnType<typeof useGetNamespacesQuery>;
 export type GetNamespacesLazyQueryHookResult = ReturnType<typeof useGetNamespacesLazyQuery>;
 export type GetNamespacesQueryResult = Apollo.QueryResult<GetNamespacesQuery, GetNamespacesQueryVariables>;
+export const GetOrdererDocument = gql`
+    query GetOrderer($input: NameAndNamespace!) {
+  orderer(input: $input) {
+    name
+    namespace
+    yaml
+  }
+}
+    `;
+
+/**
+ * __useGetOrdererQuery__
+ *
+ * To run a query within a React component, call `useGetOrdererQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetOrdererQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetOrdererQuery({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useGetOrdererQuery(baseOptions: Apollo.QueryHookOptions<GetOrdererQuery, GetOrdererQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetOrdererQuery, GetOrdererQueryVariables>(GetOrdererDocument, options);
+      }
+export function useGetOrdererLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetOrdererQuery, GetOrdererQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetOrdererQuery, GetOrdererQueryVariables>(GetOrdererDocument, options);
+        }
+export type GetOrdererQueryHookResult = ReturnType<typeof useGetOrdererQuery>;
+export type GetOrdererLazyQueryHookResult = ReturnType<typeof useGetOrdererLazyQuery>;
+export type GetOrdererQueryResult = Apollo.QueryResult<GetOrdererQuery, GetOrdererQueryVariables>;
 export const GetOrderersDocument = gql`
     query GetOrderers {
   orderers {
@@ -289,6 +402,43 @@ export function useGetOrderersLazyQuery(baseOptions?: Apollo.LazyQueryHookOption
 export type GetOrderersQueryHookResult = ReturnType<typeof useGetOrderersQuery>;
 export type GetOrderersLazyQueryHookResult = ReturnType<typeof useGetOrderersLazyQuery>;
 export type GetOrderersQueryResult = Apollo.QueryResult<GetOrderersQuery, GetOrderersQueryVariables>;
+export const GetPeerDocument = gql`
+    query GetPeer($input: NameAndNamespace!) {
+  peer(input: $input) {
+    name
+    namespace
+    yaml
+  }
+}
+    `;
+
+/**
+ * __useGetPeerQuery__
+ *
+ * To run a query within a React component, call `useGetPeerQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetPeerQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetPeerQuery({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useGetPeerQuery(baseOptions: Apollo.QueryHookOptions<GetPeerQuery, GetPeerQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetPeerQuery, GetPeerQueryVariables>(GetPeerDocument, options);
+      }
+export function useGetPeerLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetPeerQuery, GetPeerQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetPeerQuery, GetPeerQueryVariables>(GetPeerDocument, options);
+        }
+export type GetPeerQueryHookResult = ReturnType<typeof useGetPeerQuery>;
+export type GetPeerLazyQueryHookResult = ReturnType<typeof useGetPeerLazyQuery>;
+export type GetPeerQueryResult = Apollo.QueryResult<GetPeerQuery, GetPeerQueryVariables>;
 export const GetPeersDocument = gql`
     query GetPeers {
   peers {

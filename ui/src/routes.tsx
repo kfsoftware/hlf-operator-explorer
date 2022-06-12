@@ -1,10 +1,11 @@
-import { BrowserRouter, Routes as ReactRoutes, Route } from "react-router-dom";
+import { BrowserRouter, Route, Routes as ReactRoutes } from "react-router-dom";
 import App from "./App";
 import CADetail from "./pages/CADetail";
 import CAList from "./pages/CAList";
 import NotFound from "./pages/NotFound";
+import OrdererDetail from "./pages/OrdererDetail";
 import OrdererList from "./pages/OrdererList";
-import PeerCreate from "./pages/PeerCreate";
+import PeerDetail from "./pages/PeerDetail";
 import PeerList from "./pages/PeerList";
 export default function Routes() {
   return (
@@ -13,8 +14,10 @@ export default function Routes() {
         <Route path="/" element={<App />}>
           <Route index element={<PeerList />} />
           <Route path="peers" element={<PeerList />} />
-          <Route path="peers/create" element={<PeerCreate />} />
+          <Route path="peers/:namespace/:name" element={<PeerDetail />} />
+          {/* <Route path="peers/create" element={<PeerCreate />} /> */}
           <Route path="orderers" element={<OrdererList />} />
+          <Route path="orderers/:namespace/:name" element={<OrdererDetail />} />
           <Route path="cas" element={<CAList />} />
           <Route path="cas/:namespace/:name" element={<CADetail />} />
         </Route>

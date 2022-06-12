@@ -1,0 +1,7 @@
+query GetOrderer($input: NameAndNamespace!) {
+  orderer(input: $input) {
+    name
+    namespace
+    yaml
+  }
+}

@@ -1,16 +1,12 @@
 /* This example requires Tailwind CSS v2.0+ */
-import { Fragment, useMemo, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import {
-  CalendarIcon,
-  ChartBarIcon,
   FolderIcon,
-  HomeIcon,
-  InboxIcon,
-  MenuIcon,
+  HomeIcon, MenuIcon,
   UsersIcon,
-  XIcon,
+  XIcon
 } from "@heroicons/react/outline";
+import { Fragment, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 const navigation = [
   { name: "Orderer nodes", href: "/orderers", icon: HomeIcon, current: false },
@@ -105,11 +101,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 </Transition.Child>
                 <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
                   <div className="flex-shrink-0 flex items-center px-4">
-                    <img
+                    <span className="text-white">HLF OPERATOR UI</span>
+                    {/* TODO: Change logo */}
+                    {/* <img
                       className="h-8 w-auto"
                       src="https://tailwindui.com/img/logos/workflow-logo-indigo-500-mark-white-text.svg"
                       alt="Workflow"
-                    />
+                    /> */}
                   </div>
                   <nav className="mt-5 px-2 space-y-1">
                     {navigationWithCurrent.map((item) => (
@@ -172,11 +170,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex-1 flex flex-col min-h-0 bg-gray-800">
             <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
               <div className="flex items-center flex-shrink-0 px-4">
-                <img
+                <span className="text-white">HLF OPERATOR UI</span>
+                {/* TODO: change logo */}
+                {/* <img
                   className="h-8 w-auto"
                   src="https://tailwindui.com/img/logos/workflow-logo-indigo-500-mark-white-text.svg"
                   alt="Workflow"
-                />
+                /> */}
               </div>
               <nav className="mt-5 flex-1 px-2 space-y-1">
                 {navigationWithCurrent.map((item) => (
@@ -204,7 +204,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 ))}
               </nav>
             </div>
-            <div className="flex-shrink-0 flex bg-gray-700 p-4">
+            {/* <div className="flex-shrink-0 flex bg-gray-700 p-4">
               <a href="#" className="flex-shrink-0 w-full group block">
                 <div className="flex items-center">
                   <div>
@@ -222,7 +222,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   </div>
                 </div>
               </a>
-            </div>
+            </div> */}
           </div>
         </div>
         <div className="md:pl-64 flex flex-col flex-1">
