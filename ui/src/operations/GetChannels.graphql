@@ -1,0 +1,5 @@
+query channels {
+  channels {
+    name
+  }
+}

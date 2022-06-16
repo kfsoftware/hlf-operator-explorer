@@ -12,6 +12,36 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  Time: any;
+};
+
+export type ApplicationConfig = {
+  __typename?: 'ApplicationConfig';
+  policies?: Maybe<Array<ChannelPolicy>>;
+  acls?: Maybe<Array<ChannelAcl>>;
+  capabilities?: Maybe<Array<Scalars['String']>>;
+  organizations?: Maybe<Array<ChannelOrg>>;
+};
+
+export type ApplicationPolicy = {
+  __typename?: 'ApplicationPolicy';
+  channelConfigPolicy: Scalars['String'];
+  signaturePolicy?: Maybe<SignaturePolicy>;
+};
+
+export type Block = {
+  __typename?: 'Block';
+  blockNumber: Scalars['Int'];
+  dataHash: Scalars['String'];
+  numTransactions: Scalars['Int'];
+  createdAt: Scalars['Time'];
+  transactions?: Maybe<Array<Transaction>>;
+};
+
+export type BlocksResponse = {
+  __typename?: 'BlocksResponse';
+  height: Scalars['Int'];
+  blocks?: Maybe<Array<Block>>;
 };
 
 export type Ca = {
@@ -19,6 +49,88 @@ export type Ca = {
   name: Scalars['String'];
   namespace: Scalars['String'];
   yaml: Scalars['String'];
+};
+
+export type ChaincodeApproval = {
+  __typename?: 'ChaincodeApproval';
+  mspID: Scalars['String'];
+  approved: Scalars['Boolean'];
+};
+
+export type Channel = {
+  __typename?: 'Channel';
+  name: Scalars['String'];
+  rawConfig: Scalars['String'];
+  protoConfig: Scalars['String'];
+  channelConfig: ChannelConfig;
+  application?: Maybe<ApplicationConfig>;
+  orderer: OrdererConfig;
+  height: Scalars['Int'];
+  chaincodes?: Maybe<Array<ChannelChaincode>>;
+};
+
+export type ChannelAcl = {
+  __typename?: 'ChannelACL';
+  key: Scalars['String'];
+  value: Scalars['String'];
+};
+
+export type ChannelAnchorPeer = {
+  __typename?: 'ChannelAnchorPeer';
+  mspID: Scalars['String'];
+  host: Scalars['String'];
+  port: Scalars['Int'];
+};
+
+export type ChannelChaincode = {
+  __typename?: 'ChannelChaincode';
+  name: Scalars['String'];
+  version: Scalars['String'];
+  sequence: Scalars['Int'];
+  signaturePolicy: SignaturePolicy;
+  endorsementPlugin: Scalars['String'];
+  validationPlugin: Scalars['String'];
+  configPolicy: Scalars['String'];
+  privateDataCollections?: Maybe<Array<PrivateDataCollection>>;
+  approvals?: Maybe<Array<ChaincodeApproval>>;
+};
+
+export type ChannelConfig = {
+  __typename?: 'ChannelConfig';
+  policies?: Maybe<Array<ChannelPolicy>>;
+  capabilities?: Maybe<Array<Scalars['String']>>;
+};
+
+export type ChannelMsp = {
+  __typename?: 'ChannelMSP';
+  name: Scalars['String'];
+  rootCerts?: Maybe<Array<Scalars['String']>>;
+  intermediateCerts?: Maybe<Array<Scalars['String']>>;
+  admins?: Maybe<Array<Scalars['String']>>;
+  revocationList?: Maybe<Array<Scalars['String']>>;
+  tlsRootCerts?: Maybe<Array<Scalars['String']>>;
+  tlsIntermediateCerts?: Maybe<Array<Scalars['String']>>;
+};
+
+export type ChannelOrg = {
+  __typename?: 'ChannelOrg';
+  modPolicy: Scalars['String'];
+  mspID: Scalars['String'];
+  policies?: Maybe<Array<ChannelPolicy>>;
+  msp: ChannelMsp;
+  ordererEndpoints?: Maybe<Array<Scalars['String']>>;
+  anchorPeer?: Maybe<Array<NetworkAddress>>;
+  nodeOUs: NodeOUs;
+  cryptoConfig: CryptoConfig;
+  ous?: Maybe<Array<OuIdentifier>>;
+};
+
+export type ChannelPolicy = {
+  __typename?: 'ChannelPolicy';
+  key: Scalars['String'];
+  type: Scalars['String'];
+  rule: Scalars['String'];
+  modPolicy: Scalars['String'];
 };
 
 export type CreateCaInput = {
@@ -31,6 +143,35 @@ export type CreateOrdererInput = {
 
 export type CreatePeerInput = {
   yaml: Scalars['String'];
+};
+
+export type CryptoConfig = {
+  __typename?: 'CryptoConfig';
+  signatureHashFamily: Scalars['String'];
+  identityIdentifierHashFunction: Scalars['String'];
+};
+
+export type LightChannel = {
+  __typename?: 'LightChannel';
+  name: Scalars['String'];
+};
+
+export type MspPrincipal = {
+  __typename?: 'MSPPrincipal';
+  combined?: Maybe<MspPrincipalCombined>;
+  role?: Maybe<MspPrincipalRole>;
+};
+
+export type MspPrincipalCombined = {
+  __typename?: 'MSPPrincipalCombined';
+  classification: Scalars['String'];
+  mspPrincipals?: Maybe<Array<MspPrincipal>>;
+};
+
+export type MspPrincipalRole = {
+  __typename?: 'MSPPrincipalRole';
+  mspID: Scalars['String'];
+  role: Scalars['String'];
 };
 
 export type Mutation = {
@@ -86,6 +227,27 @@ export type Namespace = {
   name: Scalars['String'];
 };
 
+export type NetworkAddress = {
+  __typename?: 'NetworkAddress';
+  host: Scalars['String'];
+  port: Scalars['Int'];
+};
+
+export type NodeOUs = {
+  __typename?: 'NodeOUs';
+  enable: Scalars['Boolean'];
+  clientOUIdentifier: OuIdentifier;
+  peerOUIdentifier: OuIdentifier;
+  adminOUIdentifier: OuIdentifier;
+  ordererOUIdentifier: OuIdentifier;
+};
+
+export type OuIdentifier = {
+  __typename?: 'OUIdentifier';
+  certificate: Scalars['String'];
+  ouIdentifier: Scalars['String'];
+};
+
 export type Orderer = {
   __typename?: 'Orderer';
   name: Scalars['String'];
@@ -93,11 +255,65 @@ export type Orderer = {
   yaml: Scalars['String'];
 };
 
+export type OrdererConfig = {
+  __typename?: 'OrdererConfig';
+  type: Scalars['String'];
+  batchTimeout: Scalars['Int'];
+  batchSize: OrdererConfigBatchSize;
+  maxChannels: Scalars['Int'];
+  capabilities?: Maybe<Array<Scalars['String']>>;
+  state: Scalars['String'];
+  policies?: Maybe<Array<ChannelPolicy>>;
+  etcdDraft: OrdererConfigRaft;
+  organizations?: Maybe<Array<ChannelOrg>>;
+};
+
+export type OrdererConfigBatchSize = {
+  __typename?: 'OrdererConfigBatchSize';
+  maxMessageCount: Scalars['Int'];
+  absoluteMaxBytes: Scalars['Int'];
+  preferredMaxBytes: Scalars['Int'];
+};
+
+export type OrdererConfigRaft = {
+  __typename?: 'OrdererConfigRaft';
+  consenters?: Maybe<Array<OrdererConfigRaftConsenter>>;
+  options: OrdererConfigRaftOptions;
+};
+
+export type OrdererConfigRaftConsenter = {
+  __typename?: 'OrdererConfigRaftConsenter';
+  address: NetworkAddress;
+  clientTlsCert: Scalars['String'];
+  serverTlsCert: Scalars['String'];
+};
+
+export type OrdererConfigRaftOptions = {
+  __typename?: 'OrdererConfigRaftOptions';
+  tickInterval: Scalars['String'];
+  electionTick: Scalars['Int'];
+  heartbeatTick: Scalars['Int'];
+  maxInflightBlocks: Scalars['Int'];
+  snapshotIntervalSize: Scalars['Int'];
+};
+
 export type Peer = {
   __typename?: 'Peer';
   name: Scalars['String'];
   namespace: Scalars['String'];
   yaml: Scalars['String'];
+};
+
+export type PrivateDataCollection = {
+  __typename?: 'PrivateDataCollection';
+  name: Scalars['String'];
+  requiredPeerCount: Scalars['Int'];
+  maxPeerCount: Scalars['Int'];
+  blockToLive: Scalars['Int'];
+  memberOnlyRead: Scalars['Boolean'];
+  memberOnlyWrite: Scalars['Boolean'];
+  endorsementPolicy?: Maybe<ApplicationPolicy>;
+  memberOrgsPolicy?: Maybe<SignaturePolicy>;
 };
 
 export type Query = {
@@ -109,6 +325,10 @@ export type Query = {
   cas?: Maybe<Array<Ca>>;
   ca?: Maybe<Ca>;
   namespaces?: Maybe<Array<Namespace>>;
+  channels?: Maybe<Array<LightChannel>>;
+  channel: Channel;
+  blocks: BlocksResponse;
+  block: Block;
 };
 
 
@@ -124,6 +344,91 @@ export type QueryOrdererArgs = {
 
 export type QueryCaArgs = {
   input: NameAndNamespace;
+};
+
+
+export type QueryChannelArgs = {
+  channelID: Scalars['String'];
+};
+
+
+export type QueryBlocksArgs = {
+  channelID: Scalars['String'];
+  from: Scalars['Int'];
+  to: Scalars['Int'];
+  reverse: Scalars['Boolean'];
+};
+
+
+export type QueryBlockArgs = {
+  channelID: Scalars['String'];
+  blockNumber: Scalars['Int'];
+};
+
+export type SignaturePolicy = {
+  __typename?: 'SignaturePolicy';
+  version: Scalars['Int'];
+  rule: SignaturePolicyRule;
+  principals?: Maybe<Array<MspPrincipal>>;
+};
+
+export type SignaturePolicyNOutOf = {
+  __typename?: 'SignaturePolicyNOutOf';
+  n: Scalars['Int'];
+  rules?: Maybe<Array<SignaturePolicyRule>>;
+};
+
+export type SignaturePolicyRule = {
+  __typename?: 'SignaturePolicyRule';
+  type: Scalars['String'];
+  noutOf?: Maybe<SignaturePolicyNOutOf>;
+  signedBy?: Maybe<SignaturePolicySignedBy>;
+};
+
+export type SignaturePolicySignedBy = {
+  __typename?: 'SignaturePolicySignedBy';
+  signedBy: Scalars['Int'];
+};
+
+
+export type Transaction = {
+  __typename?: 'Transaction';
+  txID: Scalars['String'];
+  type: TransactionType;
+  createdAt: Scalars['Time'];
+  version: Scalars['String'];
+  path?: Maybe<Scalars['String']>;
+  response?: Maybe<Scalars['String']>;
+  request?: Maybe<Scalars['String']>;
+  chaincode: Scalars['String'];
+  writes?: Maybe<Array<TransactionWrite>>;
+  reads?: Maybe<Array<TransactionRead>>;
+};
+
+export type TransactionRead = {
+  __typename?: 'TransactionRead';
+  chaincodeID: Scalars['String'];
+  key: Scalars['String'];
+  blockNumVersion?: Maybe<Scalars['Int']>;
+  txNumVersion?: Maybe<Scalars['Int']>;
+};
+
+export enum TransactionType {
+  Message = 'MESSAGE',
+  Config = 'CONFIG',
+  ConfigUpdate = 'CONFIG_UPDATE',
+  EndorserTransaction = 'ENDORSER_TRANSACTION',
+  OrdererTransaction = 'ORDERER_TRANSACTION',
+  DeliverSeekInfo = 'DELIVER_SEEK_INFO',
+  ChaincodePackage = 'CHAINCODE_PACKAGE'
+}
+
+export type TransactionWrite = {
+  __typename?: 'TransactionWrite';
+  chaincodeID: Scalars['String'];
+  deleted: Scalars['Boolean'];
+  key: Scalars['String'];
+  value: Scalars['String'];
 };
 
 export type UpdateeCaInput = {
@@ -159,6 +464,99 @@ export type GetCAsQuery = (
   & { cas?: Maybe<Array<(
     { __typename?: 'CA' }
     & Pick<Ca, 'name' | 'namespace' | 'yaml'>
+  )>> }
+);
+
+export type ChannelQueryVariables = Exact<{
+  channelID: Scalars['String'];
+}>;
+
+
+export type ChannelQuery = (
+  { __typename?: 'Query' }
+  & { channel: (
+    { __typename?: 'Channel' }
+    & { orderer: (
+      { __typename?: 'OrdererConfig' }
+      & Pick<OrdererConfig, 'type' | 'batchTimeout' | 'maxChannels' | 'capabilities' | 'state'>
+      & { batchSize: (
+        { __typename?: 'OrdererConfigBatchSize' }
+        & Pick<OrdererConfigBatchSize, 'maxMessageCount' | 'absoluteMaxBytes' | 'preferredMaxBytes'>
+      ), policies?: Maybe<Array<(
+        { __typename?: 'ChannelPolicy' }
+        & Pick<ChannelPolicy, 'key' | 'type' | 'rule' | 'modPolicy'>
+      )>>, etcdDraft: (
+        { __typename?: 'OrdererConfigRaft' }
+        & { consenters?: Maybe<Array<(
+          { __typename?: 'OrdererConfigRaftConsenter' }
+          & Pick<OrdererConfigRaftConsenter, 'clientTlsCert' | 'serverTlsCert'>
+          & { address: (
+            { __typename?: 'NetworkAddress' }
+            & Pick<NetworkAddress, 'host' | 'port'>
+          ) }
+        )>> }
+      ), organizations?: Maybe<Array<(
+        { __typename?: 'ChannelOrg' }
+        & Pick<ChannelOrg, 'modPolicy' | 'mspID' | 'ordererEndpoints'>
+        & { cryptoConfig: (
+          { __typename?: 'CryptoConfig' }
+          & Pick<CryptoConfig, 'signatureHashFamily' | 'identityIdentifierHashFunction'>
+        ), msp: (
+          { __typename?: 'ChannelMSP' }
+          & Pick<ChannelMsp, 'name' | 'rootCerts' | 'intermediateCerts' | 'admins' | 'revocationList' | 'tlsRootCerts' | 'tlsIntermediateCerts'>
+        ), nodeOUs: (
+          { __typename?: 'NodeOUs' }
+          & Pick<NodeOUs, 'enable'>
+          & { clientOUIdentifier: (
+            { __typename?: 'OUIdentifier' }
+            & Pick<OuIdentifier, 'certificate' | 'ouIdentifier'>
+          ), peerOUIdentifier: (
+            { __typename?: 'OUIdentifier' }
+            & Pick<OuIdentifier, 'certificate' | 'ouIdentifier'>
+          ), adminOUIdentifier: (
+            { __typename?: 'OUIdentifier' }
+            & Pick<OuIdentifier, 'certificate' | 'ouIdentifier'>
+          ), ordererOUIdentifier: (
+            { __typename?: 'OUIdentifier' }
+            & Pick<OuIdentifier, 'certificate' | 'ouIdentifier'>
+          ) }
+        ), policies?: Maybe<Array<(
+          { __typename?: 'ChannelPolicy' }
+          & Pick<ChannelPolicy, 'key' | 'type' | 'rule' | 'modPolicy'>
+        )>>, ous?: Maybe<Array<(
+          { __typename?: 'OUIdentifier' }
+          & Pick<OuIdentifier, 'certificate' | 'ouIdentifier'>
+        )>> }
+      )>> }
+    ), application?: Maybe<(
+      { __typename?: 'ApplicationConfig' }
+      & Pick<ApplicationConfig, 'capabilities'>
+      & { policies?: Maybe<Array<(
+        { __typename?: 'ChannelPolicy' }
+        & Pick<ChannelPolicy, 'key' | 'type' | 'rule' | 'modPolicy'>
+      )>>, acls?: Maybe<Array<(
+        { __typename?: 'ChannelACL' }
+        & Pick<ChannelAcl, 'key' | 'value'>
+      )>>, organizations?: Maybe<Array<(
+        { __typename?: 'ChannelOrg' }
+        & Pick<ChannelOrg, 'mspID' | 'modPolicy'>
+        & { anchorPeer?: Maybe<Array<(
+          { __typename?: 'NetworkAddress' }
+          & Pick<NetworkAddress, 'host' | 'port'>
+        )>> }
+      )>> }
+    )> }
+  ) }
+);
+
+export type ChannelsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ChannelsQuery = (
+  { __typename?: 'Query' }
+  & { channels?: Maybe<Array<(
+    { __typename?: 'LightChannel' }
+    & Pick<LightChannel, 'name'>
   )>> }
 );
 
@@ -295,6 +693,171 @@ export function useGetCAsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Get
 export type GetCAsQueryHookResult = ReturnType<typeof useGetCAsQuery>;
 export type GetCAsLazyQueryHookResult = ReturnType<typeof useGetCAsLazyQuery>;
 export type GetCAsQueryResult = Apollo.QueryResult<GetCAsQuery, GetCAsQueryVariables>;
+export const ChannelDocument = gql`
+    query channel($channelID: String!) {
+  channel(channelID: $channelID) {
+    orderer {
+      type
+      batchTimeout
+      batchSize {
+        maxMessageCount
+        absoluteMaxBytes
+        preferredMaxBytes
+      }
+      maxChannels
+      capabilities
+      state
+      policies {
+        key
+        type
+        rule
+        modPolicy
+      }
+      etcdDraft {
+        consenters {
+          address {
+            host
+            port
+          }
+          clientTlsCert
+          serverTlsCert
+        }
+      }
+      organizations {
+        modPolicy
+        mspID
+        ordererEndpoints
+        cryptoConfig {
+          signatureHashFamily
+          identityIdentifierHashFunction
+        }
+        msp {
+          name
+          rootCerts
+          intermediateCerts
+          admins
+          revocationList
+          revocationList
+          tlsRootCerts
+          tlsIntermediateCerts
+        }
+        nodeOUs {
+          enable
+          clientOUIdentifier {
+            certificate
+            ouIdentifier
+          }
+          peerOUIdentifier {
+            certificate
+            ouIdentifier
+          }
+          adminOUIdentifier {
+            certificate
+            ouIdentifier
+          }
+          ordererOUIdentifier {
+            certificate
+            ouIdentifier
+          }
+        }
+        policies {
+          key
+          type
+          rule
+          modPolicy
+        }
+        ous {
+          certificate
+          ouIdentifier
+        }
+      }
+    }
+    application {
+      policies {
+        key
+        type
+        rule
+        modPolicy
+      }
+      capabilities
+      acls {
+        key
+        value
+      }
+      organizations {
+        mspID
+        modPolicy
+        anchorPeer {
+          host
+          port
+        }
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useChannelQuery__
+ *
+ * To run a query within a React component, call `useChannelQuery` and pass it any options that fit your needs.
+ * When your component renders, `useChannelQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useChannelQuery({
+ *   variables: {
+ *      channelID: // value for 'channelID'
+ *   },
+ * });
+ */
+export function useChannelQuery(baseOptions: Apollo.QueryHookOptions<ChannelQuery, ChannelQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ChannelQuery, ChannelQueryVariables>(ChannelDocument, options);
+      }
+export function useChannelLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ChannelQuery, ChannelQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ChannelQuery, ChannelQueryVariables>(ChannelDocument, options);
+        }
+export type ChannelQueryHookResult = ReturnType<typeof useChannelQuery>;
+export type ChannelLazyQueryHookResult = ReturnType<typeof useChannelLazyQuery>;
+export type ChannelQueryResult = Apollo.QueryResult<ChannelQuery, ChannelQueryVariables>;
+export const ChannelsDocument = gql`
+    query channels {
+  channels {
+    name
+  }
+}
+    `;
+
+/**
+ * __useChannelsQuery__
+ *
+ * To run a query within a React component, call `useChannelsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useChannelsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useChannelsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useChannelsQuery(baseOptions?: Apollo.QueryHookOptions<ChannelsQuery, ChannelsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ChannelsQuery, ChannelsQueryVariables>(ChannelsDocument, options);
+      }
+export function useChannelsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ChannelsQuery, ChannelsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ChannelsQuery, ChannelsQueryVariables>(ChannelsDocument, options);
+        }
+export type ChannelsQueryHookResult = ReturnType<typeof useChannelsQuery>;
+export type ChannelsLazyQueryHookResult = ReturnType<typeof useChannelsLazyQuery>;
+export type ChannelsQueryResult = Apollo.QueryResult<ChannelsQuery, ChannelsQueryVariables>;
 export const GetNamespacesDocument = gql`
     query GetNamespaces {
   namespaces {

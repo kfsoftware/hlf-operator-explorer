@@ -1,10 +1,12 @@
 /* This example requires Tailwind CSS v2.0+ */
 import { Dialog, Transition } from "@headlessui/react";
 import {
+  DatabaseIcon,
   FolderIcon,
-  HomeIcon, MenuIcon,
+  HomeIcon,
+  MenuIcon,
   UsersIcon,
-  XIcon
+  XIcon,
 } from "@heroicons/react/outline";
 import { Fragment, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -17,6 +19,7 @@ const navigation = [
     icon: FolderIcon,
     current: false,
   },
+  { name: "Channels", href: "/channels", icon: DatabaseIcon, current: false },
 ];
 
 function classNames(...classes: string[]) {

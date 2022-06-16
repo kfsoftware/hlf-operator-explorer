@@ -1,0 +1,101 @@
+query channel($channelID: String!) {
+  channel(channelID: $channelID) {
+    orderer {
+      type
+      batchTimeout
+      batchSize {
+        maxMessageCount
+        absoluteMaxBytes
+        preferredMaxBytes
+      }
+      maxChannels
+      capabilities
+      state
+      policies {
+        key
+        type
+        rule
+        modPolicy
+      }
+      etcdDraft {
+        consenters {
+          address {
+            host
+            port
+          }
+          clientTlsCert
+          serverTlsCert
+        }
+      }
+      organizations {
+        modPolicy
+        mspID
+        ordererEndpoints
+        cryptoConfig {
+          signatureHashFamily
+          identityIdentifierHashFunction
+        }
+        msp {
+          name
+          rootCerts
+          intermediateCerts
+          admins
+          revocationList
+          revocationList
+          tlsRootCerts
+          tlsIntermediateCerts
+        }
+        nodeOUs {
+          enable
+          clientOUIdentifier {
+            certificate
+            ouIdentifier
+          }
+          peerOUIdentifier {
+            certificate
+            ouIdentifier
+          }
+          adminOUIdentifier {
+            certificate
+            ouIdentifier
+          }
+          ordererOUIdentifier {
+            certificate
+            ouIdentifier
+          }
+        }
+        policies {
+          key
+          type
+          rule
+          modPolicy
+        }
+        ous {
+          certificate
+          ouIdentifier
+        }
+      }
+    }
+    application {
+      policies {
+        key
+        type
+        rule
+        modPolicy
+      }
+      capabilities
+      acls {
+        key
+        value
+      }
+      organizations {
+        mspID
+        modPolicy
+        anchorPeer {
+          host
+          port
+        }
+      }
+    }
+  }
+}
