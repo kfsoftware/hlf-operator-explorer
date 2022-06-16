@@ -25,6 +25,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sort"
 )
 
 func mapPeer(peer v1alpha1.FabricPeer) (*models.Peer, error) {
@@ -171,34 +172,47 @@ func (r Resolver) getPeers() []Peer {
 	return peers
 }
 
+type Channel struct {
+	Name  string `json:"name"`
+	Peers []Peer
+}
+
+func (r Resolver) getChannels() []Channel {
+	channelsValue, _ := r.ConfigBackends[0].Lookup("channels")
+	channelsMap := channelsValue.(map[string]interface{})
+	var channels []Channel
+	for channelName, channelValue := range channelsMap {
+		peers := []Peer{}
+		channelValueMap := channelValue.(map[string]interface{})
+		peersMap := channelValueMap["peers"].(map[string]interface{})
+		for peerName, _ := range peersMap {
+			peers = append(peers, Peer{Name: peerName})
+		}
+		channels = append(channels, Channel{
+			Name:  channelName,
+			Peers: peers,
+		})
+	}
+	return channels
+}
+
 type Peer struct {
 	Name string `json:"name"`
 }
 
 func (r *queryResolver) Channels(ctx context.Context) ([]*models.LightChannel, error) {
-	peers := r.getPeers()
-	firstPeerName := peers[0].Name
-	ctxProvider := r.FabricSDK.Context(fabsdk.WithUser(r.User), fabsdk.WithOrg(r.MSPID))
-	rsmgmtClient, err := resmgmt.New(ctxProvider)
-	if err != nil {
-		return nil, err
-	}
-	channelResponse, err := rsmgmtClient.QueryChannels(
-		resmgmt.WithTargetEndpoints(firstPeerName),
-	)
-	if err != nil {
-		return nil, err
-	}
-
+	chs := r.getChannels()
 	var channelsGQL []*models.LightChannel
-	for _, ch := range channelResponse.Channels {
-		channelsGQL = append(channelsGQL, &models.LightChannel{Name: ch.ChannelId})
+	for _, ch := range chs {
+		channelsGQL = append(channelsGQL, &models.LightChannel{Name: ch.Name})
 	}
+	sort.Slice(channelsGQL, func(i, j int) bool {
+		return channelsGQL[i].Name < channelsGQL[j].Name
+	})
 	return channelsGQL, nil
 }
 
 func (r *queryResolver) Channel(ctx context.Context, channelID string) (*models.Channel, error) {
-
 	ctxProvider := r.FabricSDK.Context(fabsdk.WithUser(r.User), fabsdk.WithOrg(r.MSPID))
 	rsmgmtClient, err := resmgmt.New(ctxProvider)
 	if err != nil {
