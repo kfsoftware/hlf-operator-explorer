@@ -3,6 +3,8 @@ package resolvers
 // THIS CODE IS A STARTING POINT ONLY. IT WILL NOT BE UPDATED WITH SCHEMA CHANGES.
 
 import (
+	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/core"
+	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/kfsoftware/hlf-operator-ui/api/gql"
 	operatorv1 "github.com/kfsoftware/hlf-operator/pkg/client/clientset/versioned"
 	"k8s.io/client-go/kubernetes"
@@ -10,9 +12,13 @@ import (
 )
 
 type Resolver struct {
-	KubeClient kubernetes.Interface
-	Config     *rest.Config
-	HLFClient  operatorv1.Interface
+	MSPID          string
+	User           string
+	KubeClient     kubernetes.Interface
+	Config         *rest.Config
+	HLFClient      operatorv1.Interface
+	FabricSDK      *fabsdk.FabricSDK
+	ConfigBackends []core.ConfigBackend
 }
 
 // Mutation returns gql.MutationResolver implementation.

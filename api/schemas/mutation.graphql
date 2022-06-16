@@ -7,7 +7,11 @@ type Mutation {
 
     createCA(input: CreateCAInput!): CA
     updateCA(filter: NameAndNamespace!, input: UpdateeCAInput!): CA
+
+
+
 }
+
 
 input CreatePeerInput {
     yaml: String!

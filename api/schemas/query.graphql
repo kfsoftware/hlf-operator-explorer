@@ -9,7 +9,67 @@ type Query {
     ca(input: NameAndNamespace!): CA
 
     namespaces: [Namespace!]
+    channels: [LightChannel!]
+    channel(channelID: String!): Channel!
+    blocks(
+        channelID: String!
+        from: Int!
+        to: Int!
+        reverse: Boolean!
+    ): BlocksResponse!
+    block(channelID: String!, blockNumber: Int!): Block!
 }
+type LightChannel {
+    name: String!
+}
+type BlocksResponse {
+    height: Int!
+    blocks: [Block!]
+}
+
+type Block {
+    blockNumber: Int!
+    dataHash: String!
+    numTransactions: Int!
+    createdAt: Time!
+    transactions: [Transaction!]
+}
+
+enum TransactionType {
+    MESSAGE
+    CONFIG
+    CONFIG_UPDATE
+    ENDORSER_TRANSACTION
+    ORDERER_TRANSACTION
+    DELIVER_SEEK_INFO
+    CHAINCODE_PACKAGE
+}
+
+type Transaction {
+    txID: String!
+    type: TransactionType!
+    createdAt: Time!
+    version: String!
+    path: String
+    response: String
+    request: String
+    chaincode: String!
+    writes: [TransactionWrite!]
+    reads: [TransactionRead!]
+}
+type TransactionWrite {
+    chaincodeID: String!
+    deleted: Boolean!
+    key: String!
+    value: String!
+}
+type TransactionRead {
+    chaincodeID: String!
+    key: String!
+    blockNumVersion: Int
+    txNumVersion: Int
+}
+
 type Namespace {
     name: String!
 }
@@ -35,4 +95,171 @@ type CA {
     yaml: String!
 }
 
+type Channel {
+    name: String!
+    rawConfig: String!
+    protoConfig: String!
+    channelConfig: ChannelConfig!
+    application: ApplicationConfig
+    orderer: OrdererConfig!
+    height: Int!
+    chaincodes: [ChannelChaincode!]
+}
+type ChannelChaincode {
+    name: String!
+    version: String!
+    sequence: Int!
+    signaturePolicy: SignaturePolicy!
+    endorsementPlugin: String!
+    validationPlugin: String!
+    configPolicy: String!
+    privateDataCollections: [PrivateDataCollection!]
+    approvals: [ChaincodeApproval!]
+}
+type ChaincodeApproval {
+    mspID: String!
+    approved: Boolean!
+}
+type PrivateDataCollection {
+    name: String!
+    requiredPeerCount: Int!
+    maxPeerCount: Int!
+    blockToLive: Int!
+    memberOnlyRead: Boolean!
+    memberOnlyWrite: Boolean!
+    endorsementPolicy: ApplicationPolicy
+    memberOrgsPolicy: SignaturePolicy
+}
+type SignaturePolicy {
+    version: Int!
+    rule: SignaturePolicyRule!
+    principals: [MSPPrincipal!]
+}
+type MSPPrincipal {
+    combined: MSPPrincipalCombined
+    role: MSPPrincipalRole
+}
+type MSPPrincipalRole {
+    mspID: String!
+    role: String!
+}
+type MSPPrincipalCombined {
+    classification: String!
+    mspPrincipals: [MSPPrincipal!]
+}
+type SignaturePolicyRule {
+    type: String!
+    noutOf: SignaturePolicyNOutOf
+    signedBy: SignaturePolicySignedBy
+}
+type ApplicationPolicy {
+    channelConfigPolicy: String!
+    signaturePolicy: SignaturePolicy
+}
+type SignaturePolicySignedBy {
+    signedBy: Int!
+}
+type SignaturePolicyNOutOf {
+    n: Int!
+    rules: [SignaturePolicyRule!]
+}
+
+
+type ChannelConfig {
+    policies: [ChannelPolicy!]
+    capabilities: [String!]
+}
+type ApplicationConfig {
+    policies: [ChannelPolicy!]
+    acls: [ChannelACL!]
+    capabilities: [String!]
+    organizations: [ChannelOrg!]
+}
+type ChannelACL {
+    key: String!
+    value: String!
+}
+type OrdererConfig {
+    type: String!
+    batchTimeout: Int!
+    batchSize: OrdererConfigBatchSize!
+    maxChannels: Int!
+    capabilities: [String!]
+    state: String!
+    policies: [ChannelPolicy!]
+    etcdDraft: OrdererConfigRaft!
+    organizations: [ChannelOrg!]
+}
+type ChannelOrg {
+    modPolicy: String!
+    mspID: String!
+    policies: [ChannelPolicy!]
+    msp: ChannelMSP!
+    ordererEndpoints: [String!]
+    anchorPeer: [NetworkAddress!]
+    nodeOUs: NodeOUs!
+    cryptoConfig: CryptoConfig!
+    ous: [OUIdentifier!]
+}
+type CryptoConfig {
+    signatureHashFamily: String!
+    identityIdentifierHashFunction: String!
+}
+type NodeOUs {
+    enable: Boolean!
+    clientOUIdentifier: OUIdentifier!
+    peerOUIdentifier: OUIdentifier!
+    adminOUIdentifier: OUIdentifier!
+    ordererOUIdentifier: OUIdentifier!
+}
+type OUIdentifier {
+    certificate: String!
+    ouIdentifier: String!
+}
+type ChannelMSP {
+    name: String!
+    rootCerts: [String!]
+    intermediateCerts: [String!]
+    admins: [String!]
+    revocationList: [String!]
+    tlsRootCerts: [String!]
+    tlsIntermediateCerts: [String!]
+}
+type OrdererConfigRaft {
+    consenters: [OrdererConfigRaftConsenter!]
+    options: OrdererConfigRaftOptions!
+}
+type OrdererConfigRaftConsenter {
+    address: NetworkAddress!
+    clientTlsCert: String!
+    serverTlsCert: String!
+}
+type NetworkAddress {
+    host: String!
+    port: Int!
+}
+type OrdererConfigRaftOptions {
+    tickInterval: String!
+    electionTick: Int!
+    heartbeatTick: Int!
+    maxInflightBlocks: Int!
+    snapshotIntervalSize: Int!
+}
+type ChannelPolicy {
+    key: String!
+    type: String!
+    rule: String!
+    modPolicy: String!
+}
+type OrdererConfigBatchSize {
+    maxMessageCount: Int!
+    absoluteMaxBytes: Int!
+    preferredMaxBytes: Int!
+}
+
+type ChannelAnchorPeer {
+    mspID: String!
+    host: String!
+    port: Int!
+}
 

@@ -7,6 +7,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
+	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/kfsoftware/hlf-operator-ui/api/gql"
 	"github.com/kfsoftware/hlf-operator-ui/api/gql/resolvers"
 	"github.com/kfsoftware/hlf-operator-ui/api/log"
@@ -19,10 +21,16 @@ import (
 )
 
 type serveConfig struct {
-	address string
+	address   string
+	hlfConfig string
+	user      string
+	mspID     string
 }
 type serveCmd struct {
-	address string
+	address   string
+	hlfConfig string
+	user      string
+	mspID     string
 }
 
 func (s serveCmd) run() error {
@@ -39,14 +47,26 @@ func (s serveCmd) run() error {
 	if err != nil {
 		return err
 	}
-	config := gql.Config{
+	configBackend := config.FromFile(s.hlfConfig)
+	cfgProvider, _ := configBackend()
+	peersTest, _ := cfgProvider[0].Lookup("peers")
+	log.Infof("peersTest %v", peersTest)
+	sdk, err := fabsdk.New(configBackend)
+	if err != nil {
+		return err
+	}
+	gqlConfig := gql.Config{
 		Resolvers: &resolvers.Resolver{
-			Config:     kubeConfig,
-			KubeClient: kubeClient,
-			HLFClient:  hlfClient,
+			MSPID:          s.mspID,
+			User:           s.user,
+			KubeClient:     kubeClient,
+			Config:         kubeConfig,
+			HLFClient:      hlfClient,
+			FabricSDK:      sdk,
+			ConfigBackends: cfgProvider,
 		},
 	}
-	es := gql.NewExecutableSchema(config)
+	es := gql.NewExecutableSchema(gqlConfig)
 	h := handler.New(es)
 	h.AddTransport(transport.Options{})
 	h.AddTransport(transport.GET{})
@@ -88,12 +108,18 @@ func NewServeCommand() *cobra.Command {
 		Long:  "serve",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			s := &serveCmd{
-				address: conf.address,
+				address:   conf.address,
+				hlfConfig: conf.hlfConfig,
+				user:      conf.user,
+				mspID:     conf.mspID,
 			}
 			return s.run()
 		},
 	}
 	f := cmd.Flags()
 	f.StringVar(&conf.address, "address", "", "address for the server")
+	f.StringVar(&conf.hlfConfig, "hlf-config", "", "HLF configuration")
+	f.StringVar(&conf.mspID, "msp-id", "", "MSP ID to use for the HLF configuration")
+	f.StringVar(&conf.user, "user", "", "User to use for the HLF configuration")
 	return cmd
 }
