@@ -1,0 +1,37 @@
+query GetBlocks(
+  $channelID: String!
+  $from: Int!
+  $to: Int!
+  $reverse: Boolean = true
+) {
+  blocks(channelID: $channelID, from: $from, to: $to, reverse: $reverse) {
+    height
+    blocks {
+      blockNumber
+      createdAt
+      dataHash
+      numTransactions
+      transactions {
+        chaincode
+        path
+        createdAt
+        path
+        reads {
+          blockNumVersion
+          chaincodeID
+          key
+          txNumVersion
+        }
+        writes {
+          chaincodeID
+          deleted
+          key
+          value
+        }
+        txID
+        type
+        version
+      }
+    }
+  }
+}

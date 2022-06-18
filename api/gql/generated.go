@@ -36,6 +36,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Channel() ChannelResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 }
@@ -87,6 +88,7 @@ type ComplexityRoot struct {
 		Height        func(childComplexity int) int
 		Name          func(childComplexity int) int
 		Orderer       func(childComplexity int) int
+		Peers         func(childComplexity int) int
 		ProtoConfig   func(childComplexity int) int
 		RawConfig     func(childComplexity int) int
 	}
@@ -139,6 +141,12 @@ type ComplexityRoot struct {
 		OrdererEndpoints func(childComplexity int) int
 		Ous              func(childComplexity int) int
 		Policies         func(childComplexity int) int
+	}
+
+	ChannelPeer struct {
+		Height func(childComplexity int) int
+		MspID  func(childComplexity int) int
+		URL    func(childComplexity int) int
 	}
 
 	ChannelPolicy struct {
@@ -326,6 +334,10 @@ type ComplexityRoot struct {
 	}
 }
 
+type ChannelResolver interface {
+	Chaincodes(ctx context.Context, obj *models.Channel) ([]*models.ChannelChaincode, error)
+	Peers(ctx context.Context, obj *models.Channel) ([]*models.ChannelPeer, error)
+}
 type MutationResolver interface {
 	CreatePeer(ctx context.Context, input models.CreatePeerInput) (*models.Peer, error)
 	UpdatePeer(ctx context.Context, filter models.NameAndNamespace, input models.UpdateePeerInput) (*models.Peer, error)
@@ -530,6 +542,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Channel.Orderer(childComplexity), true
+
+	case "Channel.peers":
+		if e.complexity.Channel.Peers == nil {
+			break
+		}
+
+		return e.complexity.Channel.Peers(childComplexity), true
 
 	case "Channel.protoConfig":
 		if e.complexity.Channel.ProtoConfig == nil {
@@ -768,6 +787,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ChannelOrg.Policies(childComplexity), true
+
+	case "ChannelPeer.height":
+		if e.complexity.ChannelPeer.Height == nil {
+			break
+		}
+
+		return e.complexity.ChannelPeer.Height(childComplexity), true
+
+	case "ChannelPeer.mspID":
+		if e.complexity.ChannelPeer.MspID == nil {
+			break
+		}
+
+		return e.complexity.ChannelPeer.MspID(childComplexity), true
+
+	case "ChannelPeer.url":
+		if e.complexity.ChannelPeer.URL == nil {
+			break
+		}
+
+		return e.complexity.ChannelPeer.URL(childComplexity), true
 
 	case "ChannelPolicy.key":
 		if e.complexity.ChannelPolicy.Key == nil {
@@ -1664,7 +1704,6 @@ input UpdateeCAInput {
 
     cas: [CA!]
     ca(input: NameAndNamespace!): CA
-
     namespaces: [Namespace!]
     channels: [LightChannel!]
     channel(channelID: String!): Channel!
@@ -1761,6 +1800,12 @@ type Channel {
     orderer: OrdererConfig!
     height: Int!
     chaincodes: [ChannelChaincode!]
+    peers: [ChannelPeer!]
+}
+type ChannelPeer {
+    mspID: String!
+    url: String!
+    height: Int!
 }
 type ChannelChaincode {
     name: String!
@@ -3093,14 +3138,14 @@ func (ec *executionContext) _Channel_chaincodes(ctx context.Context, field graph
 		Object:     "Channel",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Chaincodes, nil
+		return ec.resolvers.Channel().Chaincodes(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3112,6 +3157,38 @@ func (ec *executionContext) _Channel_chaincodes(ctx context.Context, field graph
 	res := resTmp.([]*models.ChannelChaincode)
 	fc.Result = res
 	return ec.marshalOChannelChaincode2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐChannelChaincodeᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Channel_peers(ctx context.Context, field graphql.CollectedField, obj *models.Channel) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Channel",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Channel().Peers(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*models.ChannelPeer)
+	fc.Result = res
+	return ec.marshalOChannelPeer2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐChannelPeerᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ChannelACL_key(ctx context.Context, field graphql.CollectedField, obj *models.ChannelACL) (ret graphql.Marshaler) {
@@ -4190,6 +4267,111 @@ func (ec *executionContext) _ChannelOrg_ous(ctx context.Context, field graphql.C
 	res := resTmp.([]*models.OUIdentifier)
 	fc.Result = res
 	return ec.marshalOOUIdentifier2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐOUIdentifierᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ChannelPeer_mspID(ctx context.Context, field graphql.CollectedField, obj *models.ChannelPeer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ChannelPeer",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MspID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ChannelPeer_url(ctx context.Context, field graphql.CollectedField, obj *models.ChannelPeer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ChannelPeer",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.URL, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ChannelPeer_height(ctx context.Context, field graphql.CollectedField, obj *models.ChannelPeer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ChannelPeer",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Height, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ChannelPolicy_key(ctx context.Context, field graphql.CollectedField, obj *models.ChannelPolicy) (ret graphql.Marshaler) {
@@ -9516,7 +9698,7 @@ func (ec *executionContext) _Channel(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "rawConfig":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -9526,7 +9708,7 @@ func (ec *executionContext) _Channel(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "protoConfig":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -9536,7 +9718,7 @@ func (ec *executionContext) _Channel(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "channelConfig":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -9546,7 +9728,7 @@ func (ec *executionContext) _Channel(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "application":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -9563,7 +9745,7 @@ func (ec *executionContext) _Channel(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "height":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -9573,15 +9755,42 @@ func (ec *executionContext) _Channel(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "chaincodes":
+			field := field
+
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Channel_chaincodes(ctx, field, obj)
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Channel_chaincodes(ctx, field, obj)
+				return res
 			}
 
-			out.Values[i] = innerFunc(ctx)
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
 
+			})
+		case "peers":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Channel_peers(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -9986,6 +10195,57 @@ func (ec *executionContext) _ChannelOrg(ctx context.Context, sel ast.SelectionSe
 
 			out.Values[i] = innerFunc(ctx)
 
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var channelPeerImplementors = []string{"ChannelPeer"}
+
+func (ec *executionContext) _ChannelPeer(ctx context.Context, sel ast.SelectionSet, obj *models.ChannelPeer) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, channelPeerImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ChannelPeer")
+		case "mspID":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._ChannelPeer_mspID(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "url":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._ChannelPeer_url(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "height":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._ChannelPeer_height(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12217,6 +12477,16 @@ func (ec *executionContext) marshalNChannelOrg2ᚖgithubᚗcomᚋkfsoftwareᚋhl
 	return ec._ChannelOrg(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNChannelPeer2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐChannelPeer(ctx context.Context, sel ast.SelectionSet, v *models.ChannelPeer) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._ChannelPeer(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNChannelPolicy2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐChannelPolicy(ctx context.Context, sel ast.SelectionSet, v *models.ChannelPolicy) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -13080,6 +13350,53 @@ func (ec *executionContext) marshalOChannelOrg2ᚕᚖgithubᚗcomᚋkfsoftware�
 				defer wg.Done()
 			}
 			ret[i] = ec.marshalNChannelOrg2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐChannelOrg(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalOChannelPeer2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐChannelPeerᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.ChannelPeer) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNChannelPeer2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐChannelPeer(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)

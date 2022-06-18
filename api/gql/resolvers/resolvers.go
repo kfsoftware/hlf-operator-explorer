@@ -25,7 +25,9 @@ type Resolver struct {
 func (r *Resolver) Mutation() gql.MutationResolver { return &mutationResolver{r} }
 
 // Query returns gql.QueryResolver implementation.
-func (r *Resolver) Query() gql.QueryResolver { return &queryResolver{r} }
+func (r *Resolver) Query() gql.QueryResolver     { return &queryResolver{r} }
+func (r *Resolver) Channel() gql.ChannelResolver { return &channelResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type channelResolver struct{ *Resolver }

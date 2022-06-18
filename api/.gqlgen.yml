@@ -11,3 +11,8 @@ exec:
 model:
   filename: gql/models/models.go
   package: models
+
+models:
+  Channel:
+    model: github.com/kfsoftware/hlf-operator-ui/api/gql/models.Channel
+

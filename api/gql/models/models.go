@@ -45,17 +45,6 @@ type ChaincodeApproval struct {
 	Approved bool   `json:"approved"`
 }
 
-type Channel struct {
-	Name          string              `json:"name"`
-	RawConfig     string              `json:"rawConfig"`
-	ProtoConfig   string              `json:"protoConfig"`
-	ChannelConfig *ChannelConfig      `json:"channelConfig"`
-	Application   *ApplicationConfig  `json:"application"`
-	Orderer       *OrdererConfig      `json:"orderer"`
-	Height        int                 `json:"height"`
-	Chaincodes    []*ChannelChaincode `json:"chaincodes"`
-}
-
 type ChannelACL struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
@@ -104,6 +93,12 @@ type ChannelOrg struct {
 	NodeOUs          *NodeOUs          `json:"nodeOUs"`
 	CryptoConfig     *CryptoConfig     `json:"cryptoConfig"`
 	Ous              []*OUIdentifier   `json:"ous"`
+}
+
+type ChannelPeer struct {
+	MspID  string `json:"mspID"`
+	URL    string `json:"url"`
+	Height int    `json:"height"`
 }
 
 type ChannelPolicy struct {

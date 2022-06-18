@@ -7,7 +7,6 @@ type Query {
 
     cas: [CA!]
     ca(input: NameAndNamespace!): CA
-
     namespaces: [Namespace!]
     channels: [LightChannel!]
     channel(channelID: String!): Channel!
@@ -104,6 +103,12 @@ type Channel {
     orderer: OrdererConfig!
     height: Int!
     chaincodes: [ChannelChaincode!]
+    peers: [ChannelPeer!]
+}
+type ChannelPeer {
+    mspID: String!
+    url: String!
+    height: Int!
 }
 type ChannelChaincode {
     name: String!

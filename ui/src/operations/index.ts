@@ -67,6 +67,7 @@ export type Channel = {
   orderer: OrdererConfig;
   height: Scalars['Int'];
   chaincodes?: Maybe<Array<ChannelChaincode>>;
+  peers?: Maybe<Array<ChannelPeer>>;
 };
 
 export type ChannelAcl = {
@@ -123,6 +124,13 @@ export type ChannelOrg = {
   nodeOUs: NodeOUs;
   cryptoConfig: CryptoConfig;
   ous?: Maybe<Array<OuIdentifier>>;
+};
+
+export type ChannelPeer = {
+  __typename?: 'ChannelPeer';
+  mspID: Scalars['String'];
+  url: Scalars['String'];
+  height: Scalars['Int'];
 };
 
 export type ChannelPolicy = {
@@ -443,6 +451,62 @@ export type UpdateePeerInput = {
   yaml?: Maybe<Scalars['String']>;
 };
 
+export type GetBlockQueryVariables = Exact<{
+  channelID: Scalars['String'];
+  blockNumber: Scalars['Int'];
+}>;
+
+
+export type GetBlockQuery = (
+  { __typename?: 'Query' }
+  & { block: (
+    { __typename?: 'Block' }
+    & Pick<Block, 'blockNumber' | 'createdAt' | 'dataHash' | 'numTransactions'>
+    & { transactions?: Maybe<Array<(
+      { __typename?: 'Transaction' }
+      & Pick<Transaction, 'chaincode' | 'path' | 'createdAt' | 'txID' | 'type' | 'version'>
+      & { reads?: Maybe<Array<(
+        { __typename?: 'TransactionRead' }
+        & Pick<TransactionRead, 'blockNumVersion' | 'chaincodeID' | 'key' | 'txNumVersion'>
+      )>>, writes?: Maybe<Array<(
+        { __typename?: 'TransactionWrite' }
+        & Pick<TransactionWrite, 'chaincodeID' | 'deleted' | 'key' | 'value'>
+      )>> }
+    )>> }
+  ) }
+);
+
+export type GetBlocksQueryVariables = Exact<{
+  channelID: Scalars['String'];
+  from: Scalars['Int'];
+  to: Scalars['Int'];
+  reverse?: Maybe<Scalars['Boolean']>;
+}>;
+
+
+export type GetBlocksQuery = (
+  { __typename?: 'Query' }
+  & { blocks: (
+    { __typename?: 'BlocksResponse' }
+    & Pick<BlocksResponse, 'height'>
+    & { blocks?: Maybe<Array<(
+      { __typename?: 'Block' }
+      & Pick<Block, 'blockNumber' | 'createdAt' | 'dataHash' | 'numTransactions'>
+      & { transactions?: Maybe<Array<(
+        { __typename?: 'Transaction' }
+        & Pick<Transaction, 'chaincode' | 'path' | 'createdAt' | 'txID' | 'type' | 'version'>
+        & { reads?: Maybe<Array<(
+          { __typename?: 'TransactionRead' }
+          & Pick<TransactionRead, 'blockNumVersion' | 'chaincodeID' | 'key' | 'txNumVersion'>
+        )>>, writes?: Maybe<Array<(
+          { __typename?: 'TransactionWrite' }
+          & Pick<TransactionWrite, 'chaincodeID' | 'deleted' | 'key' | 'value'>
+        )>> }
+      )>> }
+    )>> }
+  ) }
+);
+
 export type GetCaQueryVariables = Exact<{
   input: NameAndNamespace;
 }>;
@@ -476,7 +540,11 @@ export type ChannelQuery = (
   { __typename?: 'Query' }
   & { channel: (
     { __typename?: 'Channel' }
-    & { orderer: (
+    & Pick<Channel, 'name' | 'height'>
+    & { peers?: Maybe<Array<(
+      { __typename?: 'ChannelPeer' }
+      & Pick<ChannelPeer, 'mspID' | 'url' | 'height'>
+    )>>, orderer: (
       { __typename?: 'OrdererConfig' }
       & Pick<OrdererConfig, 'type' | 'batchTimeout' | 'maxChannels' | 'capabilities' | 'state'>
       & { batchSize: (
@@ -539,11 +607,36 @@ export type ChannelQuery = (
         & Pick<ChannelAcl, 'key' | 'value'>
       )>>, organizations?: Maybe<Array<(
         { __typename?: 'ChannelOrg' }
-        & Pick<ChannelOrg, 'mspID' | 'modPolicy'>
+        & Pick<ChannelOrg, 'mspID' | 'modPolicy' | 'ordererEndpoints'>
         & { anchorPeer?: Maybe<Array<(
           { __typename?: 'NetworkAddress' }
           & Pick<NetworkAddress, 'host' | 'port'>
-        )>> }
+        )>>, cryptoConfig: (
+          { __typename?: 'CryptoConfig' }
+          & Pick<CryptoConfig, 'signatureHashFamily' | 'identityIdentifierHashFunction'>
+        ), msp: (
+          { __typename?: 'ChannelMSP' }
+          & Pick<ChannelMsp, 'name' | 'rootCerts' | 'intermediateCerts' | 'admins' | 'revocationList' | 'tlsRootCerts' | 'tlsIntermediateCerts'>
+        ), ous?: Maybe<Array<(
+          { __typename?: 'OUIdentifier' }
+          & Pick<OuIdentifier, 'certificate' | 'ouIdentifier'>
+        )>>, nodeOUs: (
+          { __typename?: 'NodeOUs' }
+          & Pick<NodeOUs, 'enable'>
+          & { clientOUIdentifier: (
+            { __typename?: 'OUIdentifier' }
+            & Pick<OuIdentifier, 'certificate' | 'ouIdentifier'>
+          ), ordererOUIdentifier: (
+            { __typename?: 'OUIdentifier' }
+            & Pick<OuIdentifier, 'certificate' | 'ouIdentifier'>
+          ), peerOUIdentifier: (
+            { __typename?: 'OUIdentifier' }
+            & Pick<OuIdentifier, 'certificate' | 'ouIdentifier'>
+          ), adminOUIdentifier: (
+            { __typename?: 'OUIdentifier' }
+            & Pick<OuIdentifier, 'certificate' | 'ouIdentifier'>
+          ) }
+        ) }
       )>> }
     )> }
   ) }
@@ -620,6 +713,131 @@ export type GetPeersQuery = (
 );
 
 
+export const GetBlockDocument = gql`
+    query GetBlock($channelID: String!, $blockNumber: Int!) {
+  block(channelID: $channelID, blockNumber: $blockNumber) {
+    blockNumber
+    createdAt
+    dataHash
+    numTransactions
+    transactions {
+      chaincode
+      path
+      createdAt
+      path
+      reads {
+        blockNumVersion
+        chaincodeID
+        key
+        txNumVersion
+      }
+      writes {
+        chaincodeID
+        deleted
+        key
+        value
+      }
+      txID
+      type
+      version
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetBlockQuery__
+ *
+ * To run a query within a React component, call `useGetBlockQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetBlockQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetBlockQuery({
+ *   variables: {
+ *      channelID: // value for 'channelID'
+ *      blockNumber: // value for 'blockNumber'
+ *   },
+ * });
+ */
+export function useGetBlockQuery(baseOptions: Apollo.QueryHookOptions<GetBlockQuery, GetBlockQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetBlockQuery, GetBlockQueryVariables>(GetBlockDocument, options);
+      }
+export function useGetBlockLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetBlockQuery, GetBlockQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetBlockQuery, GetBlockQueryVariables>(GetBlockDocument, options);
+        }
+export type GetBlockQueryHookResult = ReturnType<typeof useGetBlockQuery>;
+export type GetBlockLazyQueryHookResult = ReturnType<typeof useGetBlockLazyQuery>;
+export type GetBlockQueryResult = Apollo.QueryResult<GetBlockQuery, GetBlockQueryVariables>;
+export const GetBlocksDocument = gql`
+    query GetBlocks($channelID: String!, $from: Int!, $to: Int!, $reverse: Boolean = true) {
+  blocks(channelID: $channelID, from: $from, to: $to, reverse: $reverse) {
+    height
+    blocks {
+      blockNumber
+      createdAt
+      dataHash
+      numTransactions
+      transactions {
+        chaincode
+        path
+        createdAt
+        path
+        reads {
+          blockNumVersion
+          chaincodeID
+          key
+          txNumVersion
+        }
+        writes {
+          chaincodeID
+          deleted
+          key
+          value
+        }
+        txID
+        type
+        version
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetBlocksQuery__
+ *
+ * To run a query within a React component, call `useGetBlocksQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetBlocksQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetBlocksQuery({
+ *   variables: {
+ *      channelID: // value for 'channelID'
+ *      from: // value for 'from'
+ *      to: // value for 'to'
+ *      reverse: // value for 'reverse'
+ *   },
+ * });
+ */
+export function useGetBlocksQuery(baseOptions: Apollo.QueryHookOptions<GetBlocksQuery, GetBlocksQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetBlocksQuery, GetBlocksQueryVariables>(GetBlocksDocument, options);
+      }
+export function useGetBlocksLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetBlocksQuery, GetBlocksQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetBlocksQuery, GetBlocksQueryVariables>(GetBlocksDocument, options);
+        }
+export type GetBlocksQueryHookResult = ReturnType<typeof useGetBlocksQuery>;
+export type GetBlocksLazyQueryHookResult = ReturnType<typeof useGetBlocksLazyQuery>;
+export type GetBlocksQueryResult = Apollo.QueryResult<GetBlocksQuery, GetBlocksQueryVariables>;
 export const GetCaDocument = gql`
     query GetCA($input: NameAndNamespace!) {
   ca(input: $input) {
@@ -696,6 +914,13 @@ export type GetCAsQueryResult = Apollo.QueryResult<GetCAsQuery, GetCAsQueryVaria
 export const ChannelDocument = gql`
     query channel($channelID: String!) {
   channel(channelID: $channelID) {
+    name
+    peers {
+      mspID
+      url
+      height
+    }
+    height
     orderer {
       type
       batchTimeout
@@ -790,6 +1015,44 @@ export const ChannelDocument = gql`
         anchorPeer {
           host
           port
+        }
+        ordererEndpoints
+        cryptoConfig {
+          signatureHashFamily
+          identityIdentifierHashFunction
+        }
+        msp {
+          name
+          rootCerts
+          intermediateCerts
+          admins
+          revocationList
+          revocationList
+          tlsRootCerts
+          tlsIntermediateCerts
+        }
+        ous {
+          certificate
+          ouIdentifier
+        }
+        nodeOUs {
+          enable
+          clientOUIdentifier {
+            certificate
+            ouIdentifier
+          }
+          ordererOUIdentifier {
+            certificate
+            ouIdentifier
+          }
+          peerOUIdentifier {
+            certificate
+            ouIdentifier
+          }
+          adminOUIdentifier {
+            certificate
+            ouIdentifier
+          }
         }
       }
     }

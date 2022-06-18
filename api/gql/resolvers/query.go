@@ -14,6 +14,7 @@ import (
 	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/ledger"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
+	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fab/resource"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/kfsoftware/hlf-operator-ui/api/gql/models"
@@ -309,35 +310,72 @@ func (r *queryResolver) Channel(ctx context.Context, channelID string) (*models.
 	}
 	channel.ChannelConfig.Policies = mapPolicies(chConfig.Policies)
 	channel.ChannelConfig.Capabilities = chConfig.Capabilities
-	//
-	//committedCCs, err := rsmgmtClient.LifecycleQueryCommittedCC(
-	//	channelID,
-	//	resmgmt.LifecycleQueryCommittedCCRequest{Name: ""},
-	//	opts...,
-	//)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//var ccChannels []*models.ChannelChaincode
-	//for _, c := range committedCCs {
-	//	signaturePolicy, err := mapSignaturePolicy(c.SignaturePolicy)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	ccChannels = append(ccChannels, &models.ChannelChaincode{
-	//		Name:                   c.Name,
-	//		Version:                c.Version,
-	//		Sequence:               int(c.Sequence),
-	//		SignaturePolicy:        signaturePolicy,
-	//		EndorsementPlugin:      c.EndorsementPlugin,
-	//		ValidationPlugin:       c.ValidationPlugin,
-	//		ConfigPolicy:           c.ChannelConfigPolicy,
-	//		PrivateDataCollections: mapPDCs(c.CollectionConfig),
-	//		Approvals:              mapChaincodeApprovals(c.Approvals),
-	//	})
-	//}
-	//channel.Chaincodes = ccChannels
+
 	return &channel, nil
+}
+
+func (c channelResolver) Chaincodes(ctx context.Context, obj *models.Channel) ([]*models.ChannelChaincode, error) {
+	ctxProvider := c.FabricSDK.Context(fabsdk.WithUser(c.User), fabsdk.WithOrg(c.MSPID))
+	rsmgmtClient, err := resmgmt.New(ctxProvider)
+	if err != nil {
+		return nil, err
+	}
+	committedCCs, err := rsmgmtClient.LifecycleQueryCommittedCC(
+		obj.Name,
+		resmgmt.LifecycleQueryCommittedCCRequest{},
+	)
+	if err != nil {
+		return nil, err
+	}
+	var ccChannels []*models.ChannelChaincode
+	for _, c := range committedCCs {
+		signaturePolicy, err := mapSignaturePolicy(c.SignaturePolicy)
+		if err != nil {
+			return nil, err
+		}
+		ccChannels = append(ccChannels, &models.ChannelChaincode{
+			Name:                   c.Name,
+			Version:                c.Version,
+			Sequence:               int(c.Sequence),
+			SignaturePolicy:        signaturePolicy,
+			EndorsementPlugin:      c.EndorsementPlugin,
+			ValidationPlugin:       c.ValidationPlugin,
+			ConfigPolicy:           c.ChannelConfigPolicy,
+			PrivateDataCollections: mapPDCs(c.CollectionConfig),
+			Approvals:              mapChaincodeApprovals(c.Approvals),
+		})
+	}
+	return ccChannels, nil
+}
+
+func (c channelResolver) Peers(ctx context.Context, obj *models.Channel) ([]*models.ChannelPeer, error) {
+	channelProvider := c.FabricSDK.ChannelContext(obj.Name, fabsdk.WithUser(c.User), fabsdk.WithOrg(c.MSPID))
+	chCtx, err := channelProvider()
+	if err != nil {
+		return nil, err
+	}
+	discoveryService, err := chCtx.ChannelService().Discovery()
+	if err != nil {
+		return nil, err
+	}
+	peers, err := discoveryService.GetPeers()
+	if err != nil {
+		return nil, err
+	}
+	channelPeers := []*models.ChannelPeer{}
+	for _, peer := range peers {
+		props := peer.Properties()
+		ledgerHeight := props[fab.PropertyLedgerHeight]
+		channelPeers = append(channelPeers, &models.ChannelPeer{
+			MspID:  peer.MSPID(),
+			URL:    peer.URL(),
+			Height: int(ledgerHeight.(uint64)),
+		})
+	}
+	sort.Slice(channelPeers, func(i, j int) bool {
+		return channelPeers[i].URL < channelPeers[j].URL
+	})
+	return channelPeers, nil
 }
 func EncodeX509CertificatesToPem(crts []*x509.Certificate) []string {
 	var pems []string

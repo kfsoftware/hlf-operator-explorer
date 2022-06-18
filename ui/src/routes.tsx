@@ -23,7 +23,7 @@ export default function Routes() {
           <Route path="cas" element={<CAList />} />
           <Route path="cas/:namespace/:name" element={<CADetail />} />
           <Route path="channels" element={<ChannelList />} />
-          <Route path="channels/:name" element={<ChannelDetail />} />
+          <Route path="channels/:name/*" element={<ChannelDetail />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </ReactRoutes>
