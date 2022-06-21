@@ -1,4 +1,11 @@
-import { Link, Route, Routes, useNavigate, useParams } from "react-router-dom";
+import {
+  Link,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 import {
   Block,
   Channel,
@@ -25,6 +32,15 @@ export default function ChannelDetail() {
       channelID: name!,
     },
   });
+  const location = useLocation();
+  const isBlockActive = useMemo(
+    () => location.pathname === `/channels/${name!}/blocks`,
+    [location]
+  );
+  const isConfigActive = useMemo(
+    () => location.pathname === `/channels/${name!}`,
+    [location]
+  );
   return (
     <div className="py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -33,6 +49,28 @@ export default function ChannelDetail() {
             <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
               Channel {name!}
             </h2>
+          </div>
+          <div className="mt-4 flex md:mt-0 md:ml-4">
+            <Link
+              to={`/channels/${name!}`}
+              className={
+                isConfigActive
+                  ? `inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`
+                  : `inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`
+              }
+            >
+              Config
+            </Link>
+            <Link
+              to={`/channels/${name!}/blocks`}
+              className={
+                isBlockActive
+                  ? `ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`
+                  : `ml-3 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`
+              }
+            >
+              Blocks
+            </Link>
           </div>
         </div>
       </div>
@@ -95,9 +133,7 @@ function splitHLFKey(key: string): string[] {
   return key.split(SPLIT_KEY).filter((i) => !!i);
 }
 
-function TransactionList({
-  transactions,
-}: TransactionListProps) {
+function TransactionList({ transactions }: TransactionListProps) {
   const columns = useMemo(
     () =>
       [
@@ -107,7 +143,18 @@ function TransactionList({
           Cell: function Cell({ row: { original } }) {
             return (
               <div className="flex items-center" title={original.txID}>
-                {original.txID.slice(0, 8)}
+                {original.txID.substring(0, 8)}
+              </div>
+            );
+          },
+        },
+        {
+          accessor: "request",
+          Header: "Request",
+          Cell: function Cell({ row: { original } }) {
+            return (
+              <div className="flex items-center" title={original.request!}>
+                {original.request}
               </div>
             );
           },
@@ -134,24 +181,21 @@ function TransactionList({
                     if (write.key.startsWith(SPLIT_KEY)) {
                       const parts = splitHLFKey(write.key);
                       const itemType = parts[0];
+                      console.log(itemType);
+                      let value = write.value;
+                      try {
+                        value = JSON.parse(write.value);
+                      } catch (e) {
+                        // value not json
+                      }
                       switch (itemType) {
-                        case "partner":
-                          const partnerId = parts[1];
-                          return (
-                            <li key={write.key}>
-                              <Link
-                                className="text-indigo-600 hover:text-indigo-900"
-                                to={`/partners/${partnerId}`}
-                              >
-                                Partner {partnerId} created
-                              </Link>
-                            </li>
-                          );
-                        // TODO: Add other types
                         default:
                           return (
                             <li key={write.key}>
-                              {write.key}={write.value}
+                              <pre>
+                                Key{" "}={" "}{write.key}<br />
+                                Value{" "}={" "} {JSON.stringify(value, null, 4)}
+                              </pre>
                             </li>
                           );
                       }
@@ -197,7 +241,8 @@ function TransactionList({
                         default:
                           return (
                             <li key={read.key}>
-                              {read.key}={read.txNumVersion} ({read.blockNumVersion})
+                              {read.key}={read.txNumVersion} (
+                              {read.blockNumVersion})
                             </li>
                           );
                       }
@@ -487,7 +532,9 @@ function OrgDetailCard({
             </dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
               {org.msp?.rootCerts?.map((cert, idx) => (
-                <pre key={idx} className="select-all">{cert}</pre>
+                <pre key={idx} className="select-all">
+                  {cert}
+                </pre>
               ))}
             </dd>
           </div>
@@ -497,7 +544,9 @@ function OrgDetailCard({
             </dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
               {org.msp?.tlsRootCerts?.map((cert, idx) => (
-                <pre key={idx} className="select-all">{cert}</pre>
+                <pre key={idx} className="select-all">
+                  {cert}
+                </pre>
               ))}
             </dd>
           </div>
