@@ -1,5 +1,5 @@
-import { BrowserRouter, Route, Routes as ReactRoutes } from "react-router-dom";
-import App from "./App";
+import { Route, Routes as ReactRoutes } from "react-router-dom";
+import Base from "./Base";
 import CADetail from "./pages/CADetail";
 import CAList from "./pages/CAList";
 import ChannelDetail from "./pages/ChannelDetail";
@@ -11,9 +11,8 @@ import PeerDetail from "./pages/PeerDetail";
 import PeerList from "./pages/PeerList";
 export default function Routes() {
   return (
-    <BrowserRouter>
       <ReactRoutes>
-        <Route path="/" element={<App />}>
+        <Route path="/" element={<Base />}>
           <Route index element={<PeerList />} />
           <Route path="peers" element={<PeerList />} />
           <Route path="peers/:namespace/:name" element={<PeerDetail />} />
@@ -27,6 +26,5 @@ export default function Routes() {
         </Route>
         <Route path="*" element={<NotFound />} />
       </ReactRoutes>
-    </BrowserRouter>
   );
 }

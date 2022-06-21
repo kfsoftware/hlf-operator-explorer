@@ -1,15 +1,22 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import Routes from "./routes";
+import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./index.css";
-import {ApolloProvider} from "./providers/ApolloProvider";
+import { ApolloProvider } from "./providers/ApolloProvider";
+import Routes from "./routes";
 
 ReactDOM.render(
   <React.StrictMode>
-    <ApolloProvider url="http://localhost:8003/graphql" >
-      <Routes />
-    </ApolloProvider>
+    <BrowserRouter>
+      <App>
+        {({ appConfig }) => (
+          <ApolloProvider url={appConfig.apiUrl}>
+            <Routes />
+          </ApolloProvider>
+        )}
+      </App>
+    </BrowserRouter>
   </React.StrictMode>,
   document.getElementById("root")
 );
