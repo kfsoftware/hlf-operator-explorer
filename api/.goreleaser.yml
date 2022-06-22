@@ -43,4 +43,5 @@ dockers:
 
     extra_files:
       - LICENSE
+      - CREDITS
       - README.md
