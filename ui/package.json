@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview",
+    "preview": "vite preview --host=0.0.0.0",
     "schema": "graphql-codegen",
     "schema:w": "graphql-codegen --watch='src/operations/**/*.graphql'"
   },
