@@ -272,17 +272,18 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Block      func(childComplexity int, channelID string, blockNumber int) int
-		Blocks     func(childComplexity int, channelID string, from int, to int, reverse bool) int
-		Ca         func(childComplexity int, input models.NameAndNamespace) int
-		Cas        func(childComplexity int) int
-		Channel    func(childComplexity int, channelID string) int
-		Channels   func(childComplexity int) int
-		Namespaces func(childComplexity int) int
-		Orderer    func(childComplexity int, input models.NameAndNamespace) int
-		Orderers   func(childComplexity int) int
-		Peer       func(childComplexity int, input models.NameAndNamespace) int
-		Peers      func(childComplexity int) int
+		Block       func(childComplexity int, channelID string, blockNumber int) int
+		BlockByTxid func(childComplexity int, channelID string, transactionID string) int
+		Blocks      func(childComplexity int, channelID string, from int, to int, reverse bool) int
+		Ca          func(childComplexity int, input models.NameAndNamespace) int
+		Cas         func(childComplexity int) int
+		Channel     func(childComplexity int, channelID string) int
+		Channels    func(childComplexity int) int
+		Namespaces  func(childComplexity int) int
+		Orderer     func(childComplexity int, input models.NameAndNamespace) int
+		Orderers    func(childComplexity int) int
+		Peer        func(childComplexity int, input models.NameAndNamespace) int
+		Peers       func(childComplexity int) int
 	}
 
 	SignaturePolicy struct {
@@ -358,6 +359,7 @@ type QueryResolver interface {
 	Channel(ctx context.Context, channelID string) (*models.Channel, error)
 	Blocks(ctx context.Context, channelID string, from int, to int, reverse bool) (*models.BlocksResponse, error)
 	Block(ctx context.Context, channelID string, blockNumber int) (*models.Block, error)
+	BlockByTxid(ctx context.Context, channelID string, transactionID string) (*models.Block, error)
 }
 
 type executableSchema struct {
@@ -1306,6 +1308,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Block(childComplexity, args["channelID"].(string), args["blockNumber"].(int)), true
 
+	case "Query.blockByTXID":
+		if e.complexity.Query.BlockByTxid == nil {
+			break
+		}
+
+		args, err := ec.field_Query_blockByTXID_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.BlockByTxid(childComplexity, args["channelID"].(string), args["transactionID"].(string)), true
+
 	case "Query.blocks":
 		if e.complexity.Query.Blocks == nil {
 			break
@@ -1714,6 +1728,7 @@ input UpdateeCAInput {
         reverse: Boolean!
     ): BlocksResponse!
     block(channelID: String!, blockNumber: Int!): Block!
+    blockByTXID(channelID: String!, transactionID: String!): Block!
 }
 type LightChannel {
     name: String!
@@ -2109,6 +2124,30 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_blockByTXID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["channelID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("channelID"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["channelID"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["transactionID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("transactionID"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["transactionID"] = arg1
 	return args, nil
 }
 
@@ -7049,6 +7088,48 @@ func (ec *executionContext) _Query_block(ctx context.Context, field graphql.Coll
 	return ec.marshalNBlock2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐBlock(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_blockByTXID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_blockByTXID_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().BlockByTxid(rctx, args["channelID"].(string), args["transactionID"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*models.Block)
+	fc.Result = res
+	return ec.marshalNBlock2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐBlock(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -11505,6 +11586,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_block(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "blockByTXID":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_blockByTXID(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}

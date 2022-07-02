@@ -7,6 +7,7 @@ import (
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/ledger"
+	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	"github.com/hyperledger/fabric-sdk-go/third_party/github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/rwsetutil"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -73,12 +74,20 @@ func UnmarshalChannelHeader(bytes []byte) (*common.ChannelHeader, error) {
 	return chdr, errors.Wrap(err, "error unmarshaling ChannelHeader")
 }
 
+func GetBlockByTXID(ledgerClient *ledger.Client, txID string) (*Block, error) {
+	block, err := ledgerClient.QueryBlockByTxID(fab.TransactionID(txID))
+	if err != nil {
+		return nil, err
+	}
+	return GetBlock(ledgerClient, int(block.Header.Number))
+}
 func GetBlock(ledgerClient *ledger.Client, blockNumber int) (*Block, error) {
 	block, err := ledgerClient.QueryBlock(uint64(blockNumber))
 	if err != nil {
 		logrus.Debugf("Block %d doesn't exist", blockNumber)
 		return nil, err
 	}
+
 	dataHash := block.Header.DataHash
 	blk := &Block{
 		Number:   int(block.Header.Number),

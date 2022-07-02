@@ -752,11 +752,22 @@ func (r *queryResolver) Block(ctx context.Context, channelID string, blockNumber
 	if err != nil {
 		return nil, err
 	}
-	var totalBlocks []*block.Block
 	blck, err := block.GetBlock(ledgerClient, blockNumber)
 	if err != nil {
 		return nil, err
 	}
-	totalBlocks = append(totalBlocks, blck)
+	return mapBlock(blck), nil
+}
+
+func (r *queryResolver) BlockByTxid(ctx context.Context, channelID string, transactionID string) (*models.Block, error) {
+	chContext := r.FabricSDK.ChannelContext(channelID, fabsdk.WithUser(r.User), fabsdk.WithOrg(r.MSPID))
+	ledgerClient, err := ledger.New(chContext)
+	if err != nil {
+		return nil, err
+	}
+	blck, err := block.GetBlockByTXID(ledgerClient, transactionID)
+	if err != nil {
+		return nil, err
+	}
 	return mapBlock(blck), nil
 }

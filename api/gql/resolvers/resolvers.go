@@ -30,4 +30,5 @@ func (r *Resolver) Channel() gql.ChannelResolver { return &channelResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
 type channelResolver struct{ *Resolver }

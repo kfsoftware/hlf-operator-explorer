@@ -17,6 +17,7 @@ type Query {
         reverse: Boolean!
     ): BlocksResponse!
     block(channelID: String!, blockNumber: Int!): Block!
+    blockByTXID(channelID: String!, transactionID: String!): Block!
 }
 type LightChannel {
     name: String!
