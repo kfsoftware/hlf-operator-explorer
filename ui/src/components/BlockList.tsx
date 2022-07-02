@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -10,14 +10,23 @@ import {
   UsePaginationInstanceProps,
   UsePaginationOptions,
   UsePaginationState,
-  useSortBy,
   UseSortByColumnOptions,
-  UseSortByState,
   useTable,
 } from "react-table";
-
+import {
+  ChevronDownIcon,
+  SearchIcon,
+  SortAscendingIcon,
+} from "@heroicons/react/solid";
 import TimeAgo from "timeago-react";
-import { Block, TransactionType, useGetBlocksQuery } from "../operations";
+import {
+  Block,
+  TransactionType,
+  useGetBlockByTxidLazyQuery,
+  useGetBlockLazyQuery,
+  useGetBlockQuery,
+  useGetBlocksQuery,
+} from "../operations";
 import { Table } from "./table";
 interface BlockListProps {
   channel: string;
@@ -121,7 +130,37 @@ export default function BlockList({ channel }: BlockListProps) {
     },
     skip: !channel,
   });
-
+  const [search, setSearch] = useState("");
+  const [getBlock] = useGetBlockLazyQuery();
+  const [getBlockByTXID] = useGetBlockByTxidLazyQuery();
+  const fetchAndNavigateToBlock = useCallback(async () => {
+    if (search.length === 64) {
+      const { data } = await getBlockByTXID({
+        variables: {
+          channelID: channel,
+          txID: search,
+        },
+      });
+      if (data?.block.blockNumber) {
+        await navigate(`/channels/${channel}/blocks/${data.block.blockNumber}`);
+      }
+    } else {
+      const blockNumber = parseInt(search);
+      if (!isNaN(blockNumber)) {
+        const { data } = await getBlock({
+          variables: {
+            blockNumber,
+            channelID: channel,
+          },
+        });
+        if (data?.block.blockNumber) {
+          await navigate(
+            `/channels/${channel}/blocks/${data.block.blockNumber}`
+          );
+        }
+      }
+    }
+  }, [search]);
   useEffect(() => {
     setBlocks((data?.blocks.blocks as Block[]) || []);
     setPageCount(Math.floor(data?.blocks?.height! / pageSize) + 1);
@@ -129,12 +168,69 @@ export default function BlockList({ channel }: BlockListProps) {
   const navigate = useNavigate();
   return (
     <>
+      <div className="pb-5 border-b border-gray-200 sm:flex sm:items-center sm:justify-between">
+        <h3 className="text-lg leading-6 font-medium text-gray-900">Blocks</h3>
+        <div className="mt-3 sm:mt-0 sm:ml-4 max-w-2xl w-full">
+          <label htmlFor="mobile-search-candidate" className="sr-only">
+            Search
+          </label>
+          <label htmlFor="desktop-search-candidate" className="sr-only">
+            Search
+          </label>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              fetchAndNavigateToBlock();
+            }}
+          >
+            <div className="flex rounded-md shadow-sm">
+              <div className="relative flex-grow focus-within:z-10">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <SearchIcon
+                    className="h-5 w-5 text-gray-400"
+                    aria-hidden="true"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  name="mobile-search-block"
+                  id="mobile-search-block"
+                  onKeyPress={(key) => {
+                    if (key.key === "Enter") {
+                      fetchAndNavigateToBlock();
+                    }
+                  }}
+                  className="focus:ring-indigo-500 focus:border-indigo-500 block w-full rounded-r-md rounded-l-md pl-10 sm:hidden border-gray-300"
+                  placeholder="Search"
+                />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyPress={(key) => {
+                    if (key.key === "Enter") {
+                      fetchAndNavigateToBlock();
+                    }
+                  }}
+                  name="desktop-search-block"
+                  id="desktop-search-block"
+                  className="hidden focus:ring-indigo-500 focus:border-indigo-500 w-full rounded-r-md rounded-l-md pl-10 sm:block sm:text-sm border-gray-300"
+                  placeholder="Search by tx or block number"
+                />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
       <Table
         error={error}
         loading={loading}
         table={table}
         onRowClick={(block: Block) => {
-            navigate(`/channels/${channel}/blocks/${block.blockNumber}`);
+          navigate(`/channels/${channel}/blocks/${block.blockNumber}`);
         }}
       />
     </>

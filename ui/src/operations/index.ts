@@ -337,6 +337,7 @@ export type Query = {
   channel: Channel;
   blocks: BlocksResponse;
   block: Block;
+  blockByTXID: Block;
 };
 
 
@@ -371,6 +372,12 @@ export type QueryBlocksArgs = {
 export type QueryBlockArgs = {
   channelID: Scalars['String'];
   blockNumber: Scalars['Int'];
+};
+
+
+export type QueryBlockByTxidArgs = {
+  channelID: Scalars['String'];
+  transactionID: Scalars['String'];
 };
 
 export type SignaturePolicy = {
@@ -710,6 +717,31 @@ export type GetPeersQuery = (
     { __typename?: 'Peer' }
     & Pick<Peer, 'name' | 'namespace' | 'yaml'>
   )>> }
+);
+
+export type GetBlockByTxidQueryVariables = Exact<{
+  channelID: Scalars['String'];
+  txID: Scalars['String'];
+}>;
+
+
+export type GetBlockByTxidQuery = (
+  { __typename?: 'Query' }
+  & { block: (
+    { __typename?: 'Block' }
+    & Pick<Block, 'blockNumber' | 'createdAt' | 'dataHash' | 'numTransactions'>
+    & { transactions?: Maybe<Array<(
+      { __typename?: 'Transaction' }
+      & Pick<Transaction, 'chaincode' | 'path' | 'createdAt' | 'txID' | 'type' | 'version'>
+      & { reads?: Maybe<Array<(
+        { __typename?: 'TransactionRead' }
+        & Pick<TransactionRead, 'blockNumVersion' | 'chaincodeID' | 'key' | 'txNumVersion'>
+      )>>, writes?: Maybe<Array<(
+        { __typename?: 'TransactionWrite' }
+        & Pick<TransactionWrite, 'chaincodeID' | 'deleted' | 'key' | 'value'>
+      )>> }
+    )>> }
+  ) }
 );
 
 
@@ -1301,3 +1333,63 @@ export function useGetPeersLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<G
 export type GetPeersQueryHookResult = ReturnType<typeof useGetPeersQuery>;
 export type GetPeersLazyQueryHookResult = ReturnType<typeof useGetPeersLazyQuery>;
 export type GetPeersQueryResult = Apollo.QueryResult<GetPeersQuery, GetPeersQueryVariables>;
+export const GetBlockByTxidDocument = gql`
+    query GetBlockByTXID($channelID: String!, $txID: String!) {
+  block: blockByTXID(channelID: $channelID, transactionID: $txID) {
+    blockNumber
+    createdAt
+    dataHash
+    numTransactions
+    transactions {
+      chaincode
+      path
+      createdAt
+      path
+      reads {
+        blockNumVersion
+        chaincodeID
+        key
+        txNumVersion
+      }
+      writes {
+        chaincodeID
+        deleted
+        key
+        value
+      }
+      txID
+      type
+      version
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetBlockByTxidQuery__
+ *
+ * To run a query within a React component, call `useGetBlockByTxidQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetBlockByTxidQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetBlockByTxidQuery({
+ *   variables: {
+ *      channelID: // value for 'channelID'
+ *      txID: // value for 'txID'
+ *   },
+ * });
+ */
+export function useGetBlockByTxidQuery(baseOptions: Apollo.QueryHookOptions<GetBlockByTxidQuery, GetBlockByTxidQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetBlockByTxidQuery, GetBlockByTxidQueryVariables>(GetBlockByTxidDocument, options);
+      }
+export function useGetBlockByTxidLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetBlockByTxidQuery, GetBlockByTxidQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetBlockByTxidQuery, GetBlockByTxidQueryVariables>(GetBlockByTxidDocument, options);
+        }
+export type GetBlockByTxidQueryHookResult = ReturnType<typeof useGetBlockByTxidQuery>;
+export type GetBlockByTxidLazyQueryHookResult = ReturnType<typeof useGetBlockByTxidLazyQuery>;
+export type GetBlockByTxidQueryResult = Apollo.QueryResult<GetBlockByTxidQuery, GetBlockByTxidQueryVariables>;
