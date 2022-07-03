@@ -38,6 +38,15 @@ export type Block = {
   transactions?: Maybe<Array<Transaction>>;
 };
 
+export type BlockWithPrivateData = {
+  __typename?: 'BlockWithPrivateData';
+  blockNumber: Scalars['Int'];
+  dataHash: Scalars['String'];
+  numTransactions: Scalars['Int'];
+  createdAt: Scalars['Time'];
+  transactions?: Maybe<Array<TransactionWithPrivateData>>;
+};
+
 export type BlocksResponse = {
   __typename?: 'BlocksResponse';
   height: Scalars['Int'];
@@ -305,6 +314,22 @@ export type OrdererConfigRaftOptions = {
   snapshotIntervalSize: Scalars['Int'];
 };
 
+export type PdcRead = {
+  __typename?: 'PDCRead';
+  collectionName: Scalars['String'];
+  key: Scalars['String'];
+  block: Scalars['Int'];
+  txNum: Scalars['Int'];
+};
+
+export type PdcWrite = {
+  __typename?: 'PDCWrite';
+  collectionName: Scalars['String'];
+  deleted: Scalars['Boolean'];
+  key: Scalars['String'];
+  value: Scalars['String'];
+};
+
 export type Peer = {
   __typename?: 'Peer';
   name: Scalars['String'];
@@ -337,6 +362,7 @@ export type Query = {
   channel: Channel;
   blocks: BlocksResponse;
   block: Block;
+  blockWithPrivateData: BlockWithPrivateData;
   blockByTXID: Block;
 };
 
@@ -370,6 +396,12 @@ export type QueryBlocksArgs = {
 
 
 export type QueryBlockArgs = {
+  channelID: Scalars['String'];
+  blockNumber: Scalars['Int'];
+};
+
+
+export type QueryBlockWithPrivateDataArgs = {
   channelID: Scalars['String'];
   blockNumber: Scalars['Int'];
 };
@@ -438,6 +470,22 @@ export enum TransactionType {
   ChaincodePackage = 'CHAINCODE_PACKAGE'
 }
 
+export type TransactionWithPrivateData = {
+  __typename?: 'TransactionWithPrivateData';
+  txID: Scalars['String'];
+  type: TransactionType;
+  createdAt: Scalars['Time'];
+  version: Scalars['String'];
+  path?: Maybe<Scalars['String']>;
+  response?: Maybe<Scalars['String']>;
+  request?: Maybe<Scalars['String']>;
+  chaincode: Scalars['String'];
+  writes?: Maybe<Array<TransactionWrite>>;
+  reads?: Maybe<Array<TransactionRead>>;
+  pdcWrites?: Maybe<Array<PdcWrite>>;
+  pdcReads?: Maybe<Array<PdcRead>>;
+};
+
 export type TransactionWrite = {
   __typename?: 'TransactionWrite';
   chaincodeID: Scalars['String'];
@@ -478,6 +526,37 @@ export type GetBlockQuery = (
       )>>, writes?: Maybe<Array<(
         { __typename?: 'TransactionWrite' }
         & Pick<TransactionWrite, 'chaincodeID' | 'deleted' | 'key' | 'value'>
+      )>> }
+    )>> }
+  ) }
+);
+
+export type GetBlockWithPrivateDataQueryVariables = Exact<{
+  channelID: Scalars['String'];
+  blockNumber: Scalars['Int'];
+}>;
+
+
+export type GetBlockWithPrivateDataQuery = (
+  { __typename?: 'Query' }
+  & { block: (
+    { __typename?: 'BlockWithPrivateData' }
+    & Pick<BlockWithPrivateData, 'blockNumber' | 'createdAt' | 'dataHash' | 'numTransactions'>
+    & { transactions?: Maybe<Array<(
+      { __typename?: 'TransactionWithPrivateData' }
+      & Pick<TransactionWithPrivateData, 'chaincode' | 'path' | 'createdAt' | 'txID' | 'type' | 'version'>
+      & { reads?: Maybe<Array<(
+        { __typename?: 'TransactionRead' }
+        & Pick<TransactionRead, 'blockNumVersion' | 'chaincodeID' | 'key' | 'txNumVersion'>
+      )>>, writes?: Maybe<Array<(
+        { __typename?: 'TransactionWrite' }
+        & Pick<TransactionWrite, 'chaincodeID' | 'deleted' | 'key' | 'value'>
+      )>>, pdcWrites?: Maybe<Array<(
+        { __typename?: 'PDCWrite' }
+        & Pick<PdcWrite, 'collectionName' | 'deleted' | 'key' | 'value'>
+      )>>, pdcReads?: Maybe<Array<(
+        { __typename?: 'PDCRead' }
+        & Pick<PdcRead, 'collectionName' | 'key' | 'block' | 'txNum'>
       )>> }
     )>> }
   ) }
@@ -805,6 +884,78 @@ export function useGetBlockLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<G
 export type GetBlockQueryHookResult = ReturnType<typeof useGetBlockQuery>;
 export type GetBlockLazyQueryHookResult = ReturnType<typeof useGetBlockLazyQuery>;
 export type GetBlockQueryResult = Apollo.QueryResult<GetBlockQuery, GetBlockQueryVariables>;
+export const GetBlockWithPrivateDataDocument = gql`
+    query GetBlockWithPrivateData($channelID: String!, $blockNumber: Int!) {
+  block: blockWithPrivateData(channelID: $channelID, blockNumber: $blockNumber) {
+    blockNumber
+    createdAt
+    dataHash
+    numTransactions
+    transactions {
+      chaincode
+      path
+      createdAt
+      path
+      reads {
+        blockNumVersion
+        chaincodeID
+        key
+        txNumVersion
+      }
+      writes {
+        chaincodeID
+        deleted
+        key
+        value
+      }
+      pdcWrites {
+        collectionName
+        deleted
+        key
+        value
+      }
+      pdcReads {
+        collectionName
+        key
+        block
+        txNum
+      }
+      txID
+      type
+      version
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetBlockWithPrivateDataQuery__
+ *
+ * To run a query within a React component, call `useGetBlockWithPrivateDataQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetBlockWithPrivateDataQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetBlockWithPrivateDataQuery({
+ *   variables: {
+ *      channelID: // value for 'channelID'
+ *      blockNumber: // value for 'blockNumber'
+ *   },
+ * });
+ */
+export function useGetBlockWithPrivateDataQuery(baseOptions: Apollo.QueryHookOptions<GetBlockWithPrivateDataQuery, GetBlockWithPrivateDataQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetBlockWithPrivateDataQuery, GetBlockWithPrivateDataQueryVariables>(GetBlockWithPrivateDataDocument, options);
+      }
+export function useGetBlockWithPrivateDataLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetBlockWithPrivateDataQuery, GetBlockWithPrivateDataQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetBlockWithPrivateDataQuery, GetBlockWithPrivateDataQueryVariables>(GetBlockWithPrivateDataDocument, options);
+        }
+export type GetBlockWithPrivateDataQueryHookResult = ReturnType<typeof useGetBlockWithPrivateDataQuery>;
+export type GetBlockWithPrivateDataLazyQueryHookResult = ReturnType<typeof useGetBlockWithPrivateDataLazyQuery>;
+export type GetBlockWithPrivateDataQueryResult = Apollo.QueryResult<GetBlockWithPrivateDataQuery, GetBlockWithPrivateDataQueryVariables>;
 export const GetBlocksDocument = gql`
     query GetBlocks($channelID: String!, $from: Int!, $to: Int!, $reverse: Boolean = true) {
   blocks(channelID: $channelID, from: $from, to: $to, reverse: $reverse) {

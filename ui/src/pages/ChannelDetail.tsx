@@ -8,13 +8,16 @@ import {
 } from "react-router-dom";
 import {
   Block,
+  BlockWithPrivateData,
   Channel,
   ChannelOrg,
   LightChannel,
   Transaction,
+  TransactionWithPrivateData,
   useChannelQuery,
   useChannelsQuery,
   useGetBlockQuery,
+  useGetBlockWithPrivateDataQuery,
 } from "../operations";
 import {
   Column,
@@ -103,7 +106,7 @@ export default function ChannelDetail() {
 }
 function BlockDetailPage() {
   const { name, blockNumber } = useParams();
-  const { data, loading, error } = useGetBlockQuery({
+  const { data, loading, error } = useGetBlockWithPrivateDataQuery({
     variables: {
       blockNumber: parseInt(blockNumber!),
       channelID: name!,
@@ -126,7 +129,7 @@ function BlockDetailPage() {
 }
 
 interface TransactionListProps {
-  transactions: Transaction[];
+  transactions: TransactionWithPrivateData[];
 }
 const SPLIT_KEY = "\u0000";
 function splitHLFKey(key: string): string[] {
@@ -178,35 +181,47 @@ function TransactionList({ transactions }: TransactionListProps) {
               <div className="flex items-center">
                 <ul>
                   {original.writes?.map((write) => {
-                    if (write.key.startsWith(SPLIT_KEY)) {
-                      const parts = splitHLFKey(write.key);
-                      const itemType = parts[0];
-                      console.log(itemType);
-                      let value = write.value;
-                      try {
-                        value = JSON.parse(write.value);
-                      } catch (e) {
-                        // value not json
-                      }
-                      switch (itemType) {
-                        default:
-                          return (
-                            <li key={write.key}>
-                              <pre>
-                                Key{" "}={" "}{write.key}<br />
-                                Value{" "}={" "} {JSON.stringify(value, null, 4)}
-                              </pre>
-                            </li>
-                          );
-                      }
-                    } else {
-                      return (
-                        <li key={write.key}>
-                          {" "}
-                          {write.key}={write.value}
-                        </li>
-                      );
+                    let value = write.value;
+                    try {
+                      value = JSON.stringify(JSON.parse(write.value), null, 4);
+                    } catch (e) {
+                      // value not json
+                      value = write.value;
                     }
+                    return (
+                      <li key={write.key}>
+                        <pre>
+                          Key = {write.key.replace(/\u0000/g, "|")}
+                          <br />
+                          Value = {value || `""`}
+                          <br />
+                          {write.deleted ? <>Deleted ={" Yes"}</> : null}
+                        </pre>
+                      </li>
+                    );
+                  })}
+
+                  {original.pdcWrites?.map((write) => {
+                    let value = write.value;
+                    try {
+                      value = JSON.stringify(JSON.parse(write.value), null, 4);
+                    } catch (e) {
+                      // value not json
+                      value = write.value;
+                    }
+                    return (
+                      <li key={write.key}>
+                        <pre>
+                          PDC Name = {write.collectionName}
+                          <br />
+                          Key = {write.key.replace(/\u0000/g, "|")}
+                          <br />
+                          Value = {value || `""`}
+                          <br />
+                          {write.deleted ? <>Deleted ={" Yes"}</> : null}
+                        </pre>
+                      </li>
+                    );
                   })}
                 </ul>
               </div>
@@ -221,46 +236,27 @@ function TransactionList({ transactions }: TransactionListProps) {
               <div className="flex items-center">
                 <ul>
                   {original.reads?.map((read) => {
-                    if (read.key.startsWith(SPLIT_KEY)) {
-                      const parts = splitHLFKey(read.key);
-                      const itemType = parts[0];
-                      switch (itemType) {
-                        case "partner":
-                          const partnerId = parts[1];
-                          return (
-                            <li key={read.key}>
-                              <Link
-                                className="text-indigo-600 hover:text-indigo-900"
-                                to={`/partners/${partnerId}`}
-                              >
-                                Partner {partnerId} created
-                              </Link>
-                            </li>
-                          );
-                        // TODO: Add other types
-                        default:
-                          return (
-                            <li key={read.key}>
-                              {read.key}={read.txNumVersion} (
-                              {read.blockNumVersion})
-                            </li>
-                          );
-                      }
-                    } else {
-                      return (
-                        <li key={read.key}>
-                          {" "}
-                          {read.key}={read.txNumVersion}
-                        </li>
-                      );
-                    }
+                    return (
+                      <li key={read.key}>
+                        {" "}
+                        {read.key}={read.txNumVersion} ({read.blockNumVersion})
+                      </li>
+                    );
+                  })}
+                  {original.pdcReads?.map((read) => {
+                    return (
+                      <li key={read.key}>
+                        {read.key}={read.txNum} ({read.block})
+                      </li>
+                    );
                   })}
                 </ul>
               </div>
             );
           },
         },
-      ] as (Column<Transaction> & UseSortByColumnOptions<Transaction>)[],
+      ] as (Column<TransactionWithPrivateData> &
+        UseSortByColumnOptions<TransactionWithPrivateData>)[],
     []
   );
   const table = useTable(
@@ -269,11 +265,12 @@ function TransactionList({ transactions }: TransactionListProps) {
       columns,
     },
     usePagination
-  ) as TableInstance<Transaction> & UsePaginationInstanceProps<Transaction>;
+  ) as TableInstance<TransactionWithPrivateData> &
+    UsePaginationInstanceProps<TransactionWithPrivateData>;
   return <Table error={null} loading={false} table={table} />;
 }
 interface BlockDetailProps {
-  block: Block;
+  block: BlockWithPrivateData;
 }
 function BlockDetailCard({ block }: BlockDetailProps) {
   return (

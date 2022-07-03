@@ -1,0 +1,44 @@
+query GetBlockWithPrivateData($channelID: String!, $blockNumber: Int!) {
+  block: blockWithPrivateData(
+    channelID: $channelID
+    blockNumber: $blockNumber
+  ) {
+    blockNumber
+    createdAt
+    dataHash
+    numTransactions
+    transactions {
+      chaincode
+      path
+      createdAt
+      path
+      reads {
+        blockNumVersion
+        chaincodeID
+        key
+        txNumVersion
+      }
+      writes {
+        chaincodeID
+        deleted
+        key
+        value
+      }
+      pdcWrites {
+        collectionName
+        deleted
+        key
+        value
+      }
+      pdcReads {
+        collectionName
+        key
+        block
+        txNum
+      }
+      txID
+      type
+      version
+    }
+  }
+}

@@ -29,6 +29,14 @@ type Block struct {
 	Transactions    []*Transaction `json:"transactions"`
 }
 
+type BlockWithPrivateData struct {
+	BlockNumber     int                           `json:"blockNumber"`
+	DataHash        string                        `json:"dataHash"`
+	NumTransactions int                           `json:"numTransactions"`
+	CreatedAt       time.Time                     `json:"createdAt"`
+	Transactions    []*TransactionWithPrivateData `json:"transactions"`
+}
+
 type BlocksResponse struct {
 	Height int      `json:"height"`
 	Blocks []*Block `json:"blocks"`
@@ -214,6 +222,20 @@ type OrdererConfigRaftOptions struct {
 	SnapshotIntervalSize int    `json:"snapshotIntervalSize"`
 }
 
+type PDCRead struct {
+	CollectionName string `json:"collectionName"`
+	Key            string `json:"key"`
+	Block          int    `json:"block"`
+	TxNum          int    `json:"txNum"`
+}
+
+type PDCWrite struct {
+	CollectionName string `json:"collectionName"`
+	Deleted        bool   `json:"deleted"`
+	Key            string `json:"key"`
+	Value          string `json:"value"`
+}
+
 type Peer struct {
 	Name      string `json:"name"`
 	Namespace string `json:"namespace"`
@@ -270,6 +292,21 @@ type TransactionRead struct {
 	Key             string `json:"key"`
 	BlockNumVersion *int   `json:"blockNumVersion"`
 	TxNumVersion    *int   `json:"txNumVersion"`
+}
+
+type TransactionWithPrivateData struct {
+	TxID      string              `json:"txID"`
+	Type      TransactionType     `json:"type"`
+	CreatedAt time.Time           `json:"createdAt"`
+	Version   string              `json:"version"`
+	Path      *string             `json:"path"`
+	Response  *string             `json:"response"`
+	Request   *string             `json:"request"`
+	Chaincode string              `json:"chaincode"`
+	Writes    []*TransactionWrite `json:"writes"`
+	Reads     []*TransactionRead  `json:"reads"`
+	PdcWrites []*PDCWrite         `json:"pdcWrites"`
+	PdcReads  []*PDCRead          `json:"pdcReads"`
 }
 
 type TransactionWrite struct {

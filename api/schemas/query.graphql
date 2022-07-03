@@ -17,6 +17,7 @@ type Query {
         reverse: Boolean!
     ): BlocksResponse!
     block(channelID: String!, blockNumber: Int!): Block!
+    blockWithPrivateData(channelID: String!, blockNumber: Int!): BlockWithPrivateData!
     blockByTXID(channelID: String!, transactionID: String!): Block!
 }
 type LightChannel {
@@ -33,6 +34,14 @@ type Block {
     numTransactions: Int!
     createdAt: Time!
     transactions: [Transaction!]
+}
+
+type BlockWithPrivateData {
+    blockNumber: Int!
+    dataHash: String!
+    numTransactions: Int!
+    createdAt: Time!
+    transactions: [TransactionWithPrivateData!]
 }
 
 enum TransactionType {
@@ -56,6 +65,33 @@ type Transaction {
     chaincode: String!
     writes: [TransactionWrite!]
     reads: [TransactionRead!]
+}
+type TransactionWithPrivateData {
+    txID: String!
+    type: TransactionType!
+    createdAt: Time!
+    version: String!
+    path: String
+    response: String
+    request: String
+    chaincode: String!
+    writes: [TransactionWrite!]
+    reads: [TransactionRead!]
+
+    pdcWrites: [PDCWrite!]
+    pdcReads: [PDCRead!]
+}
+type PDCRead {
+    collectionName: String!
+    key: String!
+    block: Int!
+    txNum: Int!
+}
+type PDCWrite {
+    collectionName: String!
+    deleted: Boolean!
+    key: String!
+    value: String!
 }
 type TransactionWrite {
     chaincodeID: String!

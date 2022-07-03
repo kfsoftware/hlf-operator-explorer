@@ -65,6 +65,14 @@ type ComplexityRoot struct {
 		Transactions    func(childComplexity int) int
 	}
 
+	BlockWithPrivateData struct {
+		BlockNumber     func(childComplexity int) int
+		CreatedAt       func(childComplexity int) int
+		DataHash        func(childComplexity int) int
+		NumTransactions func(childComplexity int) int
+		Transactions    func(childComplexity int) int
+	}
+
 	BlocksResponse struct {
 		Blocks func(childComplexity int) int
 		Height func(childComplexity int) int
@@ -254,6 +262,20 @@ type ComplexityRoot struct {
 		TickInterval         func(childComplexity int) int
 	}
 
+	PDCRead struct {
+		Block          func(childComplexity int) int
+		CollectionName func(childComplexity int) int
+		Key            func(childComplexity int) int
+		TxNum          func(childComplexity int) int
+	}
+
+	PDCWrite struct {
+		CollectionName func(childComplexity int) int
+		Deleted        func(childComplexity int) int
+		Key            func(childComplexity int) int
+		Value          func(childComplexity int) int
+	}
+
 	Peer struct {
 		Name      func(childComplexity int) int
 		Namespace func(childComplexity int) int
@@ -272,18 +294,19 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Block       func(childComplexity int, channelID string, blockNumber int) int
-		BlockByTxid func(childComplexity int, channelID string, transactionID string) int
-		Blocks      func(childComplexity int, channelID string, from int, to int, reverse bool) int
-		Ca          func(childComplexity int, input models.NameAndNamespace) int
-		Cas         func(childComplexity int) int
-		Channel     func(childComplexity int, channelID string) int
-		Channels    func(childComplexity int) int
-		Namespaces  func(childComplexity int) int
-		Orderer     func(childComplexity int, input models.NameAndNamespace) int
-		Orderers    func(childComplexity int) int
-		Peer        func(childComplexity int, input models.NameAndNamespace) int
-		Peers       func(childComplexity int) int
+		Block                func(childComplexity int, channelID string, blockNumber int) int
+		BlockByTxid          func(childComplexity int, channelID string, transactionID string) int
+		BlockWithPrivateData func(childComplexity int, channelID string, blockNumber int) int
+		Blocks               func(childComplexity int, channelID string, from int, to int, reverse bool) int
+		Ca                   func(childComplexity int, input models.NameAndNamespace) int
+		Cas                  func(childComplexity int) int
+		Channel              func(childComplexity int, channelID string) int
+		Channels             func(childComplexity int) int
+		Namespaces           func(childComplexity int) int
+		Orderer              func(childComplexity int, input models.NameAndNamespace) int
+		Orderers             func(childComplexity int) int
+		Peer                 func(childComplexity int, input models.NameAndNamespace) int
+		Peers                func(childComplexity int) int
 	}
 
 	SignaturePolicy struct {
@@ -327,6 +350,21 @@ type ComplexityRoot struct {
 		TxNumVersion    func(childComplexity int) int
 	}
 
+	TransactionWithPrivateData struct {
+		Chaincode func(childComplexity int) int
+		CreatedAt func(childComplexity int) int
+		Path      func(childComplexity int) int
+		PdcReads  func(childComplexity int) int
+		PdcWrites func(childComplexity int) int
+		Reads     func(childComplexity int) int
+		Request   func(childComplexity int) int
+		Response  func(childComplexity int) int
+		TxID      func(childComplexity int) int
+		Type      func(childComplexity int) int
+		Version   func(childComplexity int) int
+		Writes    func(childComplexity int) int
+	}
+
 	TransactionWrite struct {
 		ChaincodeID func(childComplexity int) int
 		Deleted     func(childComplexity int) int
@@ -359,6 +397,7 @@ type QueryResolver interface {
 	Channel(ctx context.Context, channelID string) (*models.Channel, error)
 	Blocks(ctx context.Context, channelID string, from int, to int, reverse bool) (*models.BlocksResponse, error)
 	Block(ctx context.Context, channelID string, blockNumber int) (*models.Block, error)
+	BlockWithPrivateData(ctx context.Context, channelID string, blockNumber int) (*models.BlockWithPrivateData, error)
 	BlockByTxid(ctx context.Context, channelID string, transactionID string) (*models.Block, error)
 }
 
@@ -453,6 +492,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Block.Transactions(childComplexity), true
+
+	case "BlockWithPrivateData.blockNumber":
+		if e.complexity.BlockWithPrivateData.BlockNumber == nil {
+			break
+		}
+
+		return e.complexity.BlockWithPrivateData.BlockNumber(childComplexity), true
+
+	case "BlockWithPrivateData.createdAt":
+		if e.complexity.BlockWithPrivateData.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.BlockWithPrivateData.CreatedAt(childComplexity), true
+
+	case "BlockWithPrivateData.dataHash":
+		if e.complexity.BlockWithPrivateData.DataHash == nil {
+			break
+		}
+
+		return e.complexity.BlockWithPrivateData.DataHash(childComplexity), true
+
+	case "BlockWithPrivateData.numTransactions":
+		if e.complexity.BlockWithPrivateData.NumTransactions == nil {
+			break
+		}
+
+		return e.complexity.BlockWithPrivateData.NumTransactions(childComplexity), true
+
+	case "BlockWithPrivateData.transactions":
+		if e.complexity.BlockWithPrivateData.Transactions == nil {
+			break
+		}
+
+		return e.complexity.BlockWithPrivateData.Transactions(childComplexity), true
 
 	case "BlocksResponse.blocks":
 		if e.complexity.BlocksResponse.Blocks == nil {
@@ -1219,6 +1293,62 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.OrdererConfigRaftOptions.TickInterval(childComplexity), true
 
+	case "PDCRead.block":
+		if e.complexity.PDCRead.Block == nil {
+			break
+		}
+
+		return e.complexity.PDCRead.Block(childComplexity), true
+
+	case "PDCRead.collectionName":
+		if e.complexity.PDCRead.CollectionName == nil {
+			break
+		}
+
+		return e.complexity.PDCRead.CollectionName(childComplexity), true
+
+	case "PDCRead.key":
+		if e.complexity.PDCRead.Key == nil {
+			break
+		}
+
+		return e.complexity.PDCRead.Key(childComplexity), true
+
+	case "PDCRead.txNum":
+		if e.complexity.PDCRead.TxNum == nil {
+			break
+		}
+
+		return e.complexity.PDCRead.TxNum(childComplexity), true
+
+	case "PDCWrite.collectionName":
+		if e.complexity.PDCWrite.CollectionName == nil {
+			break
+		}
+
+		return e.complexity.PDCWrite.CollectionName(childComplexity), true
+
+	case "PDCWrite.deleted":
+		if e.complexity.PDCWrite.Deleted == nil {
+			break
+		}
+
+		return e.complexity.PDCWrite.Deleted(childComplexity), true
+
+	case "PDCWrite.key":
+		if e.complexity.PDCWrite.Key == nil {
+			break
+		}
+
+		return e.complexity.PDCWrite.Key(childComplexity), true
+
+	case "PDCWrite.value":
+		if e.complexity.PDCWrite.Value == nil {
+			break
+		}
+
+		return e.complexity.PDCWrite.Value(childComplexity), true
+
 	case "Peer.name":
 		if e.complexity.Peer.Name == nil {
 			break
@@ -1319,6 +1449,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.BlockByTxid(childComplexity, args["channelID"].(string), args["transactionID"].(string)), true
+
+	case "Query.blockWithPrivateData":
+		if e.complexity.Query.BlockWithPrivateData == nil {
+			break
+		}
+
+		args, err := ec.field_Query_blockWithPrivateData_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.BlockWithPrivateData(childComplexity, args["channelID"].(string), args["blockNumber"].(int)), true
 
 	case "Query.blocks":
 		if e.complexity.Query.Blocks == nil {
@@ -1576,6 +1718,90 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TransactionRead.TxNumVersion(childComplexity), true
 
+	case "TransactionWithPrivateData.chaincode":
+		if e.complexity.TransactionWithPrivateData.Chaincode == nil {
+			break
+		}
+
+		return e.complexity.TransactionWithPrivateData.Chaincode(childComplexity), true
+
+	case "TransactionWithPrivateData.createdAt":
+		if e.complexity.TransactionWithPrivateData.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.TransactionWithPrivateData.CreatedAt(childComplexity), true
+
+	case "TransactionWithPrivateData.path":
+		if e.complexity.TransactionWithPrivateData.Path == nil {
+			break
+		}
+
+		return e.complexity.TransactionWithPrivateData.Path(childComplexity), true
+
+	case "TransactionWithPrivateData.pdcReads":
+		if e.complexity.TransactionWithPrivateData.PdcReads == nil {
+			break
+		}
+
+		return e.complexity.TransactionWithPrivateData.PdcReads(childComplexity), true
+
+	case "TransactionWithPrivateData.pdcWrites":
+		if e.complexity.TransactionWithPrivateData.PdcWrites == nil {
+			break
+		}
+
+		return e.complexity.TransactionWithPrivateData.PdcWrites(childComplexity), true
+
+	case "TransactionWithPrivateData.reads":
+		if e.complexity.TransactionWithPrivateData.Reads == nil {
+			break
+		}
+
+		return e.complexity.TransactionWithPrivateData.Reads(childComplexity), true
+
+	case "TransactionWithPrivateData.request":
+		if e.complexity.TransactionWithPrivateData.Request == nil {
+			break
+		}
+
+		return e.complexity.TransactionWithPrivateData.Request(childComplexity), true
+
+	case "TransactionWithPrivateData.response":
+		if e.complexity.TransactionWithPrivateData.Response == nil {
+			break
+		}
+
+		return e.complexity.TransactionWithPrivateData.Response(childComplexity), true
+
+	case "TransactionWithPrivateData.txID":
+		if e.complexity.TransactionWithPrivateData.TxID == nil {
+			break
+		}
+
+		return e.complexity.TransactionWithPrivateData.TxID(childComplexity), true
+
+	case "TransactionWithPrivateData.type":
+		if e.complexity.TransactionWithPrivateData.Type == nil {
+			break
+		}
+
+		return e.complexity.TransactionWithPrivateData.Type(childComplexity), true
+
+	case "TransactionWithPrivateData.version":
+		if e.complexity.TransactionWithPrivateData.Version == nil {
+			break
+		}
+
+		return e.complexity.TransactionWithPrivateData.Version(childComplexity), true
+
+	case "TransactionWithPrivateData.writes":
+		if e.complexity.TransactionWithPrivateData.Writes == nil {
+			break
+		}
+
+		return e.complexity.TransactionWithPrivateData.Writes(childComplexity), true
+
 	case "TransactionWrite.chaincodeID":
 		if e.complexity.TransactionWrite.ChaincodeID == nil {
 			break
@@ -1728,6 +1954,7 @@ input UpdateeCAInput {
         reverse: Boolean!
     ): BlocksResponse!
     block(channelID: String!, blockNumber: Int!): Block!
+    blockWithPrivateData(channelID: String!, blockNumber: Int!): BlockWithPrivateData!
     blockByTXID(channelID: String!, transactionID: String!): Block!
 }
 type LightChannel {
@@ -1744,6 +1971,14 @@ type Block {
     numTransactions: Int!
     createdAt: Time!
     transactions: [Transaction!]
+}
+
+type BlockWithPrivateData {
+    blockNumber: Int!
+    dataHash: String!
+    numTransactions: Int!
+    createdAt: Time!
+    transactions: [TransactionWithPrivateData!]
 }
 
 enum TransactionType {
@@ -1767,6 +2002,33 @@ type Transaction {
     chaincode: String!
     writes: [TransactionWrite!]
     reads: [TransactionRead!]
+}
+type TransactionWithPrivateData {
+    txID: String!
+    type: TransactionType!
+    createdAt: Time!
+    version: String!
+    path: String
+    response: String
+    request: String
+    chaincode: String!
+    writes: [TransactionWrite!]
+    reads: [TransactionRead!]
+
+    pdcWrites: [PDCWrite!]
+    pdcReads: [PDCRead!]
+}
+type PDCRead {
+    collectionName: String!
+    key: String!
+    block: Int!
+    txNum: Int!
+}
+type PDCWrite {
+    collectionName: String!
+    deleted: Boolean!
+    key: String!
+    value: String!
 }
 type TransactionWrite {
     chaincodeID: String!
@@ -2148,6 +2410,30 @@ func (ec *executionContext) field_Query_blockByTXID_args(ctx context.Context, ra
 		}
 	}
 	args["transactionID"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_blockWithPrivateData_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["channelID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("channelID"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["channelID"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["blockNumber"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("blockNumber"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["blockNumber"] = arg1
 	return args, nil
 }
 
@@ -2680,6 +2966,178 @@ func (ec *executionContext) _Block_transactions(ctx context.Context, field graph
 	res := resTmp.([]*models.Transaction)
 	fc.Result = res
 	return ec.marshalOTransaction2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐTransactionᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BlockWithPrivateData_blockNumber(ctx context.Context, field graphql.CollectedField, obj *models.BlockWithPrivateData) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BlockWithPrivateData",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BlockNumber, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BlockWithPrivateData_dataHash(ctx context.Context, field graphql.CollectedField, obj *models.BlockWithPrivateData) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BlockWithPrivateData",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DataHash, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BlockWithPrivateData_numTransactions(ctx context.Context, field graphql.CollectedField, obj *models.BlockWithPrivateData) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BlockWithPrivateData",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.NumTransactions, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BlockWithPrivateData_createdAt(ctx context.Context, field graphql.CollectedField, obj *models.BlockWithPrivateData) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BlockWithPrivateData",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BlockWithPrivateData_transactions(ctx context.Context, field graphql.CollectedField, obj *models.BlockWithPrivateData) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BlockWithPrivateData",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Transactions, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*models.TransactionWithPrivateData)
+	fc.Result = res
+	return ec.marshalOTransactionWithPrivateData2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐTransactionWithPrivateDataᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _BlocksResponse_height(ctx context.Context, field graphql.CollectedField, obj *models.BlocksResponse) (ret graphql.Marshaler) {
@@ -6306,6 +6764,286 @@ func (ec *executionContext) _OrdererConfigRaftOptions_snapshotIntervalSize(ctx c
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _PDCRead_collectionName(ctx context.Context, field graphql.CollectedField, obj *models.PDCRead) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PDCRead",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CollectionName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PDCRead_key(ctx context.Context, field graphql.CollectedField, obj *models.PDCRead) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PDCRead",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Key, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PDCRead_block(ctx context.Context, field graphql.CollectedField, obj *models.PDCRead) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PDCRead",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Block, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PDCRead_txNum(ctx context.Context, field graphql.CollectedField, obj *models.PDCRead) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PDCRead",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TxNum, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PDCWrite_collectionName(ctx context.Context, field graphql.CollectedField, obj *models.PDCWrite) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PDCWrite",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CollectionName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PDCWrite_deleted(ctx context.Context, field graphql.CollectedField, obj *models.PDCWrite) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PDCWrite",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Deleted, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PDCWrite_key(ctx context.Context, field graphql.CollectedField, obj *models.PDCWrite) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PDCWrite",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Key, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PDCWrite_value(ctx context.Context, field graphql.CollectedField, obj *models.PDCWrite) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PDCWrite",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Value, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Peer_name(ctx context.Context, field graphql.CollectedField, obj *models.Peer) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -7086,6 +7824,48 @@ func (ec *executionContext) _Query_block(ctx context.Context, field graphql.Coll
 	res := resTmp.(*models.Block)
 	fc.Result = res
 	return ec.marshalNBlock2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐBlock(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_blockWithPrivateData(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_blockWithPrivateData_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().BlockWithPrivateData(rctx, args["channelID"].(string), args["blockNumber"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*models.BlockWithPrivateData)
+	fc.Result = res
+	return ec.marshalNBlockWithPrivateData2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐBlockWithPrivateData(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_blockByTXID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -7971,6 +8751,405 @@ func (ec *executionContext) _TransactionRead_txNumVersion(ctx context.Context, f
 	res := resTmp.(*int)
 	fc.Result = res
 	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TransactionWithPrivateData_txID(ctx context.Context, field graphql.CollectedField, obj *models.TransactionWithPrivateData) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TransactionWithPrivateData",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TxID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TransactionWithPrivateData_type(ctx context.Context, field graphql.CollectedField, obj *models.TransactionWithPrivateData) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TransactionWithPrivateData",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Type, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(models.TransactionType)
+	fc.Result = res
+	return ec.marshalNTransactionType2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐTransactionType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TransactionWithPrivateData_createdAt(ctx context.Context, field graphql.CollectedField, obj *models.TransactionWithPrivateData) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TransactionWithPrivateData",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TransactionWithPrivateData_version(ctx context.Context, field graphql.CollectedField, obj *models.TransactionWithPrivateData) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TransactionWithPrivateData",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Version, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TransactionWithPrivateData_path(ctx context.Context, field graphql.CollectedField, obj *models.TransactionWithPrivateData) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TransactionWithPrivateData",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Path, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TransactionWithPrivateData_response(ctx context.Context, field graphql.CollectedField, obj *models.TransactionWithPrivateData) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TransactionWithPrivateData",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Response, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TransactionWithPrivateData_request(ctx context.Context, field graphql.CollectedField, obj *models.TransactionWithPrivateData) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TransactionWithPrivateData",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Request, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TransactionWithPrivateData_chaincode(ctx context.Context, field graphql.CollectedField, obj *models.TransactionWithPrivateData) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TransactionWithPrivateData",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Chaincode, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TransactionWithPrivateData_writes(ctx context.Context, field graphql.CollectedField, obj *models.TransactionWithPrivateData) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TransactionWithPrivateData",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Writes, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*models.TransactionWrite)
+	fc.Result = res
+	return ec.marshalOTransactionWrite2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐTransactionWriteᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TransactionWithPrivateData_reads(ctx context.Context, field graphql.CollectedField, obj *models.TransactionWithPrivateData) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TransactionWithPrivateData",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Reads, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*models.TransactionRead)
+	fc.Result = res
+	return ec.marshalOTransactionRead2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐTransactionReadᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TransactionWithPrivateData_pdcWrites(ctx context.Context, field graphql.CollectedField, obj *models.TransactionWithPrivateData) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TransactionWithPrivateData",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PdcWrites, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*models.PDCWrite)
+	fc.Result = res
+	return ec.marshalOPDCWrite2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCWriteᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TransactionWithPrivateData_pdcReads(ctx context.Context, field graphql.CollectedField, obj *models.TransactionWithPrivateData) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TransactionWithPrivateData",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PdcReads, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*models.PDCRead)
+	fc.Result = res
+	return ec.marshalOPDCRead2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCReadᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _TransactionWrite_chaincodeID(ctx context.Context, field graphql.CollectedField, obj *models.TransactionWrite) (ret graphql.Marshaler) {
@@ -9631,6 +10810,74 @@ func (ec *executionContext) _Block(ctx context.Context, sel ast.SelectionSet, ob
 	return out
 }
 
+var blockWithPrivateDataImplementors = []string{"BlockWithPrivateData"}
+
+func (ec *executionContext) _BlockWithPrivateData(ctx context.Context, sel ast.SelectionSet, obj *models.BlockWithPrivateData) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, blockWithPrivateDataImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("BlockWithPrivateData")
+		case "blockNumber":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._BlockWithPrivateData_blockNumber(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "dataHash":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._BlockWithPrivateData_dataHash(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "numTransactions":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._BlockWithPrivateData_numTransactions(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createdAt":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._BlockWithPrivateData_createdAt(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "transactions":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._BlockWithPrivateData_transactions(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var blocksResponseImplementors = []string{"BlocksResponse"}
 
 func (ec *executionContext) _BlocksResponse(ctx context.Context, sel ast.SelectionSet, obj *models.BlocksResponse) graphql.Marshaler {
@@ -11205,6 +12452,128 @@ func (ec *executionContext) _OrdererConfigRaftOptions(ctx context.Context, sel a
 	return out
 }
 
+var pDCReadImplementors = []string{"PDCRead"}
+
+func (ec *executionContext) _PDCRead(ctx context.Context, sel ast.SelectionSet, obj *models.PDCRead) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, pDCReadImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PDCRead")
+		case "collectionName":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PDCRead_collectionName(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "key":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PDCRead_key(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "block":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PDCRead_block(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "txNum":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PDCRead_txNum(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var pDCWriteImplementors = []string{"PDCWrite"}
+
+func (ec *executionContext) _PDCWrite(ctx context.Context, sel ast.SelectionSet, obj *models.PDCWrite) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, pDCWriteImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PDCWrite")
+		case "collectionName":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PDCWrite_collectionName(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleted":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PDCWrite_deleted(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "key":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PDCWrite_key(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "value":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PDCWrite_value(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var peerImplementors = []string{"Peer"}
 
 func (ec *executionContext) _Peer(ctx context.Context, sel ast.SelectionSet, obj *models.Peer) graphql.Marshaler {
@@ -11599,6 +12968,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "blockWithPrivateData":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_blockWithPrivateData(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "blockByTXID":
 			field := field
 
@@ -11955,6 +13347,126 @@ func (ec *executionContext) _TransactionRead(ctx context.Context, sel ast.Select
 		case "txNumVersion":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._TransactionRead_txNumVersion(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var transactionWithPrivateDataImplementors = []string{"TransactionWithPrivateData"}
+
+func (ec *executionContext) _TransactionWithPrivateData(ctx context.Context, sel ast.SelectionSet, obj *models.TransactionWithPrivateData) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, transactionWithPrivateDataImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TransactionWithPrivateData")
+		case "txID":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._TransactionWithPrivateData_txID(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "type":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._TransactionWithPrivateData_type(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createdAt":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._TransactionWithPrivateData_createdAt(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "version":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._TransactionWithPrivateData_version(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "path":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._TransactionWithPrivateData_path(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "response":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._TransactionWithPrivateData_response(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "request":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._TransactionWithPrivateData_request(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "chaincode":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._TransactionWithPrivateData_chaincode(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "writes":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._TransactionWithPrivateData_writes(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "reads":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._TransactionWithPrivateData_reads(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "pdcWrites":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._TransactionWithPrivateData_pdcWrites(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "pdcReads":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._TransactionWithPrivateData_pdcReads(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -12468,6 +13980,20 @@ func (ec *executionContext) marshalNBlock2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑo
 	return ec._Block(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNBlockWithPrivateData2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐBlockWithPrivateData(ctx context.Context, sel ast.SelectionSet, v models.BlockWithPrivateData) graphql.Marshaler {
+	return ec._BlockWithPrivateData(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNBlockWithPrivateData2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐBlockWithPrivateData(ctx context.Context, sel ast.SelectionSet, v *models.BlockWithPrivateData) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._BlockWithPrivateData(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNBlocksResponse2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐBlocksResponse(ctx context.Context, sel ast.SelectionSet, v models.BlocksResponse) graphql.Marshaler {
 	return ec._BlocksResponse(ctx, sel, &v)
 }
@@ -12766,6 +14292,26 @@ func (ec *executionContext) marshalNOrdererConfigRaftOptions2ᚖgithubᚗcomᚋk
 	return ec._OrdererConfigRaftOptions(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNPDCRead2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCRead(ctx context.Context, sel ast.SelectionSet, v *models.PDCRead) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._PDCRead(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNPDCWrite2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCWrite(ctx context.Context, sel ast.SelectionSet, v *models.PDCWrite) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._PDCWrite(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNPeer2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPeer(ctx context.Context, sel ast.SelectionSet, v *models.Peer) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -12864,6 +14410,16 @@ func (ec *executionContext) unmarshalNTransactionType2githubᚗcomᚋkfsoftware�
 
 func (ec *executionContext) marshalNTransactionType2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐTransactionType(ctx context.Context, sel ast.SelectionSet, v models.TransactionType) graphql.Marshaler {
 	return v
+}
+
+func (ec *executionContext) marshalNTransactionWithPrivateData2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐTransactionWithPrivateData(ctx context.Context, sel ast.SelectionSet, v *models.TransactionWithPrivateData) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._TransactionWithPrivateData(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNTransactionWrite2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐTransactionWrite(ctx context.Context, sel ast.SelectionSet, v *models.TransactionWrite) graphql.Marshaler {
@@ -13933,6 +15489,100 @@ func (ec *executionContext) marshalOOrdererConfigRaftConsenter2ᚕᚖgithubᚗco
 	return ret
 }
 
+func (ec *executionContext) marshalOPDCRead2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCReadᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.PDCRead) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNPDCRead2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCRead(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalOPDCWrite2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCWriteᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.PDCWrite) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNPDCWrite2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCWrite(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) marshalOPeer2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPeerᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Peer) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -14231,6 +15881,53 @@ func (ec *executionContext) marshalOTransactionRead2ᚕᚖgithubᚗcomᚋkfsoftw
 				defer wg.Done()
 			}
 			ret[i] = ec.marshalNTransactionRead2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐTransactionRead(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalOTransactionWithPrivateData2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐTransactionWithPrivateDataᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.TransactionWithPrivateData) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTransactionWithPrivateData2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐTransactionWithPrivateData(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)

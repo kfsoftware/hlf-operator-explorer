@@ -3,6 +3,7 @@ package resolvers
 // THIS CODE IS A STARTING POINT ONLY. IT WILL NOT BE UPDATED WITH SCHEMA CHANGES.
 
 import (
+	"github.com/hyperledger/fabric-gateway/pkg/client"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/core"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/kfsoftware/hlf-operator-ui/api/gql"
@@ -19,6 +20,7 @@ type Resolver struct {
 	HLFClient      operatorv1.Interface
 	FabricSDK      *fabsdk.FabricSDK
 	ConfigBackends []core.ConfigBackend
+	Gateway        *client.Gateway
 }
 
 // Mutation returns gql.MutationResolver implementation.

@@ -9,7 +9,9 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-config/configtx"
 	"github.com/hyperledger/fabric-config/protolator"
+	"github.com/hyperledger/fabric-gateway/pkg/client"
 	cb "github.com/hyperledger/fabric-protos-go/common"
+	"github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset"
 	"github.com/hyperledger/fabric-protos-go/msp"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/ledger"
@@ -770,4 +772,85 @@ func (r *queryResolver) BlockByTxid(ctx context.Context, channelID string, trans
 		return nil, err
 	}
 	return mapBlock(blck), nil
+}
+
+func (r *queryResolver) BlockWithPrivateData(ctx context.Context, channelID string, blockNumber int) (*models.BlockWithPrivateData, error) {
+	chContext := r.FabricSDK.ChannelContext(channelID, fabsdk.WithUser(r.User), fabsdk.WithOrg(r.MSPID))
+	ledgerClient, err := ledger.New(chContext)
+	if err != nil {
+		return nil, err
+	}
+
+	blck, err := block.GetBlock(ledgerClient, blockNumber)
+	if err != nil {
+		return nil, err
+	}
+	ch := r.Gateway.GetNetwork(channelID)
+	events, err := ch.NewBlockAndPrivateDataEventsRequest(client.WithStartBlock(uint64(blockNumber)))
+	if err != nil {
+		logrus.Errorf("failed to get events: %s", err)
+		return nil, err
+	}
+	eee, err := events.Events(context.Background())
+	if err != nil {
+		logrus.Errorf("failed to get events: %s", err)
+		return nil, err
+	}
+	privateDataBlock := <-eee
+	block := mapBlock(blck)
+	txsWithPrivateData := []*models.TransactionWithPrivateData{}
+
+	for _, transaction := range block.Transactions {
+		txsWithPrivateData = append(txsWithPrivateData, &models.TransactionWithPrivateData{
+			TxID:      transaction.TxID,
+			Type:      transaction.Type,
+			CreatedAt: transaction.CreatedAt,
+			Version:   transaction.Version,
+			Path:      transaction.Path,
+			Response:  transaction.Response,
+			Request:   transaction.Request,
+			Chaincode: transaction.Chaincode,
+			Writes:    transaction.Writes,
+			Reads:     transaction.Reads,
+			PdcWrites: []*models.PDCWrite{},
+			PdcReads:  []*models.PDCRead{},
+		})
+	}
+	for txIdx, value := range privateDataBlock.GetPrivateDataMap() {
+		transactionWithPrivateData := txsWithPrivateData[txIdx]
+		for _, set := range value.NsPvtRwset {
+			for _, writeSet := range set.GetCollectionPvtRwset() {
+				kvrwSet := &kvrwset.KVRWSet{}
+				err = proto.Unmarshal(writeSet.GetRwset(), kvrwSet)
+				if err != nil {
+					logrus.Errorf("failed to unmarshal rwset: %s", err)
+					return nil, err
+				}
+				for _, read := range kvrwSet.Reads {
+					transactionWithPrivateData.PdcReads = append(transactionWithPrivateData.PdcReads, &models.PDCRead{
+						CollectionName: writeSet.GetCollectionName(),
+						Key:            read.Key,
+						Block:          int(read.Version.BlockNum),
+						TxNum:          int(read.Version.TxNum),
+					})
+				}
+				for _, write := range kvrwSet.Writes {
+					transactionWithPrivateData.PdcWrites = append(transactionWithPrivateData.PdcWrites, &models.PDCWrite{
+						CollectionName: writeSet.GetCollectionName(),
+						Deleted:        write.IsDelete,
+						Key:            write.Key,
+						Value:          string(write.Value),
+					})
+				}
+			}
+		}
+	}
+	blockWithPrivateData := &models.BlockWithPrivateData{
+		BlockNumber:     block.BlockNumber,
+		DataHash:        block.DataHash,
+		NumTransactions: block.NumTransactions,
+		CreatedAt:       block.CreatedAt,
+		Transactions:    txsWithPrivateData,
+	}
+	return blockWithPrivateData, nil
 }
