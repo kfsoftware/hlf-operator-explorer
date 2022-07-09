@@ -9,6 +9,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	"github.com/hyperledger/fabric-gateway/pkg/client"
 	"github.com/hyperledger/fabric-gateway/pkg/identity"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/core"
@@ -22,6 +24,7 @@ import (
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"io"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"net/http"
@@ -177,26 +180,52 @@ func (s serveCmd) run() error {
 		Cache: lru.New(100),
 	})
 	h.Use(apollotracing.Tracer{})
-	playgroundHandler := playground.Handler("GraphQL", "/graphql")
-
-	graphqlHandler := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		writer.Header().Set("Access-Control-Allow-Origin", "*")
-		writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With, X-Identity")
-		writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
-		h.ServeHTTP(writer, request)
+	serverMux := gin.Default()
+	serverMux.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "PUT", "PATCH"},
+		AllowHeaders:     []string{"X-MC-User", "X-MC-MSPID", "Authorization", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		AllowOriginFunc: func(origin string) bool {
+			return true
+		},
+		MaxAge: 12 * time.Hour,
+	}))
+	graphqlHandler := gin.HandlerFunc(func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With, X-Identity")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
+		h.ServeHTTP(c.Writer, c.Request)
 	})
-	serverMux := http.NewServeMux()
-	serverMux.HandleFunc(
+	serverMux.Any(
 		"/graphql",
 		graphqlHandler,
 	)
-	serverMux.HandleFunc(
+	serverMux.GET(
 		"/playground",
-		playgroundHandler,
+		playgroundHandler(),
+	)
+	serverMux.GET(
+		"/healthz",
+		func(c *gin.Context) {
+			c.Writer.WriteHeader(http.StatusOK)
+			c.Writer.Header().Set("Content-Type", "application/json")
+			io.WriteString(c.Writer, `{"alive": true}`)
+		},
 	)
 	log.Infof("Server listening on %s", s.address)
 	return http.ListenAndServe(s.address, serverMux)
+}
+
+// Defining the Playground handler
+func playgroundHandler() gin.HandlerFunc {
+	h := playground.Handler("GraphQL", "/graphql")
+
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
 }
 
 // newGrpcConnection creates a gRPC connection to the Gateway server.
