@@ -11,6 +11,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/hyperledger/fabric-gateway/pkg/client"
 	"github.com/hyperledger/fabric-gateway/pkg/identity"
+	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/core"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/kfsoftware/hlf-operator-ui/api/gql"
@@ -75,76 +76,81 @@ func (s serveCmd) run() error {
 	if err != nil {
 		return err
 	}
-	configBackend := config.FromFile(s.hlfConfig)
-	cfgProvider, err := configBackend()
-	if err != nil {
-		return err
-	}
-	sdk, err := fabsdk.New(configBackend)
-	if err != nil {
-		return err
-	}
-	configBackend1, err := sdk.Config()
-	if err != nil {
-		return err
-	}
-
-	peersInt, _ := configBackend1.Lookup(fmt.Sprintf("organizations.%s.peers", s.mspID))
-	peersArrayInterface := peersInt.([]interface{})
-	var peers []string
-	idx := 0
-	var peerUrl string
-	var peerTLSCACert []byte
-	for _, item := range peersArrayInterface {
-		peerName := item.(string)
-		peers = append(peers, peerName)
-		peerUrlKey := fmt.Sprintf("peers.%s.url", peerName)
-		peerTLSCACertKey := fmt.Sprintf("peers.%s.tlsCACerts.pem", peerName)
-		peerUrlInt, _ := configBackend1.Lookup(peerUrlKey)
-		peerTLSCACertInt, _ := configBackend1.Lookup(peerTLSCACertKey)
-		peerUrl = strings.Replace(peerUrlInt.(string), "grpcs://", "", -1)
-		peerTLSCACert = []byte(peerTLSCACertInt.(string))
-		idx++
-		if idx >= 1 {
-			break
+	var sdk *fabsdk.FabricSDK
+	var cfgProvider []core.ConfigBackend
+	var gw *client.Gateway
+	if s.hlfConfig != "" {
+		configBackend := config.FromFile(s.hlfConfig)
+		cfgProvider, err = configBackend()
+		if err != nil {
+			return err
 		}
-	}
-	userCertKey := fmt.Sprintf("organizations.%s.users.%s.cert.pem", s.mspID, s.user)
-	userPrivateKey := fmt.Sprintf("organizations.%s.users.%s.key.pem", s.mspID, s.user)
-	userPrivateCertString, certExists := configBackend1.Lookup(userCertKey)
-	if !certExists {
-		return fmt.Errorf("user cert not found")
-	}
-	userPrivateKeyString, keyExists := configBackend1.Lookup(userPrivateKey)
-	if !keyExists {
-		return fmt.Errorf("user key not found")
-	}
-	grpcConn, err := newGrpcConnection(peerUrl, peerTLSCACert)
-	if err != nil {
-		return err
-	}
-	cert, err := utils.ParseX509Certificate([]byte(userPrivateCertString.(string)))
-	if err != nil {
-		return err
-	}
-	x509Identity, err := identity.NewX509Identity(s.mspID, cert)
-	if err != nil {
-		return err
-	}
-	privateKey, err := identity.PrivateKeyFromPEM([]byte(userPrivateKeyString.(string)))
-	if err != nil {
-		return err
-	}
-	sign, err := identity.NewPrivateKeySign(privateKey)
-	if err != nil {
-		return err
-	}
-	gw, err := getGateway(grpcConn, &IdentityStruct{
-		Identity: x509Identity,
-		Sign:     sign,
-	})
-	if err != nil {
-		return err
+		sdk, err := fabsdk.New(configBackend)
+		if err != nil {
+			return err
+		}
+		configBackend1, err := sdk.Config()
+		if err != nil {
+			return err
+		}
+
+		peersInt, _ := configBackend1.Lookup(fmt.Sprintf("organizations.%s.peers", s.mspID))
+		peersArrayInterface := peersInt.([]interface{})
+		var peers []string
+		idx := 0
+		var peerUrl string
+		var peerTLSCACert []byte
+		for _, item := range peersArrayInterface {
+			peerName := item.(string)
+			peers = append(peers, peerName)
+			peerUrlKey := fmt.Sprintf("peers.%s.url", peerName)
+			peerTLSCACertKey := fmt.Sprintf("peers.%s.tlsCACerts.pem", peerName)
+			peerUrlInt, _ := configBackend1.Lookup(peerUrlKey)
+			peerTLSCACertInt, _ := configBackend1.Lookup(peerTLSCACertKey)
+			peerUrl = strings.Replace(peerUrlInt.(string), "grpcs://", "", -1)
+			peerTLSCACert = []byte(peerTLSCACertInt.(string))
+			idx++
+			if idx >= 1 {
+				break
+			}
+		}
+		userCertKey := fmt.Sprintf("organizations.%s.users.%s.cert.pem", s.mspID, s.user)
+		userPrivateKey := fmt.Sprintf("organizations.%s.users.%s.key.pem", s.mspID, s.user)
+		userPrivateCertString, certExists := configBackend1.Lookup(userCertKey)
+		if !certExists {
+			return fmt.Errorf("user cert not found")
+		}
+		userPrivateKeyString, keyExists := configBackend1.Lookup(userPrivateKey)
+		if !keyExists {
+			return fmt.Errorf("user key not found")
+		}
+		grpcConn, err := newGrpcConnection(peerUrl, peerTLSCACert)
+		if err != nil {
+			return err
+		}
+		cert, err := utils.ParseX509Certificate([]byte(userPrivateCertString.(string)))
+		if err != nil {
+			return err
+		}
+		x509Identity, err := identity.NewX509Identity(s.mspID, cert)
+		if err != nil {
+			return err
+		}
+		privateKey, err := identity.PrivateKeyFromPEM([]byte(userPrivateKeyString.(string)))
+		if err != nil {
+			return err
+		}
+		sign, err := identity.NewPrivateKeySign(privateKey)
+		if err != nil {
+			return err
+		}
+		gw, err = getGateway(grpcConn, &IdentityStruct{
+			Identity: x509Identity,
+			Sign:     sign,
+		})
+		if err != nil {
+			return err
+		}
 	}
 	gqlConfig := gql.Config{
 		Resolvers: &resolvers.Resolver{
