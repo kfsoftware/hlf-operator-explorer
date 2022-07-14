@@ -3,6 +3,8 @@ import { AuthProvider } from "react-oidc-context";
 import { useNavigate } from "react-router-dom";
 import { StringParam, useQueryParam } from "use-query-params";
 import "./App.css";
+import { ConfigProvider } from "./config";
+import { FeatureFlagsProvider } from "./featureFlags";
 import { ApolloProvider } from "./providers/ApolloProvider";
 import Routes from "./routes";
 
@@ -11,6 +13,7 @@ interface AppConfig {
   oidcAuthority: string;
   oidcClientId: string;
   oidcScope: string;
+  logoUrl: string;
 }
 function App({}: {}) {
   const [appConfig, setAppConfig] = useState<AppConfig>({
@@ -18,6 +21,7 @@ function App({}: {}) {
     oidcAuthority: "",
     oidcClientId: "",
     oidcScope: "",
+    logoUrl: "",
   });
 
   const [loading, setLoading] = useState(true);
@@ -47,28 +51,34 @@ function App({}: {}) {
   ) : appConfig.oidcAuthority &&
     appConfig.oidcClientId &&
     appConfig.oidcScope ? (
-    <AuthProvider
-      loadUserInfo={true}
-      authority={appConfig.oidcAuthority}
-      client_id={appConfig.oidcClientId}
-      onSigninCallback={() => {
-        if (callbackUri) {
-          navigate(callbackUri, { replace: true });
-        } else {
-          navigate("/", { replace: true });
-        }
-      }}
-      scope={appConfig.oidcScope}
-      redirect_uri={redirectUri}
-    >
+    <ConfigProvider {...appConfig}>
+      <AuthProvider
+        loadUserInfo={true}
+        authority={appConfig.oidcAuthority}
+        client_id={appConfig.oidcClientId}
+        onSigninCallback={() => {
+          if (callbackUri) {
+            navigate(callbackUri, { replace: true });
+          } else {
+            navigate("/", { replace: true });
+          }
+        }}
+        scope={appConfig.oidcScope}
+        redirect_uri={redirectUri}
+      >
+        <ApolloProvider url={appConfig.apiUrl}>
+          <FeatureFlagsProvider>
+            <Routes />
+          </FeatureFlagsProvider>
+        </ApolloProvider>
+      </AuthProvider>
+    </ConfigProvider>
+  ) : (
+    <ConfigProvider {...appConfig}>
       <ApolloProvider url={appConfig.apiUrl}>
         <Routes />
       </ApolloProvider>
-    </AuthProvider>
-  ) : (
-    <ApolloProvider url={appConfig.apiUrl}>
-      <Routes />
-    </ApolloProvider>
+    </ConfigProvider>
   );
 }
 

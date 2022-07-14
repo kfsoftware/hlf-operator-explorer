@@ -11,6 +11,8 @@ import {
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useAuth } from "react-oidc-context";
 import { Link, useLocation } from "react-router-dom";
+import { useConfig } from "../config";
+import { useFeatureFlags } from "../featureFlags";
 import { useNetworkConfigEnabledQuery } from "../operations";
 
 function classNames(...classes: string[]) {
@@ -23,7 +25,8 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-
+  const config = useConfig();
+  const featureFlags = useFeatureFlags();
   const auth = useAuth();
   useEffect(() => {
     if (
@@ -34,7 +37,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       auth.signinRedirect({});
     }
   }, [auth]);
-  const { data: networkConfigData } = useNetworkConfigEnabledQuery();
+  
   const navigation = useMemo(() => {
     const nav = [
       {
@@ -51,7 +54,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         current: false,
       },
     ];
-    if (networkConfigData?.networkConfigEnabled) {
+    if (featureFlags?.networkConfigEnabled) {
       nav.push({
         name: "Channels",
         href: "/channels",
@@ -60,7 +63,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       });
     }
     return nav;
-  }, [networkConfigData]);
+  }, [featureFlags.networkConfigEnabled]);
   const navigationWithCurrent = useMemo(() => {
     return navigation.map(({ name, href, icon, current }) => ({
       name,
@@ -128,7 +131,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     {/* TODO: Change logo */}
                     <img
                       className="h-8 w-auto"
-                      src="https://tailwindui.com/img/logos/workflow-logo-indigo-500-mark-white-text.svg"
+                      src={config.logoUrl}
                       alt="Workflow"
                     />
                   </div>
@@ -197,7 +200,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 {/* TODO: change logo */}
                 <img
                   className="h-16 w-auto"
-                  src="/public/fabric.png"
+                  src={config.logoUrl}
                   alt="Workflow"
                 />
               </div>

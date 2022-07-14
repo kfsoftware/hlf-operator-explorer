@@ -16,7 +16,6 @@ export default function Routes() {
           <Route index element={<PeerList />} />
           <Route path="peers" element={<PeerList />} />
           <Route path="peers/:namespace/:name" element={<PeerDetail />} />
-          {/* <Route path="peers/create" element={<PeerCreate />} /> */}
           <Route path="orderers" element={<OrdererList />} />
           <Route path="orderers/:namespace/:name" element={<OrdererDetail />} />
           <Route path="cas" element={<CAList />} />
