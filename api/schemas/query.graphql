@@ -1,24 +1,26 @@
 type Query {
-    peers: [Peer!]
-    peer(input: NameAndNamespace!): Peer
+    peers: [Peer!] @requiresAuth
+    peer(input: NameAndNamespace!): Peer @requiresAuth
 
-    orderers: [Orderer!]
-    orderer(input: NameAndNamespace!): Orderer
+    orderers: [Orderer!] @requiresAuth
+    orderer(input: NameAndNamespace!): Orderer @requiresAuth
 
-    cas: [CA!]
-    ca(input: NameAndNamespace!): CA
-    namespaces: [Namespace!]
-    channels: [LightChannel!]
-    channel(channelID: String!): Channel!
+    networkConfigEnabled: Boolean!
+
+    cas: [CA!] @requiresAuth
+    ca(input: NameAndNamespace!): CA @requiresAuth
+    namespaces: [Namespace!] @requiresAuth
+    channels: [LightChannel!] @requiresAuth
+    channel(channelID: String!): Channel! @requiresAuth
     blocks(
         channelID: String!
         from: Int!
         to: Int!
         reverse: Boolean!
-    ): BlocksResponse!
-    block(channelID: String!, blockNumber: Int!): Block!
-    blockWithPrivateData(channelID: String!, blockNumber: Int!): BlockWithPrivateData!
-    blockByTXID(channelID: String!, transactionID: String!): Block!
+    ): BlocksResponse! @requiresAuth
+    block(channelID: String!, blockNumber: Int!): Block! @requiresAuth
+    blockWithPrivateData(channelID: String!, blockNumber: Int!): BlockWithPrivateData! @requiresAuth
+    blockByTXID(channelID: String!, transactionID: String!): Block! @requiresAuth
 }
 type LightChannel {
     name: String!

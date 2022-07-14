@@ -3,4 +3,6 @@ schema {
     mutation: Mutation
 }
 
+directive @requiresAuth on FIELD_DEFINITION
+
 scalar Time

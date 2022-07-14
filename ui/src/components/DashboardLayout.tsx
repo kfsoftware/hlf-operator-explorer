@@ -8,19 +8,10 @@ import {
   UsersIcon,
   XIcon,
 } from "@heroicons/react/outline";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
+import { useAuth } from "react-oidc-context";
 import { Link, useLocation } from "react-router-dom";
-const navigation = [
-  { name: "Orderer nodes", href: "/orderers", icon: HomeIcon, current: false },
-  { name: "Peers", href: "/", icon: UsersIcon, current: false },
-  {
-    name: "Certificate Authorities",
-    href: "/cas",
-    icon: FolderIcon,
-    current: false,
-  },
-  { name: "Channels", href: "/channels", icon: DatabaseIcon, current: false },
-];
+import { useNetworkConfigEnabledQuery } from "../operations";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -32,6 +23,44 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+
+  const auth = useAuth();
+  useEffect(() => {
+    if (
+      !auth.isLoading &&
+      !auth.isAuthenticated &&
+      !location.search.includes("code=")
+    ) {
+      auth.signinRedirect({});
+    }
+  }, [auth]);
+  const { data: networkConfigData } = useNetworkConfigEnabledQuery();
+  const navigation = useMemo(() => {
+    const nav = [
+      {
+        name: "Orderer nodes",
+        href: "/orderers",
+        icon: HomeIcon,
+        current: false,
+      },
+      { name: "Peers", href: "/", icon: UsersIcon, current: false },
+      {
+        name: "Certificate Authorities",
+        href: "/cas",
+        icon: FolderIcon,
+        current: false,
+      },
+    ];
+    if (networkConfigData?.networkConfigEnabled) {
+      nav.push({
+        name: "Channels",
+        href: "/channels",
+        icon: DatabaseIcon,
+        current: false,
+      });
+    }
+    return nav;
+  }, [networkConfigData]);
   const navigationWithCurrent = useMemo(() => {
     return navigation.map(({ name, href, icon, current }) => ({
       name,
@@ -39,18 +68,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       icon,
       current: location.pathname === href,
     }));
-  }, [location.pathname]);
-
+  }, [location.pathname, navigation]);
   return (
     <>
-      {/*
-        This example requires updating your template:
-
-        ```
-        <html class="h-full bg-gray-100">
-        <body class="h-full">
-        ```
-      */}
       <div>
         <Transition.Root show={sidebarOpen} as={Fragment}>
           <Dialog
@@ -104,13 +124,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 </Transition.Child>
                 <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
                   <div className="flex-shrink-0 flex items-center px-4">
-                    <span className="text-white">HLF OPERATOR UI</span>
+                    {/* <span className="text-white">HLF OPERATOR UI</span> */}
                     {/* TODO: Change logo */}
-                    {/* <img
+                    <img
                       className="h-8 w-auto"
                       src="https://tailwindui.com/img/logos/workflow-logo-indigo-500-mark-white-text.svg"
                       alt="Workflow"
-                    /> */}
+                    />
                   </div>
                   <nav className="mt-5 px-2 space-y-1">
                     {navigationWithCurrent.map((item) => (
@@ -173,13 +193,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex-1 flex flex-col min-h-0 bg-gray-800">
             <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
               <div className="flex items-center flex-shrink-0 px-4">
-                <span className="text-white">HLF OPERATOR UI</span>
+                {/* <span className="text-white">HLF OPERATOR UI</span> */}
                 {/* TODO: change logo */}
-                {/* <img
-                  className="h-8 w-auto"
-                  src="https://tailwindui.com/img/logos/workflow-logo-indigo-500-mark-white-text.svg"
+                <img
+                  className="h-16 w-auto"
+                  src="/public/fabric.png"
                   alt="Workflow"
-                /> */}
+                />
               </div>
               <nav className="mt-5 flex-1 px-2 space-y-1">
                 {navigationWithCurrent.map((item) => (

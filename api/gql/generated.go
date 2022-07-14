@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -42,6 +43,7 @@ type ResolverRoot interface {
 }
 
 type DirectiveRoot struct {
+	RequiresAuth func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
 }
 
 type ComplexityRoot struct {
@@ -303,6 +305,7 @@ type ComplexityRoot struct {
 		Channel              func(childComplexity int, channelID string) int
 		Channels             func(childComplexity int) int
 		Namespaces           func(childComplexity int) int
+		NetworkConfigEnabled func(childComplexity int) int
 		Orderer              func(childComplexity int, input models.NameAndNamespace) int
 		Orderers             func(childComplexity int) int
 		Peer                 func(childComplexity int, input models.NameAndNamespace) int
@@ -390,6 +393,7 @@ type QueryResolver interface {
 	Peer(ctx context.Context, input models.NameAndNamespace) (*models.Peer, error)
 	Orderers(ctx context.Context) ([]*models.Orderer, error)
 	Orderer(ctx context.Context, input models.NameAndNamespace) (*models.Orderer, error)
+	NetworkConfigEnabled(ctx context.Context) (bool, error)
 	Cas(ctx context.Context) ([]*models.Ca, error)
 	Ca(ctx context.Context, input models.NameAndNamespace) (*models.Ca, error)
 	Namespaces(ctx context.Context) ([]*models.Namespace, error)
@@ -1519,6 +1523,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Namespaces(childComplexity), true
 
+	case "Query.networkConfigEnabled":
+		if e.complexity.Query.NetworkConfigEnabled == nil {
+			break
+		}
+
+		return e.complexity.Query.NetworkConfigEnabled(childComplexity), true
+
 	case "Query.orderer":
 		if e.complexity.Query.Orderer == nil {
 			break
@@ -1936,26 +1947,28 @@ input UpdateeCAInput {
 
 `, BuiltIn: false},
 	{Name: "schemas/query.graphql", Input: `type Query {
-    peers: [Peer!]
-    peer(input: NameAndNamespace!): Peer
+    peers: [Peer!] @requiresAuth
+    peer(input: NameAndNamespace!): Peer @requiresAuth
 
-    orderers: [Orderer!]
-    orderer(input: NameAndNamespace!): Orderer
+    orderers: [Orderer!] @requiresAuth
+    orderer(input: NameAndNamespace!): Orderer @requiresAuth
 
-    cas: [CA!]
-    ca(input: NameAndNamespace!): CA
-    namespaces: [Namespace!]
-    channels: [LightChannel!]
-    channel(channelID: String!): Channel!
+    networkConfigEnabled: Boolean!
+
+    cas: [CA!] @requiresAuth
+    ca(input: NameAndNamespace!): CA @requiresAuth
+    namespaces: [Namespace!] @requiresAuth
+    channels: [LightChannel!] @requiresAuth
+    channel(channelID: String!): Channel! @requiresAuth
     blocks(
         channelID: String!
         from: Int!
         to: Int!
         reverse: Boolean!
-    ): BlocksResponse!
-    block(channelID: String!, blockNumber: Int!): Block!
-    blockWithPrivateData(channelID: String!, blockNumber: Int!): BlockWithPrivateData!
-    blockByTXID(channelID: String!, transactionID: String!): Block!
+    ): BlocksResponse! @requiresAuth
+    block(channelID: String!, blockNumber: Int!): Block! @requiresAuth
+    blockWithPrivateData(channelID: String!, blockNumber: Int!): BlockWithPrivateData! @requiresAuth
+    blockByTXID(channelID: String!, transactionID: String!): Block! @requiresAuth
 }
 type LightChannel {
     name: String!
@@ -2247,6 +2260,8 @@ type ChannelAnchorPeer {
     query: Query
     mutation: Mutation
 }
+
+directive @requiresAuth on FIELD_DEFINITION
 
 scalar Time
 `, BuiltIn: false},
@@ -7440,8 +7455,28 @@ func (ec *executionContext) _Query_peers(ctx context.Context, field graphql.Coll
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Peers(rctx)
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().Peers(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.RequiresAuth == nil {
+				return nil, errors.New("directive requiresAuth is not implemented")
+			}
+			return ec.directives.RequiresAuth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*models.Peer); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/kfsoftware/hlf-operator-ui/api/gql/models.Peer`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7479,8 +7514,28 @@ func (ec *executionContext) _Query_peer(ctx context.Context, field graphql.Colle
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Peer(rctx, args["input"].(models.NameAndNamespace))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().Peer(rctx, args["input"].(models.NameAndNamespace))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.RequiresAuth == nil {
+				return nil, errors.New("directive requiresAuth is not implemented")
+			}
+			return ec.directives.RequiresAuth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*models.Peer); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/kfsoftware/hlf-operator-ui/api/gql/models.Peer`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7511,8 +7566,28 @@ func (ec *executionContext) _Query_orderers(ctx context.Context, field graphql.C
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Orderers(rctx)
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().Orderers(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.RequiresAuth == nil {
+				return nil, errors.New("directive requiresAuth is not implemented")
+			}
+			return ec.directives.RequiresAuth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*models.Orderer); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/kfsoftware/hlf-operator-ui/api/gql/models.Orderer`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7550,8 +7625,28 @@ func (ec *executionContext) _Query_orderer(ctx context.Context, field graphql.Co
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Orderer(rctx, args["input"].(models.NameAndNamespace))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().Orderer(rctx, args["input"].(models.NameAndNamespace))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.RequiresAuth == nil {
+				return nil, errors.New("directive requiresAuth is not implemented")
+			}
+			return ec.directives.RequiresAuth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*models.Orderer); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/kfsoftware/hlf-operator-ui/api/gql/models.Orderer`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7563,6 +7658,41 @@ func (ec *executionContext) _Query_orderer(ctx context.Context, field graphql.Co
 	res := resTmp.(*models.Orderer)
 	fc.Result = res
 	return ec.marshalOOrderer2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐOrderer(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_networkConfigEnabled(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().NetworkConfigEnabled(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_cas(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -7582,8 +7712,28 @@ func (ec *executionContext) _Query_cas(ctx context.Context, field graphql.Collec
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Cas(rctx)
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().Cas(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.RequiresAuth == nil {
+				return nil, errors.New("directive requiresAuth is not implemented")
+			}
+			return ec.directives.RequiresAuth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*models.Ca); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/kfsoftware/hlf-operator-ui/api/gql/models.Ca`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7621,8 +7771,28 @@ func (ec *executionContext) _Query_ca(ctx context.Context, field graphql.Collect
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Ca(rctx, args["input"].(models.NameAndNamespace))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().Ca(rctx, args["input"].(models.NameAndNamespace))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.RequiresAuth == nil {
+				return nil, errors.New("directive requiresAuth is not implemented")
+			}
+			return ec.directives.RequiresAuth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*models.Ca); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/kfsoftware/hlf-operator-ui/api/gql/models.Ca`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7653,8 +7823,28 @@ func (ec *executionContext) _Query_namespaces(ctx context.Context, field graphql
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Namespaces(rctx)
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().Namespaces(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.RequiresAuth == nil {
+				return nil, errors.New("directive requiresAuth is not implemented")
+			}
+			return ec.directives.RequiresAuth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*models.Namespace); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/kfsoftware/hlf-operator-ui/api/gql/models.Namespace`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7685,8 +7875,28 @@ func (ec *executionContext) _Query_channels(ctx context.Context, field graphql.C
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Channels(rctx)
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().Channels(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.RequiresAuth == nil {
+				return nil, errors.New("directive requiresAuth is not implemented")
+			}
+			return ec.directives.RequiresAuth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*models.LightChannel); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/kfsoftware/hlf-operator-ui/api/gql/models.LightChannel`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7724,8 +7934,28 @@ func (ec *executionContext) _Query_channel(ctx context.Context, field graphql.Co
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Channel(rctx, args["channelID"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().Channel(rctx, args["channelID"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.RequiresAuth == nil {
+				return nil, errors.New("directive requiresAuth is not implemented")
+			}
+			return ec.directives.RequiresAuth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*models.Channel); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/kfsoftware/hlf-operator-ui/api/gql/models.Channel`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7766,8 +7996,28 @@ func (ec *executionContext) _Query_blocks(ctx context.Context, field graphql.Col
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Blocks(rctx, args["channelID"].(string), args["from"].(int), args["to"].(int), args["reverse"].(bool))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().Blocks(rctx, args["channelID"].(string), args["from"].(int), args["to"].(int), args["reverse"].(bool))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.RequiresAuth == nil {
+				return nil, errors.New("directive requiresAuth is not implemented")
+			}
+			return ec.directives.RequiresAuth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*models.BlocksResponse); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/kfsoftware/hlf-operator-ui/api/gql/models.BlocksResponse`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7808,8 +8058,28 @@ func (ec *executionContext) _Query_block(ctx context.Context, field graphql.Coll
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Block(rctx, args["channelID"].(string), args["blockNumber"].(int))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().Block(rctx, args["channelID"].(string), args["blockNumber"].(int))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.RequiresAuth == nil {
+				return nil, errors.New("directive requiresAuth is not implemented")
+			}
+			return ec.directives.RequiresAuth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*models.Block); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/kfsoftware/hlf-operator-ui/api/gql/models.Block`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7850,8 +8120,28 @@ func (ec *executionContext) _Query_blockWithPrivateData(ctx context.Context, fie
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().BlockWithPrivateData(rctx, args["channelID"].(string), args["blockNumber"].(int))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().BlockWithPrivateData(rctx, args["channelID"].(string), args["blockNumber"].(int))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.RequiresAuth == nil {
+				return nil, errors.New("directive requiresAuth is not implemented")
+			}
+			return ec.directives.RequiresAuth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*models.BlockWithPrivateData); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/kfsoftware/hlf-operator-ui/api/gql/models.BlockWithPrivateData`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7892,8 +8182,28 @@ func (ec *executionContext) _Query_blockByTXID(ctx context.Context, field graphq
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().BlockByTxid(rctx, args["channelID"].(string), args["transactionID"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().BlockByTxid(rctx, args["channelID"].(string), args["transactionID"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.RequiresAuth == nil {
+				return nil, errors.New("directive requiresAuth is not implemented")
+			}
+			return ec.directives.RequiresAuth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*models.Block); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/kfsoftware/hlf-operator-ui/api/gql/models.Block`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -12809,6 +13119,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_orderer(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "networkConfigEnabled":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_networkConfigEnabled(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			}
 

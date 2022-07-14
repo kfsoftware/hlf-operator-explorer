@@ -854,3 +854,7 @@ func (r *queryResolver) BlockWithPrivateData(ctx context.Context, channelID stri
 	}
 	return blockWithPrivateData, nil
 }
+
+func (r *queryResolver) NetworkConfigEnabled(ctx context.Context) (bool, error) {
+	return r.Gateway != nil, nil
+}

@@ -355,6 +355,7 @@ export type Query = {
   peer?: Maybe<Peer>;
   orderers?: Maybe<Array<Orderer>>;
   orderer?: Maybe<Orderer>;
+  networkConfigEnabled: Scalars['Boolean'];
   cas?: Maybe<Array<Ca>>;
   ca?: Maybe<Ca>;
   namespaces?: Maybe<Array<Namespace>>;
@@ -821,6 +822,14 @@ export type GetBlockByTxidQuery = (
       )>> }
     )>> }
   ) }
+);
+
+export type NetworkConfigEnabledQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type NetworkConfigEnabledQuery = (
+  { __typename?: 'Query' }
+  & Pick<Query, 'networkConfigEnabled'>
 );
 
 
@@ -1544,3 +1553,35 @@ export function useGetBlockByTxidLazyQuery(baseOptions?: Apollo.LazyQueryHookOpt
 export type GetBlockByTxidQueryHookResult = ReturnType<typeof useGetBlockByTxidQuery>;
 export type GetBlockByTxidLazyQueryHookResult = ReturnType<typeof useGetBlockByTxidLazyQuery>;
 export type GetBlockByTxidQueryResult = Apollo.QueryResult<GetBlockByTxidQuery, GetBlockByTxidQueryVariables>;
+export const NetworkConfigEnabledDocument = gql`
+    query networkConfigEnabled {
+  networkConfigEnabled
+}
+    `;
+
+/**
+ * __useNetworkConfigEnabledQuery__
+ *
+ * To run a query within a React component, call `useNetworkConfigEnabledQuery` and pass it any options that fit your needs.
+ * When your component renders, `useNetworkConfigEnabledQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useNetworkConfigEnabledQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useNetworkConfigEnabledQuery(baseOptions?: Apollo.QueryHookOptions<NetworkConfigEnabledQuery, NetworkConfigEnabledQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<NetworkConfigEnabledQuery, NetworkConfigEnabledQueryVariables>(NetworkConfigEnabledDocument, options);
+      }
+export function useNetworkConfigEnabledLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<NetworkConfigEnabledQuery, NetworkConfigEnabledQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<NetworkConfigEnabledQuery, NetworkConfigEnabledQueryVariables>(NetworkConfigEnabledDocument, options);
+        }
+export type NetworkConfigEnabledQueryHookResult = ReturnType<typeof useNetworkConfigEnabledQuery>;
+export type NetworkConfigEnabledLazyQueryHookResult = ReturnType<typeof useNetworkConfigEnabledLazyQuery>;
+export type NetworkConfigEnabledQueryResult = Apollo.QueryResult<NetworkConfigEnabledQuery, NetworkConfigEnabledQueryVariables>;

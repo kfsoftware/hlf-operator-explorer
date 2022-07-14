@@ -1,6 +1,9 @@
 package serve
 
 import (
+	"context"
+	"crypto/rsa"
+	"crypto/tls"
 	"crypto/x509"
 	"fmt"
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -9,6 +12,10 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
+
+	gqlgengraphql "github.com/99designs/gqlgen/graphql"
+	jwtmiddleware "github.com/auth0/go-jwt-middleware"
+	"github.com/form3tech-oss/jwt-go"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/hyperledger/fabric-gateway/pkg/client"
@@ -21,6 +28,11 @@ import (
 	"github.com/kfsoftware/hlf-operator-ui/api/log"
 	"github.com/kfsoftware/hlf-operator/controllers/utils"
 	operatorv1 "github.com/kfsoftware/hlf-operator/pkg/client/clientset/versioned"
+	"github.com/lestrrat-go/jwx/jwk"
+	"github.com/pkg/errors"
+	"github.com/slok/go-http-metrics/metrics/prometheus"
+	"github.com/slok/go-http-metrics/middleware"
+	middlewarestd "github.com/slok/go-http-metrics/middleware/std"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -34,16 +46,20 @@ import (
 )
 
 type serveConfig struct {
-	address   string
-	hlfConfig string
-	user      string
-	mspID     string
+	address    string
+	hlfConfig  string
+	user       string
+	mspID      string
+	authJWKS   string
+	authIssuer string
 }
 type serveCmd struct {
-	address   string
-	hlfConfig string
-	user      string
-	mspID     string
+	address    string
+	hlfConfig  string
+	user       string
+	mspID      string
+	authJWKS   string
+	authIssuer string
 }
 type IdentityStruct struct {
 	Identity identity.Identity
@@ -88,7 +104,7 @@ func (s serveCmd) run() error {
 		if err != nil {
 			return err
 		}
-		sdk, err := fabsdk.New(configBackend)
+		sdk, err = fabsdk.New(configBackend)
 		if err != nil {
 			return err
 		}
@@ -167,6 +183,16 @@ func (s serveCmd) run() error {
 			Gateway:        gw,
 		},
 	}
+	gqlConfig.Directives.RequiresAuth = func(ctx context.Context, obj interface{}, next gqlgengraphql.Resolver) (interface{}, error) {
+		if s.authJWKS == "" || s.authIssuer == "" {
+			return next(ctx)
+		}
+		user := ctx.Value("user")
+		if user == nil {
+			return nil, errors.New("access denied")
+		}
+		return next(ctx)
+	}
 	es := gql.NewExecutableSchema(gqlConfig)
 	h := handler.New(es)
 	h.AddTransport(transport.Options{})
@@ -215,8 +241,32 @@ func (s serveCmd) run() error {
 			io.WriteString(c.Writer, `{"alive": true}`)
 		},
 	)
+	mdlw := middleware.New(middleware.Config{
+		Recorder: prometheus.NewRecorder(prometheus.Config{}),
+	})
+	httpHandler := middlewarestd.Handler("", mdlw, serverMux)
+	if s.authIssuer != "" && s.authJWKS != "" {
+		jwtMiddleware := jwtmiddleware.New(jwtmiddleware.Options{
+			ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
+				iss := s.authIssuer
+				checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(iss, false)
+				if !checkIss {
+					return token, errors.New("Invalid issuer.")
+				}
+
+				cert, err := getPemCert(token, s.authJWKS)
+				if err != nil {
+					return nil, err
+				}
+				return cert, nil
+			},
+			SigningMethod:       jwt.SigningMethodRS256,
+			CredentialsOptional: true,
+		})
+		httpHandler = jwtMiddleware.Handler(httpHandler)
+	}
 	log.Infof("Server listening on %s", s.address)
-	return http.ListenAndServe(s.address, serverMux)
+	return http.ListenAndServe(s.address, httpHandler)
 }
 
 // Defining the Playground handler
@@ -255,10 +305,12 @@ func NewServeCommand() *cobra.Command {
 		Long:  "serve",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			s := &serveCmd{
-				address:   conf.address,
-				hlfConfig: conf.hlfConfig,
-				user:      conf.user,
-				mspID:     conf.mspID,
+				address:    conf.address,
+				hlfConfig:  conf.hlfConfig,
+				user:       conf.user,
+				mspID:      conf.mspID,
+				authJWKS:   conf.authJWKS,
+				authIssuer: conf.authIssuer,
 			}
 			return s.run()
 		},
@@ -268,5 +320,47 @@ func NewServeCommand() *cobra.Command {
 	f.StringVar(&conf.hlfConfig, "hlf-config", "", "HLF configuration")
 	f.StringVar(&conf.mspID, "msp-id", "", "MSP ID to use for the HLF configuration")
 	f.StringVar(&conf.user, "user", "", "User to use for the HLF configuration")
+	f.StringVarP(&conf.authJWKS, "auth-jwks", "", "", "auth jwks")
+	f.StringVarP(&conf.authIssuer, "auth-issuer", "", "", "auth issuer")
 	return cmd
+}
+
+type Jwks struct {
+	Keys []JSONWebKeys `json:"keys"`
+}
+
+type JSONWebKeys struct {
+	Kty string   `json:"kty"`
+	Kid string   `json:"kid"`
+	Use string   `json:"use"`
+	N   string   `json:"n"`
+	E   string   `json:"e"`
+	X5c []string `json:"x5c"`
+}
+
+func getPemCert(token *jwt.Token, jwksUrl string) (*rsa.PublicKey, error) {
+	kid := token.Header["kid"].(string)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	httpClient := &http.Client{Transport: tr}
+	set, err := jwk.Fetch(context.Background(), jwksUrl, jwk.WithHTTPClient(httpClient))
+	if err != nil {
+		log.Printf("failed to parse JWK: %s", err)
+		return nil, err
+	}
+	k, exists := set.LookupKeyID(kid)
+	if !exists {
+		return nil, errors.Errorf("kid %s not found in jwks", kid)
+	}
+	var rawKey interface{}
+	err = k.Raw(&rawKey)
+	if !exists {
+		return nil, err
+	}
+	rsaKey, ok := rawKey.(*rsa.PublicKey)
+	if !ok {
+		return nil, errors.Errorf("kid %s not found in jwks", kid)
+	}
+	return rsaKey, nil
 }

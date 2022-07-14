@@ -1,13 +1,16 @@
 import {
-    ApolloClient,
-    ApolloProvider as OriginalApolloProvider,
-    createHttpLink,
-    InMemoryCache
+  ApolloClient,
+  ApolloProvider as OriginalApolloProvider,
+  createHttpLink,
+  InMemoryCache,
 } from "@apollo/client";
 import { RetryLink } from "@apollo/client/link/retry";
 import { onError } from "apollo-link-error";
 import fetch from "cross-fetch";
 import React, { useMemo, useState } from "react";
+import { useAuth } from "react-oidc-context";
+import { setContext } from "@apollo/client/link/context";
+
 interface AuthorizedApolloProviderProps {
   url: string;
   children: JSX.Element;
@@ -34,7 +37,20 @@ export const ApolloProvider = ({
       retryIf: (error, _operation) => !!error,
     },
   });
-
+  const auth = useAuth();
+  const authLink = useMemo(
+    () =>
+      setContext(async () => {
+        const headers: any = {};
+        if (auth.user) {
+          headers["Authorization"] = `Bearer ${auth.user.access_token}`;
+        }
+        return {
+          headers: headers,
+        };
+      }),
+    [auth]
+  );
   const errorLink = onError(({ graphQLErrors, networkError, operation }) => {
     if (graphQLErrors) {
       graphQLErrors.map(({ message, path }) =>
@@ -48,7 +64,10 @@ export const ApolloProvider = ({
   const apolloClient = useMemo(
     () =>
       new ApolloClient({
-        link: (errorLink as any).concat(retryLink).concat(httpLink),
+        link: authLink
+          .concat(errorLink as any)
+          .concat(retryLink)
+          .concat(httpLink),
         cache: new InMemoryCache(),
         connectToDevTools: true,
         defaultOptions: {
@@ -65,5 +84,9 @@ export const ApolloProvider = ({
     [errorLink, httpLink, retryLink]
   );
 
-  return <OriginalApolloProvider client={apolloClient}>{children}</OriginalApolloProvider>;
+  return (
+    <OriginalApolloProvider client={apolloClient}>
+      {children}
+    </OriginalApolloProvider>
+  );
 };
