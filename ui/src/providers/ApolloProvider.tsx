@@ -42,7 +42,7 @@ export const ApolloProvider = ({
     () =>
       setContext(async () => {
         const headers: any = {};
-        if (auth.user) {
+        if (auth && auth.user) {
           headers["Authorization"] = `Bearer ${auth.user.access_token}`;
         }
         return {
