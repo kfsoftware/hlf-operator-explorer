@@ -1,6 +1,7 @@
+import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useGetPeerQuery } from "../operations";
-
+import { parse, stringify } from "yaml";
 export default function PeerDetail() {
   const { name, namespace } = useParams();
   const { data, error, loading } = useGetPeerQuery({
@@ -11,7 +12,11 @@ export default function PeerDetail() {
       },
     },
   });
-
+  const yamlData = useMemo(() => {
+    const parsedData = parse(data?.peer?.yaml || "");
+    delete parsedData["metadata"]["managedFields"];
+    return parsedData;
+  }, [data]);
   return (
     <div className="py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -37,6 +42,8 @@ export default function PeerDetail() {
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
               <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
                 <pre>{JSON.stringify(data, null, 4)}</pre>
+                {/* <pre>{data?.peer?.yaml}</pre> */}
+                <pre>{stringify(yamlData)}</pre>
               </div>
             </div>
           </div>

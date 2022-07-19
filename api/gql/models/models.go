@@ -274,6 +274,10 @@ type SignaturePolicySignedBy struct {
 	SignedBy int `json:"signedBy"`
 }
 
+type StorageClass struct {
+	Name string `json:"name"`
+}
+
 type Transaction struct {
 	TxID      string              `json:"txID"`
 	Type      TransactionType     `json:"type"`
@@ -316,16 +320,16 @@ type TransactionWrite struct {
 	Value       string `json:"value"`
 }
 
-type UpdateeCAInput struct {
-	Yaml *string `json:"yaml"`
+type UpdateCAInput struct {
+	Yaml string `json:"yaml"`
 }
 
 type UpdateeOrdererInput struct {
-	Yaml *string `json:"yaml"`
+	Yaml string `json:"yaml"`
 }
 
 type UpdateePeerInput struct {
-	Yaml *string `json:"yaml"`
+	Yaml string `json:"yaml"`
 }
 
 type TransactionType string

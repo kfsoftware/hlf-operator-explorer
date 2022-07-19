@@ -26,8 +26,8 @@ import (
 	"github.com/kfsoftware/hlf-operator/controllers/utils"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v3"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/yaml"
 	"sort"
 )
 
@@ -857,4 +857,18 @@ func (r *queryResolver) BlockWithPrivateData(ctx context.Context, channelID stri
 
 func (r *queryResolver) NetworkConfigEnabled(ctx context.Context) (bool, error) {
 	return r.Gateway != nil, nil
+}
+
+func (r *queryResolver) StorageClasses(ctx context.Context) ([]*models.StorageClass, error) {
+	storageClasses, err := r.KubeClient.StorageV1().StorageClasses().List(ctx, v1.ListOptions{})
+	if err != nil {
+		return []*models.StorageClass{}, nil
+	}
+	result := []*models.StorageClass{}
+	for _, storageClass := range storageClasses.Items {
+		result = append(result, &models.StorageClass{
+			Name: storageClass.Name,
+		})
+	}
+	return result, nil
 }

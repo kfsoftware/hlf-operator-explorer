@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useGetOrderersQuery } from "../operations";
 
 export default function OrdererList() {
@@ -14,12 +14,12 @@ export default function OrdererList() {
             </h2>
           </div>
           <div className="mt-4 flex md:mt-0 md:ml-4">
-            <button
-              type="button"
+            <Link
+              to="/orderers/create"
               className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Create
-            </button>
+            </Link>
           </div>
         </div>
       </div>
@@ -82,12 +82,6 @@ export default function OrdererList() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {orderer.namespace}
                           </td>
-                          {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {peer.email}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {peer.role}
-                          </td> */}
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <a
                               href="#"

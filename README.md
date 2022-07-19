@@ -1,17 +1,9 @@
 
-## Badges
-
-Add badges from somewhere like: [shields.io](https://shields.io/)
-
 [![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?)](https://github.com/tterb/atomic-design-ui/blob/master/LICENSEs)
-[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
-[![AGPL License](https://img.shields.io/badge/license-AGPL-blue.svg)](http://www.gnu.org/licenses/agpl-3.0)
 
+# HLF Operator UI
 
-# Project Title
-
-A brief description of what this project does and who it's for
-
+The HLF Operator UI provides a graphical interface for a convenient blockchain-as-a-service user experience. Once the operator is set up it's very easy for teams to create, clone, watch, edit and delete their own Certificate Authorities, Peers and Orderer nodes.
 
 ## Roadmap
 
@@ -22,7 +14,10 @@ A brief description of what this project does and who it's for
 
 ## Deployment
 
-To deploy this project run
+### Kubernetes
+To deploy this project you need to install the [hlf-operator](https://github.com/hyperledger-labs/hlf-operator) in the Kubernetes cluster.
+
+Then, there
 
 ```bash
   npm run deploy

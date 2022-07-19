@@ -1,7 +1,5 @@
 import { useParams } from "react-router-dom";
-import {
-  useGetCaQuery
-} from "../operations";
+import { useGetCaQuery } from "../operations";
 
 export default function CADetail() {
   const { name, namespace } = useParams();
@@ -19,7 +17,7 @@ export default function CADetail() {
         <div className="md:flex md:items-center md:justify-between">
           <div className="flex-1 min-w-0">
             <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-              Certiifcate Authorities
+              Certificate Authority
             </h2>
           </div>
         </div>
@@ -29,9 +27,7 @@ export default function CADetail() {
           <div className="flex flex-col">
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
               <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                <pre>
-                  {JSON.stringify(data, null, 4)}
-                </pre>
+                <pre>{JSON.stringify(data, null, 4)}</pre>
               </div>
             </div>
           </div>

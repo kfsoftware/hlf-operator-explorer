@@ -8,8 +8,8 @@ import { RetryLink } from "@apollo/client/link/retry";
 import { onError } from "apollo-link-error";
 import fetch from "cross-fetch";
 import React, { useMemo, useState } from "react";
-import { useAuth } from "react-oidc-context";
 import { setContext } from "@apollo/client/link/context";
+import useAuth from "../hooks/useAuth";
 
 interface AuthorizedApolloProviderProps {
   url: string;

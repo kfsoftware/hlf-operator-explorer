@@ -194,7 +194,7 @@ type ComplexityRoot struct {
 		CreateCa      func(childComplexity int, input models.CreateCAInput) int
 		CreateOrderer func(childComplexity int, input models.CreateOrdererInput) int
 		CreatePeer    func(childComplexity int, input models.CreatePeerInput) int
-		UpdateCa      func(childComplexity int, filter models.NameAndNamespace, input models.UpdateeCAInput) int
+		UpdateCa      func(childComplexity int, filter models.NameAndNamespace, input models.UpdateCAInput) int
 		UpdateOrderer func(childComplexity int, filter models.NameAndNamespace, input models.UpdateeOrdererInput) int
 		UpdatePeer    func(childComplexity int, filter models.NameAndNamespace, input models.UpdateePeerInput) int
 	}
@@ -310,6 +310,7 @@ type ComplexityRoot struct {
 		Orderers             func(childComplexity int) int
 		Peer                 func(childComplexity int, input models.NameAndNamespace) int
 		Peers                func(childComplexity int) int
+		StorageClasses       func(childComplexity int) int
 	}
 
 	SignaturePolicy struct {
@@ -331,6 +332,10 @@ type ComplexityRoot struct {
 
 	SignaturePolicySignedBy struct {
 		SignedBy func(childComplexity int) int
+	}
+
+	StorageClass struct {
+		Name func(childComplexity int) int
 	}
 
 	Transaction struct {
@@ -386,7 +391,7 @@ type MutationResolver interface {
 	CreateOrderer(ctx context.Context, input models.CreateOrdererInput) (*models.Orderer, error)
 	UpdateOrderer(ctx context.Context, filter models.NameAndNamespace, input models.UpdateeOrdererInput) (*models.Orderer, error)
 	CreateCa(ctx context.Context, input models.CreateCAInput) (*models.Ca, error)
-	UpdateCa(ctx context.Context, filter models.NameAndNamespace, input models.UpdateeCAInput) (*models.Ca, error)
+	UpdateCa(ctx context.Context, filter models.NameAndNamespace, input models.UpdateCAInput) (*models.Ca, error)
 }
 type QueryResolver interface {
 	Peers(ctx context.Context) ([]*models.Peer, error)
@@ -397,6 +402,7 @@ type QueryResolver interface {
 	Cas(ctx context.Context) ([]*models.Ca, error)
 	Ca(ctx context.Context, input models.NameAndNamespace) (*models.Ca, error)
 	Namespaces(ctx context.Context) ([]*models.Namespace, error)
+	StorageClasses(ctx context.Context) ([]*models.StorageClass, error)
 	Channels(ctx context.Context) ([]*models.LightChannel, error)
 	Channel(ctx context.Context, channelID string) (*models.Channel, error)
 	Blocks(ctx context.Context, channelID string, from int, to int, reverse bool) (*models.BlocksResponse, error)
@@ -1026,7 +1032,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateCa(childComplexity, args["filter"].(models.NameAndNamespace), args["input"].(models.UpdateeCAInput)), true
+		return e.complexity.Mutation.UpdateCa(childComplexity, args["filter"].(models.NameAndNamespace), args["input"].(models.UpdateCAInput)), true
 
 	case "Mutation.updateOrderer":
 		if e.complexity.Mutation.UpdateOrderer == nil {
@@ -1568,6 +1574,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Peers(childComplexity), true
 
+	case "Query.storageClasses":
+		if e.complexity.Query.StorageClasses == nil {
+			break
+		}
+
+		return e.complexity.Query.StorageClasses(childComplexity), true
+
 	case "SignaturePolicy.principals":
 		if e.complexity.SignaturePolicy.Principals == nil {
 			break
@@ -1630,6 +1643,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SignaturePolicySignedBy.SignedBy(childComplexity), true
+
+	case "StorageClass.name":
+		if e.complexity.StorageClass.Name == nil {
+			break
+		}
+
+		return e.complexity.StorageClass.Name(childComplexity), true
 
 	case "Transaction.chaincode":
 		if e.complexity.Transaction.Chaincode == nil {
@@ -1913,10 +1933,7 @@ var sources = []*ast.Source{
     updateOrderer(filter: NameAndNamespace!, input: UpdateeOrdererInput!): Orderer
 
     createCA(input: CreateCAInput!): CA
-    updateCA(filter: NameAndNamespace!, input: UpdateeCAInput!): CA
-
-
-
+    updateCA(filter: NameAndNamespace!, input: UpdateCAInput!): CA
 }
 
 
@@ -1925,7 +1942,7 @@ input CreatePeerInput {
 }
 
 input UpdateePeerInput {
-    yaml: String
+    yaml: String!
 }
 
 input CreateOrdererInput {
@@ -1933,15 +1950,15 @@ input CreateOrdererInput {
 }
 
 input UpdateeOrdererInput {
-    yaml: String
+    yaml: String!
 }
 
 input CreateCAInput {
     yaml: String!
 }
 
-input UpdateeCAInput {
-    yaml: String
+input UpdateCAInput {
+    yaml: String!
 }
 
 
@@ -1958,6 +1975,7 @@ input UpdateeCAInput {
     cas: [CA!] @requiresAuth
     ca(input: NameAndNamespace!): CA @requiresAuth
     namespaces: [Namespace!] @requiresAuth
+    storageClasses: [StorageClass!] @requiresAuth
     channels: [LightChannel!] @requiresAuth
     channel(channelID: String!): Channel! @requiresAuth
     blocks(
@@ -1969,6 +1987,9 @@ input UpdateeCAInput {
     block(channelID: String!, blockNumber: Int!): Block! @requiresAuth
     blockWithPrivateData(channelID: String!, blockNumber: Int!): BlockWithPrivateData! @requiresAuth
     blockByTXID(channelID: String!, transactionID: String!): Block! @requiresAuth
+}
+type StorageClass {
+    name: String!
 }
 type LightChannel {
     name: String!
@@ -2329,10 +2350,10 @@ func (ec *executionContext) field_Mutation_updateCA_args(ctx context.Context, ra
 		}
 	}
 	args["filter"] = arg0
-	var arg1 models.UpdateeCAInput
+	var arg1 models.UpdateCAInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalNUpdateeCAInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐUpdateeCAInput(ctx, tmp)
+		arg1, err = ec.unmarshalNUpdateCAInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐUpdateCAInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -5552,7 +5573,7 @@ func (ec *executionContext) _Mutation_updateCA(ctx context.Context, field graphq
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateCa(rctx, args["filter"].(models.NameAndNamespace), args["input"].(models.UpdateeCAInput))
+		return ec.resolvers.Mutation().UpdateCa(rctx, args["filter"].(models.NameAndNamespace), args["input"].(models.UpdateCAInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7858,6 +7879,58 @@ func (ec *executionContext) _Query_namespaces(ctx context.Context, field graphql
 	return ec.marshalONamespace2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐNamespaceᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_storageClasses(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().StorageClasses(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.RequiresAuth == nil {
+				return nil, errors.New("directive requiresAuth is not implemented")
+			}
+			return ec.directives.RequiresAuth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*models.StorageClass); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/kfsoftware/hlf-operator-ui/api/gql/models.StorageClass`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*models.StorageClass)
+	fc.Result = res
+	return ec.marshalOStorageClass2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐStorageClassᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_channels(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -8592,6 +8665,41 @@ func (ec *executionContext) _SignaturePolicySignedBy_signedBy(ctx context.Contex
 	res := resTmp.(int)
 	fc.Result = res
 	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StorageClass_name(ctx context.Context, field graphql.CollectedField, obj *models.StorageClass) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StorageClass",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Transaction_txID(ctx context.Context, field graphql.CollectedField, obj *models.Transaction) (ret graphql.Marshaler) {
@@ -10888,8 +10996,8 @@ func (ec *executionContext) unmarshalInputNameAndNamespace(ctx context.Context, 
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputUpdateeCAInput(ctx context.Context, obj interface{}) (models.UpdateeCAInput, error) {
-	var it models.UpdateeCAInput
+func (ec *executionContext) unmarshalInputUpdateCAInput(ctx context.Context, obj interface{}) (models.UpdateCAInput, error) {
+	var it models.UpdateCAInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -10901,7 +11009,7 @@ func (ec *executionContext) unmarshalInputUpdateeCAInput(ctx context.Context, ob
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("yaml"))
-			it.Yaml, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.Yaml, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10924,7 +11032,7 @@ func (ec *executionContext) unmarshalInputUpdateeOrdererInput(ctx context.Contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("yaml"))
-			it.Yaml, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.Yaml, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10947,7 +11055,7 @@ func (ec *executionContext) unmarshalInputUpdateePeerInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("yaml"))
-			it.Yaml, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.Yaml, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -13212,6 +13320,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "storageClasses":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_storageClasses(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "channels":
 			field := field
 
@@ -13516,6 +13644,37 @@ func (ec *executionContext) _SignaturePolicySignedBy(ctx context.Context, sel as
 		case "signedBy":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._SignaturePolicySignedBy_signedBy(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var storageClassImplementors = []string{"StorageClass"}
+
+func (ec *executionContext) _StorageClass(ctx context.Context, sel ast.SelectionSet, obj *models.StorageClass) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, storageClassImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("StorageClass")
+		case "name":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._StorageClass_name(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -14685,6 +14844,16 @@ func (ec *executionContext) marshalNSignaturePolicyRule2ᚖgithubᚗcomᚋkfsoft
 	return ec._SignaturePolicyRule(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNStorageClass2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐStorageClass(ctx context.Context, sel ast.SelectionSet, v *models.StorageClass) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._StorageClass(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -14765,8 +14934,8 @@ func (ec *executionContext) marshalNTransactionWrite2ᚖgithubᚗcomᚋkfsoftwar
 	return ec._TransactionWrite(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNUpdateeCAInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐUpdateeCAInput(ctx context.Context, v interface{}) (models.UpdateeCAInput, error) {
-	res, err := ec.unmarshalInputUpdateeCAInput(ctx, v)
+func (ec *executionContext) unmarshalNUpdateCAInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐUpdateCAInput(ctx context.Context, v interface{}) (models.UpdateCAInput, error) {
+	res, err := ec.unmarshalInputUpdateCAInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -16083,6 +16252,53 @@ func (ec *executionContext) marshalOSignaturePolicySignedBy2ᚖgithubᚗcomᚋkf
 		return graphql.Null
 	}
 	return ec._SignaturePolicySignedBy(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOStorageClass2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐStorageClassᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.StorageClass) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNStorageClass2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐStorageClass(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {

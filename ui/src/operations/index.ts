@@ -15,6 +15,7 @@ export type Scalars = {
   Time: any;
 };
 
+
 export type ApplicationConfig = {
   __typename?: 'ApplicationConfig';
   policies?: Maybe<Array<ChannelPolicy>>;
@@ -231,7 +232,7 @@ export type MutationCreateCaArgs = {
 
 export type MutationUpdateCaArgs = {
   filter: NameAndNamespace;
-  input: UpdateeCaInput;
+  input: UpdateCaInput;
 };
 
 export type NameAndNamespace = {
@@ -359,6 +360,7 @@ export type Query = {
   cas?: Maybe<Array<Ca>>;
   ca?: Maybe<Ca>;
   namespaces?: Maybe<Array<Namespace>>;
+  storageClasses?: Maybe<Array<StorageClass>>;
   channels?: Maybe<Array<LightChannel>>;
   channel: Channel;
   blocks: BlocksResponse;
@@ -438,6 +440,11 @@ export type SignaturePolicySignedBy = {
   signedBy: Scalars['Int'];
 };
 
+export type StorageClass = {
+  __typename?: 'StorageClass';
+  name: Scalars['String'];
+};
+
 
 export type Transaction = {
   __typename?: 'Transaction';
@@ -495,16 +502,16 @@ export type TransactionWrite = {
   value: Scalars['String'];
 };
 
-export type UpdateeCaInput = {
-  yaml?: Maybe<Scalars['String']>;
+export type UpdateCaInput = {
+  yaml: Scalars['String'];
 };
 
 export type UpdateeOrdererInput = {
-  yaml?: Maybe<Scalars['String']>;
+  yaml: Scalars['String'];
 };
 
 export type UpdateePeerInput = {
-  yaml?: Maybe<Scalars['String']>;
+  yaml: Scalars['String'];
 };
 
 export type GetBlockQueryVariables = Exact<{
@@ -796,6 +803,17 @@ export type GetPeersQuery = (
   & { peers?: Maybe<Array<(
     { __typename?: 'Peer' }
     & Pick<Peer, 'name' | 'namespace' | 'yaml'>
+  )>> }
+);
+
+export type GetStorageClassesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetStorageClassesQuery = (
+  { __typename?: 'Query' }
+  & { storageClasses?: Maybe<Array<(
+    { __typename?: 'StorageClass' }
+    & Pick<StorageClass, 'name'>
   )>> }
 );
 
@@ -1493,6 +1511,40 @@ export function useGetPeersLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<G
 export type GetPeersQueryHookResult = ReturnType<typeof useGetPeersQuery>;
 export type GetPeersLazyQueryHookResult = ReturnType<typeof useGetPeersLazyQuery>;
 export type GetPeersQueryResult = Apollo.QueryResult<GetPeersQuery, GetPeersQueryVariables>;
+export const GetStorageClassesDocument = gql`
+    query GetStorageClasses {
+  storageClasses {
+    name
+  }
+}
+    `;
+
+/**
+ * __useGetStorageClassesQuery__
+ *
+ * To run a query within a React component, call `useGetStorageClassesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetStorageClassesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetStorageClassesQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetStorageClassesQuery(baseOptions?: Apollo.QueryHookOptions<GetStorageClassesQuery, GetStorageClassesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetStorageClassesQuery, GetStorageClassesQueryVariables>(GetStorageClassesDocument, options);
+      }
+export function useGetStorageClassesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetStorageClassesQuery, GetStorageClassesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetStorageClassesQuery, GetStorageClassesQueryVariables>(GetStorageClassesDocument, options);
+        }
+export type GetStorageClassesQueryHookResult = ReturnType<typeof useGetStorageClassesQuery>;
+export type GetStorageClassesLazyQueryHookResult = ReturnType<typeof useGetStorageClassesLazyQuery>;
+export type GetStorageClassesQueryResult = Apollo.QueryResult<GetStorageClassesQuery, GetStorageClassesQueryVariables>;
 export const GetBlockByTxidDocument = gql`
     query GetBlockByTXID($channelID: String!, $txID: String!) {
   block: blockByTXID(channelID: $channelID, transactionID: $txID) {

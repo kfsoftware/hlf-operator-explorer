@@ -10,6 +10,7 @@ type Query {
     cas: [CA!] @requiresAuth
     ca(input: NameAndNamespace!): CA @requiresAuth
     namespaces: [Namespace!] @requiresAuth
+    storageClasses: [StorageClass!] @requiresAuth
     channels: [LightChannel!] @requiresAuth
     channel(channelID: String!): Channel! @requiresAuth
     blocks(
@@ -21,6 +22,9 @@ type Query {
     block(channelID: String!, blockNumber: Int!): Block! @requiresAuth
     blockWithPrivateData(channelID: String!, blockNumber: Int!): BlockWithPrivateData! @requiresAuth
     blockByTXID(channelID: String!, transactionID: String!): Block! @requiresAuth
+}
+type StorageClass {
+    name: String!
 }
 type LightChannel {
     name: String!
