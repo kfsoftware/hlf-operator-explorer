@@ -45,7 +45,6 @@ export default function TextField({
           <input
             {...register!(name, options)}
             {...attrs}
-            autoFocus={true}
             id={name}
             autoComplete={autocomplete}
             name={name}

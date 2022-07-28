@@ -1,34 +1,23 @@
-/*
-  This example requires Tailwind CSS v2.0+ 
-  
-  This example requires some changes to your config:
-  
-  ```
-  // tailwind.config.js
-  module.exports = {
-    // ...
-    plugins: [
-      // ...
-      require('@tailwindcss/forms'),
-    ],
-  }
-  ```
-*/
-
 import { Listbox, RadioGroup, Transition } from "@headlessui/react";
-import { CheckIcon, SelectorIcon } from "@heroicons/react/solid";
+import {
+  CheckIcon,
+  PlusSmIcon as PlusSmIconSolid,
+  MinusSmIcon as MinusSmIconSolid,
+  SelectorIcon,
+} from "@heroicons/react/solid";
 import { forwardRef, Fragment, useEffect, useMemo } from "react";
 import {
   FormProvider,
   RegisterOptions,
-  useForm,
   useFieldArray,
+  useForm,
   useFormContext,
 } from "react-hook-form";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { parse, stringify } from "yaml";
 import TextField from "../components/inputs/TextField";
 import {
-  Namespace,
   useGetNamespacesQuery,
   useGetStorageClassesQuery,
 } from "../operations";
@@ -325,6 +314,15 @@ interface CAForm {
   ingressPort: string;
   ingressGateway: string;
   users: CAUser[];
+  subject: CASubject;
+}
+interface CASubject {
+  C: string;
+  L: string;
+  O: string;
+  OU: string;
+  ST: string;
+  cn: string;
 }
 interface CAUser {
   affiliation: string;
@@ -506,13 +504,18 @@ spec:
   tolerations: null
   version: 1.4.9
 `;
+export const schema = yup.object().shape({
+  function: yup.string().required(),
+  args: yup.array().required(),
+  mspID: yup.object().required(),
+});
 // missing:
 // - component for array string
 // - component for users (username, password, affiliation, type, attrs) -> Structure done, missing add button, remove button, default peers/orderers/client
 // - parametrize subject (c,l,o,ou,st,cn)
 // - service monitor
-// TLS CA properties
-// CA properties
+// TLS CA properties + CA properties
+// 
 // Service type (NodePort, LoadBalancer, ClusterIP)
 // Image pull secrets
 export default function CACreate() {
@@ -532,6 +535,14 @@ export default function CACreate() {
       version: "1.4.9",
       ingressPort: "443",
       ingressGateway: "",
+      subject: {
+        C: "ES",
+        L: "Alicante",
+        O: "Kung Fu Software",
+        OU: "Tech",
+        ST: "Alicante",
+        cn: "ca",
+      },
       users: [
         {
           affiliation: "",
@@ -546,6 +557,51 @@ export default function CACreate() {
             "hf.Registrar.DelegateRoles": "*",
             "hf.Registrar.Roles": "*",
             "hf.Revoker": true,
+          },
+        },
+        {
+          affiliation: "",
+          name: "client",
+          pass: "clientpw",
+          type: "client",
+          attrs: {
+            "hf.AffiliationMgr": false,
+            "hf.GenCRL": false,
+            "hf.IntermediateCA": false,
+            "hf.Registrar.Attributes": "",
+            "hf.Registrar.DelegateRoles": "",
+            "hf.Registrar.Roles": "",
+            "hf.Revoker": false,
+          },
+        },
+        {
+          affiliation: "",
+          name: "peer",
+          pass: "peerpw",
+          type: "peer",
+          attrs: {
+            "hf.AffiliationMgr": false,
+            "hf.GenCRL": false,
+            "hf.IntermediateCA": false,
+            "hf.Registrar.Attributes": "",
+            "hf.Registrar.DelegateRoles": "",
+            "hf.Registrar.Roles": "",
+            "hf.Revoker": false,
+          },
+        },
+        {
+          affiliation: "",
+          name: "orderer",
+          pass: "ordererpw",
+          type: "orderer",
+          attrs: {
+            "hf.AffiliationMgr": false,
+            "hf.GenCRL": false,
+            "hf.IntermediateCA": false,
+            "hf.Registrar.Attributes": "",
+            "hf.Registrar.DelegateRoles": "",
+            "hf.Registrar.Roles": "",
+            "hf.Revoker": false,
           },
         },
       ],
@@ -680,9 +736,18 @@ export default function CACreate() {
                                   label="Affiliation"
                                 />
                               </div>
-                              <button className="ml-4 mx-auto" type="button" onClick={() => remove(idx)}>
-                                Remove
-                              </button>
+                              <div className="ml-3 flex">
+                                <button
+                                  type="button"
+                                  onClick={() => remove(idx)}
+                                  className="inline-flex items-center h-8 w-8 justify-center p-1.5 border border-transparent rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                >
+                                  <MinusSmIconSolid
+                                    className="h-5 w-5"
+                                    aria-hidden="true"
+                                  />
+                                </button>
+                              </div>
                             </div>
                           </>
                         ))}
@@ -706,12 +771,36 @@ export default function CACreate() {
                                 },
                               });
                             }}
+                            className="inline-flex items-center p-1.5 border border-transparent rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                           >
-                            Add
+                            <PlusSmIconSolid
+                              className="h-5 w-5"
+                              aria-hidden="true"
+                            />
                           </button>
                         </div>
                       </div>
                     </fieldset>
+                  </div>
+                  <SectionHeader title="CA attributes" />
+                  <div className="space-y-8 "></div>
+                  <SectionHeader title="Monitoring" />
+                  <div className="space-y-8 "></div>
+                  <SectionHeader title="Image pull secrets" />
+                  <div className="space-y-8 "></div>
+                  <SectionHeader title="Storage" />
+                  <div className="space-y-8 "></div>
+                  <SectionHeader title="Ingress" />
+                  <div className="space-y-8 ">
+                    {/* hosts */}
+                    {/* ingress gateway */}
+                    {/* ingress port */}
+                    {/* service type */}
+                  </div>
+                  <SectionHeader title="Database" />
+                  <div className="space-y-8 ">
+                    {/* type */}
+                    {/* datasource */}
                   </div>
                   <div className="pt-5">
                     <div className="flex justify-end">
