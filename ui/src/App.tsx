@@ -76,7 +76,9 @@ function App({}: {}) {
   ) : (
     <ConfigProvider {...appConfig}>
       <ApolloProvider url={appConfig.apiUrl}>
-        <Routes />
+        <FeatureFlagsProvider>
+          <Routes />
+        </FeatureFlagsProvider>
       </ApolloProvider>
     </ConfigProvider>
   );
