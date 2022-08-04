@@ -47,7 +47,7 @@ export function ConfigProvider({
     <ConfigContext.Provider
       value={{
         apiUrl,
-        logoUrl,
+        logoUrl: logoUrl || "/fabric.png",
         oidcAuthority,
         oidcClientId,
         oidcScope,
