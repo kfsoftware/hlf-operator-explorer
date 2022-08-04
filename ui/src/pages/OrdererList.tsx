@@ -13,14 +13,14 @@ export default function OrdererList() {
               Orderers
             </h2>
           </div>
-          <div className="mt-4 flex md:mt-0 md:ml-4">
+          {/* <div className="mt-4 flex md:mt-0 md:ml-4">
             <Link
               to="/orderers/create"
               className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Create
             </Link>
-          </div>
+          </div> */}
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
@@ -56,9 +56,9 @@ export default function OrdererList() {
                         >
                           Role
                         </th> */}
-                        <th scope="col" className="relative px-6 py-3">
+                        {/* <th scope="col" className="relative px-6 py-3">
                           <span className="sr-only">Edit</span>
-                        </th>
+                        </th> */}
                       </tr>
                     </thead>
                     <tbody>
@@ -82,14 +82,14 @@ export default function OrdererList() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {orderer.namespace}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          {/* <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <a
                               href="#"
                               className="text-indigo-600 hover:text-indigo-900"
                             >
                               Edit
                             </a>
-                          </td>
+                          </td> */}
                         </tr>
                       ))}
                     </tbody>
