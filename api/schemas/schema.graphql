@@ -2,3 +2,7 @@ schema {
     query: Query
     mutation: Mutation
 }
+
+directive @requiresAuth on FIELD_DEFINITION
+
+scalar Time

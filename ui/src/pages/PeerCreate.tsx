@@ -15,13 +15,16 @@
   ```
 */
 
-import { forwardRef, useEffect, useMemo } from "react";
+import { Listbox, RadioGroup, Transition } from "@headlessui/react";
+import { CheckIcon, SelectorIcon } from "@heroicons/react/solid";
+import { forwardRef, Fragment, useEffect, useMemo } from "react";
 import {
   FormProvider,
   RegisterOptions,
   useForm,
-  useFormContext,
+  useFormContext
 } from "react-hook-form";
+import { Namespace, useGetNamespacesQuery } from "../operations";
 
 /* This example requires Tailwind CSS v2.0+ */
 function Heading() {
@@ -32,25 +35,9 @@ function Heading() {
           New Peer node
         </h2>
       </div>
-      <div className="mt-4 flex md:mt-0 md:ml-4">
-        <button
-          type="button"
-          className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Edit
-        </button>
-        <button
-          type="button"
-          className="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Publish
-        </button>
-      </div>
     </div>
   );
 }
-import yaml from "yaml";
-import { useGetNamespacesQuery } from "../operations";
 /* This example requires Tailwind CSS v2.0+ */
 function SectionHeader({ title }: { title: string }) {
   return (
@@ -93,9 +80,6 @@ const InputText = forwardRef(
 interface InputTextProps {
   label: string;
 }
-import { Fragment, useState } from "react";
-import { Listbox, RadioGroup, Transition } from "@headlessui/react";
-import { CheckIcon, SelectorIcon } from "@heroicons/react/solid";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -222,21 +206,15 @@ interface RadioGroupProps {
 }
 function RadioGroupField({ name, label, items, options }: RadioGroupProps) {
   const cachedItems = useMemo(() => items, []);
-  const {
-    formState,
-    watch,
-    register: registerField,
-    setValue,
-  } = useFormContext();
+  const { formState, watch, register, setValue } = useFormContext();
   const errorMessage = formState?.errors?.[name]?.message;
-  const selectValue: SelectItem | null = watch(name) || null;
+  const selectValue: string | null = watch(name) || null;
   useEffect(() => {
-    registerField(name, options);
-  }, [registerField]);
-  const handleChange = (val: SelectItem) =>
+    register(name, options);
+  }, [name, options]);
+  const handleChange = (val: string) =>
     setValue(name, val, { shouldValidate: true });
   const hasError = !!errorMessage;
-  console.log(selectValue);
 
   return (
     <RadioGroup value={selectValue} onChange={handleChange}>
@@ -252,7 +230,7 @@ function RadioGroupField({ name, label, items, options }: RadioGroupProps) {
         {cachedItems.map((setting, settingIdx) => (
           <RadioGroup.Option
             key={setting.name}
-            value={setting}
+            value={setting.id}
             className={({ checked }) => {
               console.log(checked);
 
@@ -316,9 +294,32 @@ function RadioGroupField({ name, label, items, options }: RadioGroupProps) {
     </RadioGroup>
   );
 }
-
+const worldStates = [
+  {
+    name: "LevelDB",
+    id: "LevelDB",
+    description: "LevelDB world state",
+  },
+  {
+    name: "CouchDB",
+    id: "CouchDB",
+    description: "CouchDB world state",
+  },
+];
 export default function PeerCreate() {
-  const methods = useForm();
+  const methods = useForm({
+    defaultValues: {
+      worldState: worldStates[0].id,
+      externalEndpoint: "",
+      name: "peer0-org1",
+      namespace: null,
+    } as {
+      worldState: string;
+      externalEndpoint: string;
+      name: string;
+      namespace: Namespace | null;
+    },
+  });
   const {
     register,
     handleSubmit,
@@ -333,12 +334,12 @@ export default function PeerCreate() {
   }, [data]);
   useEffect(() => {
     if (!getValues("namespace")) {
-      setValue("namespace", namespaces.filter(i => i.name === "default")[0]);
+      setValue("namespace", namespaces.filter((i) => i.name === "default")[0]);
     }
   }, [namespaces, watch("namespace")]);
+
   return (
     <FormProvider {...methods}>
-      {JSON.stringify(watch())}
       <div className="py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Heading />
@@ -362,19 +363,8 @@ export default function PeerCreate() {
                 <RadioGroupField
                   label="World state"
                   name="worldState"
-                  items={[
-                    {
-                      name: "LevelDB",
-                      id: "LevelDB",
-                      description: "LevelDB world state",
-                    },
-                    {
-                      name: "CouchDB",
-                      id: "CouchDB",
-                      description: "CouchDB world state",
-                    },
-                  ]}
-                  options={{}}
+                  items={worldStates}
+                  options={{ required: true }}
                 />
                 <InputText
                   label="External Endpoint"

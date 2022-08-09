@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useGetPeersQuery } from "../operations";
 
 export default function PeerList() {
+  const navigate = useNavigate();
   const { data, error, loading } = useGetPeersQuery();
   return (
     <div className="py-6">
@@ -63,10 +64,15 @@ export default function PeerList() {
                     <tbody>
                       {data?.peers?.map((peer, peerIdx) => (
                         <tr
+                          onClick={() => {
+                            navigate(`/peers/${peer.namespace}/${peer.name}`);
+                          }}
                           key={`${peer.name}-${peer.namespace}`}
-                          className={
-                            peerIdx % 2 === 0 ? "bg-white" : "bg-gray-50"
-                          }
+                          className={`cursor-pointer  ${
+                            peerIdx % 2 === 0
+                              ? "bg-white hover:bg-gray-50 "
+                              : "bg-gray-50 hover:bg-gray-100"
+                          }`}
                         >
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {peer.name}

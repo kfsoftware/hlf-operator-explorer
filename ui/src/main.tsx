@@ -1,15 +1,35 @@
-import React from "react";
+import React, { useMemo } from "react";
 import ReactDOM from "react-dom";
-import Routes from "./routes";
+import { BrowserRouter, useLocation, useNavigate } from "react-router-dom";
+import { QueryParamProvider } from "use-query-params";
 import App from "./App";
 import "./index.css";
-import {ApolloProvider} from "./providers/ApolloProvider";
 
+const RouteAdapter: React.FC = ({ children }: any) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const adaptedHistory = useMemo(
+    () => ({
+      replace(location: Location) {
+        navigate(location, { replace: true });
+      },
+      push(location: Location) {
+        navigate(location, {
+          replace: false,
+        });
+      },
+    }),
+    [navigate, location]
+  );
+  return children({ history: adaptedHistory, location });
+};
 ReactDOM.render(
   <React.StrictMode>
-    <ApolloProvider url="http://localhost:8003/graphql" >
-      <Routes />
-    </ApolloProvider>
+    <BrowserRouter>
+      <QueryParamProvider ReactRouterRoute={RouteAdapter}>
+        <App />
+      </QueryParamProvider>
+    </BrowserRouter>
   </React.StrictMode>,
   document.getElementById("root")
 );

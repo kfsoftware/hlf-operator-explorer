@@ -1,0 +1,29 @@
+query GetBlockByTXID($channelID: String!, $txID: String!) {
+  block: blockByTXID(channelID: $channelID, transactionID: $txID) {
+    blockNumber
+    createdAt
+    dataHash
+    numTransactions
+    transactions {
+      chaincode
+      path
+      createdAt
+      path
+      reads {
+        blockNumVersion
+        chaincodeID
+        key
+        txNumVersion
+      }
+      writes {
+        chaincodeID
+        deleted
+        key
+        value
+      }
+      txID
+      type
+      version
+    }
+  }
+}

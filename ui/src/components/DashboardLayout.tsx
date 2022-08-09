@@ -1,27 +1,19 @@
 /* This example requires Tailwind CSS v2.0+ */
-import { Fragment, useMemo, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import {
-  CalendarIcon,
-  ChartBarIcon,
+  DatabaseIcon,
   FolderIcon,
   HomeIcon,
-  InboxIcon,
   MenuIcon,
   UsersIcon,
   XIcon,
 } from "@heroicons/react/outline";
+import { Fragment, useEffect, useMemo, useState } from "react";
+import useAuth from "../hooks/useAuth";
 import { Link, useLocation } from "react-router-dom";
-const navigation = [
-  { name: "Orderer nodes", href: "/orderers", icon: HomeIcon, current: false },
-  { name: "Peers", href: "/", icon: UsersIcon, current: false },
-  {
-    name: "Certificate Authorities",
-    href: "/cas",
-    icon: FolderIcon,
-    current: false,
-  },
-];
+import { useConfig } from "../config";
+import { useFeatureFlags } from "../featureFlags";
+import { useNetworkConfigEnabledQuery } from "../operations";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -33,6 +25,46 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const config = useConfig();
+  const featureFlags = useFeatureFlags();
+  const auth = useAuth();
+  useEffect(() => {
+    if (
+      auth &&
+      !auth.isLoading &&
+      !auth.isAuthenticated &&
+      !location.search.includes("code=")
+    ) {
+      auth.signinRedirect({});
+    }
+  }, [auth]);
+
+  const navigation = useMemo(() => {
+    const nav = [
+      {
+        name: "Orderer nodes",
+        href: "/orderers",
+        icon: HomeIcon,
+        current: false,
+      },
+      { name: "Peers", href: "/", icon: UsersIcon, current: false },
+      {
+        name: "Certificate Authorities",
+        href: "/cas",
+        icon: FolderIcon,
+        current: false,
+      },
+    ];
+    if (featureFlags?.networkConfigEnabled) {
+      nav.push({
+        name: "Channels",
+        href: "/channels",
+        icon: DatabaseIcon,
+        current: false,
+      });
+    }
+    return nav;
+  }, [featureFlags.networkConfigEnabled]);
   const navigationWithCurrent = useMemo(() => {
     return navigation.map(({ name, href, icon, current }) => ({
       name,
@@ -40,18 +72,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       icon,
       current: location.pathname === href,
     }));
-  }, [location.pathname]);
-
+  }, [location.pathname, navigation]);
   return (
     <>
-      {/*
-        This example requires updating your template:
-
-        ```
-        <html class="h-full bg-gray-100">
-        <body class="h-full">
-        ```
-      */}
       <div>
         <Transition.Root show={sidebarOpen} as={Fragment}>
           <Dialog
@@ -105,9 +128,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 </Transition.Child>
                 <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
                   <div className="flex-shrink-0 flex items-center px-4">
+                    {/* <span className="text-white">HLF OPERATOR UI</span> */}
+                    {/* TODO: Change logo */}
                     <img
                       className="h-8 w-auto"
-                      src="https://tailwindui.com/img/logos/workflow-logo-indigo-500-mark-white-text.svg"
+                      src={config.logoUrl}
                       alt="Workflow"
                     />
                   </div>
@@ -172,9 +197,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex-1 flex flex-col min-h-0 bg-gray-800">
             <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
               <div className="flex items-center flex-shrink-0 px-4">
+                {/* <span className="text-white">HLF OPERATOR UI</span> */}
+                {/* TODO: change logo */}
                 <img
-                  className="h-8 w-auto"
-                  src="https://tailwindui.com/img/logos/workflow-logo-indigo-500-mark-white-text.svg"
+                  className="h-16 w-auto"
+                  src={config.logoUrl}
                   alt="Workflow"
                 />
               </div>
@@ -204,25 +231,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 ))}
               </nav>
             </div>
-            <div className="flex-shrink-0 flex bg-gray-700 p-4">
-              <a href="#" className="flex-shrink-0 w-full group block">
-                <div className="flex items-center">
-                  <div>
-                    <img
-                      className="inline-block h-9 w-9 rounded-full"
-                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                      alt=""
-                    />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-white">Tom Cook</p>
-                    <p className="text-xs font-medium text-gray-300 group-hover:text-gray-200">
-                      View profile
-                    </p>
-                  </div>
-                </div>
-              </a>
-            </div>
+            
           </div>
         </div>
         <div className="md:pl-64 flex flex-col flex-1">

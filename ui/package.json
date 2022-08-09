@@ -5,15 +5,17 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview",
+    "preview": "vite preview --host=0.0.0.0",
     "schema": "graphql-codegen",
     "schema:w": "graphql-codegen --watch='src/operations/**/*.graphql'"
   },
   "dependencies": {
     "@apollo/client": "^3.5.8",
-    "@headlessui/react": "^1.4.3",
-    "@heroicons/react": "^1.0.5",
-    "@tailwindcss/forms": "^0.4.0",
+    "@headlessui/react": "^1.6.4",
+    "@heroicons/react": "^1.0.6",
+    "@hookform/resolvers": "^2.9.6",
+    "@tailwindcss/forms": "^0.5.2",
+    "@types/react-table": "^7.7.12",
     "@types/yaml": "^1.9.7",
     "apollo-link-error": "^1.1.13",
     "autoprefixer": "^10.4.2",
@@ -22,9 +24,14 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-hook-form": "^7.26.1",
+    "react-oidc-context": "^2.1.1",
     "react-router-dom": "6",
-    "tailwindcss": "^2.2.9",
-    "yaml": "^1.10.2"
+    "react-table": "^7.8.0",
+    "tailwindcss": "^3.1.3",
+    "timeago-react": "^3.0.5",
+    "use-query-params": "^1.2.3",
+    "yaml": "^1.10.2",
+    "yup": "^0.32.11"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^1.21.8",

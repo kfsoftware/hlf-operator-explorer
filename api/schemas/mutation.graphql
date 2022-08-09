@@ -6,15 +6,16 @@ type Mutation {
     updateOrderer(filter: NameAndNamespace!, input: UpdateeOrdererInput!): Orderer
 
     createCA(input: CreateCAInput!): CA
-    updateCA(filter: NameAndNamespace!, input: UpdateeCAInput!): CA
+    updateCA(filter: NameAndNamespace!, input: UpdateCAInput!): CA
 }
+
 
 input CreatePeerInput {
     yaml: String!
 }
 
 input UpdateePeerInput {
-    yaml: String
+    yaml: String!
 }
 
 input CreateOrdererInput {
@@ -22,15 +23,15 @@ input CreateOrdererInput {
 }
 
 input UpdateeOrdererInput {
-    yaml: String
+    yaml: String!
 }
 
 input CreateCAInput {
     yaml: String!
 }
 
-input UpdateeCAInput {
-    yaml: String
+input UpdateCAInput {
+    yaml: String!
 }
 
 

@@ -1,0 +1,47 @@
+project_name: hlf-operator-ui
+
+release:
+  name_template: "Version {{.Version}}"
+  github:
+    owner: kfsoftware
+    name: hlf-operator-ui
+
+before:
+  hooks:
+    - go mod tidy
+    - go mod download
+
+builds:
+  - id: hlf-operator-api
+    binary: hlf-operator-api
+    goos:
+      - linux
+    goarch:
+      - amd64
+    env:
+      - CGO_ENABLED=1
+    ldflags:
+      - -s -w -X main.version={{.Tag}}
+    flags:
+      - -trimpath
+
+archives:
+  - format: binary
+    allow_different_binary_count: true
+
+dockers:
+  - # GOOS of the built binary that should be used.
+    goos: linux
+    # GOARCH of the built binary that should be used.
+    goarch: amd64
+    dockerfile: Dockerfile
+    image_templates:
+      - "ghcr.io/kfsoftware/hlf-operator-api:{{ .Tag }}"
+      - "ghcr.io/kfsoftware/hlf-operator-api:v{{ .Major }}"
+      - "ghcr.io/kfsoftware/hlf-operator-api:v{{ .Major }}.{{ .Minor }}"
+      - "ghcr.io/kfsoftware/hlf-operator-api:latest"
+
+    extra_files:
+      - LICENSE
+      - CREDITS
+      - README.md

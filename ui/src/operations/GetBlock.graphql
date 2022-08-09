@@ -1,0 +1,29 @@
+query GetBlock($channelID: String!, $blockNumber: Int!) {
+  block(channelID: $channelID, blockNumber: $blockNumber) {
+    blockNumber
+    createdAt
+    dataHash
+    numTransactions
+    transactions {
+      chaincode
+      path
+      createdAt
+      path
+      reads {
+        blockNumVersion
+        chaincodeID
+        key
+        txNumVersion
+      }
+      writes {
+        chaincodeID
+        deleted
+        key
+        value
+      }
+      txID
+      type
+      version
+    }
+  }
+}
