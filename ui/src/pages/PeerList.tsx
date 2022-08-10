@@ -1,9 +1,125 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useGetPeersQuery } from "../operations";
-
+import { Peer, useGetPeersQuery } from "../operations";
+import {
+  Column,
+  TableOptions,
+  TableState,
+  usePagination,
+  UsePaginationOptions,
+  useSortBy,
+  UseSortByColumnOptions,
+  UseSortByState,
+  useTable,
+} from "react-table";
+import { useMemo } from "react";
+import { parse } from "yaml";
+import { Table } from "../components/table";
+import Badge from "../components/Badge";
+import TimeAgo from "timeago-react";
+interface PeerWithYaml extends Peer {
+  yamlData: any;
+}
 export default function PeerList() {
   const navigate = useNavigate();
   const { data, error, loading } = useGetPeersQuery();
+
+  const columns = useMemo(
+    () => [
+      {
+        Header: "Name",
+        accessor: "yamlData.metadata.name",
+        Cell: function Cell({ row: { original } }) {
+          return (
+            <div className="flex items-center">
+              {original.yamlData.metadata.name}
+            </div>
+          );
+        },
+      },
+      {
+        Header: "Namespace",
+        accessor: "yamlData.metadata.namespace",
+        Cell: function Cell({ row: { original } }) {
+          return (
+            <div className="flex items-center">
+              {original.yamlData.metadata.namespace}
+            </div>
+          );
+        },
+      },
+      {
+        Header: "MSP ID",
+        accessor: "yamlData.spec.mspID",
+        Cell: function Cell({ row: { original } }) {
+          return (
+            <div className="flex items-center">
+              {original.yamlData.spec.mspID}
+            </div>
+          );
+        },
+      },
+      {
+        Header: "Created",
+        id: "createdAt",
+        accessor: "yamlData.metadata.creationTimestamp",
+        Cell: ({ row: { original } }) => {
+          return (
+            <div className="flex items-center">
+              <TimeAgo
+                datetime={original.yamlData.metadata.creationTimestamp}
+                title={original.yamlData.metadata.creationTimestamp}
+                live={true}
+              />
+            </div>
+          );
+        },
+      },
+      {
+        Header: "Status",
+        accessor: "yamlData.status.status",
+        Cell: ({ row: { original } }) => {
+          return original.status === "PENDING" ? (
+            <Badge badgeType="pending">Pending</Badge>
+          ) : original.status !== "FAILED" ? (
+            <Badge badgeType="success">{original.yamlData.status.status}</Badge>
+          ) : (
+            <Badge badgeType="error">Failed</Badge>
+          );
+        },
+      },
+    ],
+    // as (Column<PeerWithYaml> & UseSortByColumnOptions<PeerWithYaml>)[],
+    []
+  );
+  const peers = useMemo(() => {
+    return (
+      data?.peers?.map((ca) => ({
+        name: ca.name,
+        yamlData: parse(ca.yaml),
+        namespace: ca.namespace,
+        yaml: ca.yaml,
+      })) || []
+    );
+  }, [data]);
+
+  const table = useTable(
+    {
+      columns: columns,
+      data: peers,
+      initialState: {
+        pageIndex: 0,
+        pageSize: 10,
+        sortBy: [
+          {
+            id: "createdAt",
+            desc: true,
+          },
+        ],
+      } as TableState<PeerWithYaml>,
+    },
+    useSortBy,
+    usePagination
+  );
   return (
     <div className="py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -29,75 +145,14 @@ export default function PeerList() {
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
               <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
                 <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Name
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Namespace
-                        </th>
-                        {/* <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Email
-                        </th> */}
-                        {/* <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Role
-                        </th> */}
-                        <th scope="col" className="relative px-6 py-3">
-                          <span className="sr-only">Edit</span>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data?.peers?.map((peer, peerIdx) => (
-                        <tr
-                          onClick={() => {
-                            navigate(`/peers/${peer.namespace}/${peer.name}`);
-                          }}
-                          key={`${peer.name}-${peer.namespace}`}
-                          className={`cursor-pointer  ${
-                            peerIdx % 2 === 0
-                              ? "bg-white hover:bg-gray-50 "
-                              : "bg-gray-50 hover:bg-gray-100"
-                          }`}
-                        >
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {peer.name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {peer.namespace}
-                          </td>
-                          {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {peer.email}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {peer.role}
-                          </td> */}
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a
-                              href="#"
-                              className="text-indigo-600 hover:text-indigo-900"
-                            >
-                              Edit
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <Table
+                    table={table}
+                    loading={loading}
+                    error={error}
+                    onRowClick={(peer: PeerWithYaml) => {
+                      navigate(`/peers/${peer.namespace}/${peer.name}`);
+                    }}
+                  />
                 </div>
               </div>
             </div>

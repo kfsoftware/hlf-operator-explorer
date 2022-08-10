@@ -23,6 +23,18 @@ type Resolver struct {
 	Gateway        *client.Gateway
 }
 
+func (r *Resolver) CA() gql.CAResolver {
+	return &caResolver{r}
+}
+
+func (r *Resolver) Orderer() gql.OrdererResolver {
+	return &ordererResolver{r}
+}
+
+func (r *Resolver) Peer() gql.PeerResolver {
+	return &peerResolver{r}
+}
+
 // Mutation returns gql.MutationResolver implementation.
 func (r *Resolver) Mutation() gql.MutationResolver { return &mutationResolver{r} }
 
@@ -34,3 +46,9 @@ type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 
 type channelResolver struct{ *Resolver }
+
+type peerResolver struct{ *Resolver }
+
+type ordererResolver struct{ *Resolver }
+
+type caResolver struct{ *Resolver }

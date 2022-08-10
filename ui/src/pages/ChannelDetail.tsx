@@ -78,7 +78,11 @@ export default function ChannelDetail() {
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mt-8">
-        {data?.channel ? (
+        {loading ? (
+          <>
+            <PageSkeleton />
+          </>
+        ) : data?.channel ? (
           <>
             <Routes>
               <Route
@@ -558,6 +562,7 @@ import { Fragment, useEffect, useMemo } from "react";
 import BlockList from "../components/BlockList";
 import TimeAgo from "timeago-react";
 import { Table } from "../components/table";
+import PageSkeleton from "../components/skeletons/PageSkeleton";
 
 /* This example requires Tailwind CSS v2.0+ */
 interface IChannelDetailCardProps {

@@ -59,6 +59,12 @@ export type Ca = {
   name: Scalars['String'];
   namespace: Scalars['String'];
   yaml: Scalars['String'];
+  storage?: Maybe<CaStorage>;
+};
+
+export type CaStorage = {
+  __typename?: 'CAStorage';
+  ca: StorageUsage;
 };
 
 export type ChaincodeApproval = {
@@ -271,6 +277,7 @@ export type Orderer = {
   name: Scalars['String'];
   namespace: Scalars['String'];
   yaml: Scalars['String'];
+  storage?: Maybe<OrdererStorage>;
 };
 
 export type OrdererConfig = {
@@ -315,6 +322,11 @@ export type OrdererConfigRaftOptions = {
   snapshotIntervalSize: Scalars['Int'];
 };
 
+export type OrdererStorage = {
+  __typename?: 'OrdererStorage';
+  orderer: StorageUsage;
+};
+
 export type PdcRead = {
   __typename?: 'PDCRead';
   collectionName: Scalars['String'];
@@ -336,6 +348,14 @@ export type Peer = {
   name: Scalars['String'];
   namespace: Scalars['String'];
   yaml: Scalars['String'];
+  storage?: Maybe<PeerStorage>;
+};
+
+export type PeerStorage = {
+  __typename?: 'PeerStorage';
+  chaincode: StorageUsage;
+  couchDB: StorageUsage;
+  peer: StorageUsage;
 };
 
 export type PrivateDataCollection = {
@@ -445,6 +465,17 @@ export type StorageClass = {
   name: Scalars['String'];
 };
 
+export type StorageUsage = {
+  __typename?: 'StorageUsage';
+  used: Scalars['Int'];
+  usedGB: Scalars['String'];
+  free: Scalars['Int'];
+  freeGB: Scalars['String'];
+  size: Scalars['Int'];
+  sizeGB: Scalars['String'];
+  percentageUsed: Scalars['Float'];
+};
+
 
 export type Transaction = {
   __typename?: 'Transaction';
@@ -513,6 +544,19 @@ export type UpdateeOrdererInput = {
 export type UpdateePeerInput = {
   yaml: Scalars['String'];
 };
+
+export type CreateCaMutationVariables = Exact<{
+  input: CreateCaInput;
+}>;
+
+
+export type CreateCaMutation = (
+  { __typename?: 'Mutation' }
+  & { createCA?: Maybe<(
+    { __typename?: 'CA' }
+    & Pick<Ca, 'name' | 'namespace' | 'yaml'>
+  )> }
+);
 
 export type GetBlockQueryVariables = Exact<{
   channelID: Scalars['String'];
@@ -611,6 +655,13 @@ export type GetCaQuery = (
   & { ca?: Maybe<(
     { __typename?: 'CA' }
     & Pick<Ca, 'name' | 'namespace' | 'yaml'>
+    & { storage?: Maybe<(
+      { __typename?: 'CAStorage' }
+      & { ca: (
+        { __typename?: 'StorageUsage' }
+        & Pick<StorageUsage, 'used' | 'usedGB' | 'free' | 'freeGB' | 'size' | 'sizeGB' | 'percentageUsed'>
+      ) }
+    )> }
   )> }
 );
 
@@ -768,6 +819,13 @@ export type GetOrdererQuery = (
   & { orderer?: Maybe<(
     { __typename?: 'Orderer' }
     & Pick<Orderer, 'name' | 'namespace' | 'yaml'>
+    & { storage?: Maybe<(
+      { __typename?: 'OrdererStorage' }
+      & { orderer: (
+        { __typename?: 'StorageUsage' }
+        & Pick<StorageUsage, 'used' | 'usedGB' | 'free' | 'freeGB' | 'size' | 'sizeGB' | 'percentageUsed'>
+      ) }
+    )> }
   )> }
 );
 
@@ -792,6 +850,19 @@ export type GetPeerQuery = (
   & { peer?: Maybe<(
     { __typename?: 'Peer' }
     & Pick<Peer, 'name' | 'namespace' | 'yaml'>
+    & { storage?: Maybe<(
+      { __typename?: 'PeerStorage' }
+      & { peer: (
+        { __typename?: 'StorageUsage' }
+        & Pick<StorageUsage, 'used' | 'usedGB' | 'free' | 'freeGB' | 'size' | 'sizeGB' | 'percentageUsed'>
+      ), chaincode: (
+        { __typename?: 'StorageUsage' }
+        & Pick<StorageUsage, 'used' | 'usedGB' | 'free' | 'freeGB' | 'size' | 'sizeGB' | 'percentageUsed'>
+      ), couchDB: (
+        { __typename?: 'StorageUsage' }
+        & Pick<StorageUsage, 'used' | 'usedGB' | 'free' | 'freeGB' | 'size' | 'sizeGB' | 'percentageUsed'>
+      ) }
+    )> }
   )> }
 );
 
@@ -851,6 +922,41 @@ export type NetworkConfigEnabledQuery = (
 );
 
 
+export const CreateCaDocument = gql`
+    mutation CreateCA($input: CreateCAInput!) {
+  createCA(input: $input) {
+    name
+    namespace
+    yaml
+  }
+}
+    `;
+export type CreateCaMutationFn = Apollo.MutationFunction<CreateCaMutation, CreateCaMutationVariables>;
+
+/**
+ * __useCreateCaMutation__
+ *
+ * To run a mutation, you first call `useCreateCaMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateCaMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createCaMutation, { data, loading, error }] = useCreateCaMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreateCaMutation(baseOptions?: Apollo.MutationHookOptions<CreateCaMutation, CreateCaMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateCaMutation, CreateCaMutationVariables>(CreateCaDocument, options);
+      }
+export type CreateCaMutationHookResult = ReturnType<typeof useCreateCaMutation>;
+export type CreateCaMutationResult = Apollo.MutationResult<CreateCaMutation>;
+export type CreateCaMutationOptions = Apollo.BaseMutationOptions<CreateCaMutation, CreateCaMutationVariables>;
 export const GetBlockDocument = gql`
     query GetBlock($channelID: String!, $blockNumber: Int!) {
   block(channelID: $channelID, blockNumber: $blockNumber) {
@@ -1054,6 +1160,17 @@ export const GetCaDocument = gql`
     name
     namespace
     yaml
+    storage {
+      ca {
+        used
+        usedGB
+        free
+        freeGB
+        size
+        sizeGB
+        percentageUsed
+      }
+    }
   }
 }
     `;
@@ -1371,6 +1488,17 @@ export const GetOrdererDocument = gql`
     name
     namespace
     yaml
+    storage {
+      orderer {
+        used
+        usedGB
+        free
+        freeGB
+        size
+        sizeGB
+        percentageUsed
+      }
+    }
   }
 }
     `;
@@ -1444,6 +1572,35 @@ export const GetPeerDocument = gql`
     name
     namespace
     yaml
+    storage {
+      peer {
+        used
+        usedGB
+        free
+        freeGB
+        size
+        sizeGB
+        percentageUsed
+      }
+      chaincode {
+        used
+        usedGB
+        free
+        freeGB
+        size
+        sizeGB
+        percentageUsed
+      }
+      couchDB {
+        used
+        usedGB
+        free
+        freeGB
+        size
+        sizeGB
+        percentageUsed
+      }
+    }
   }
 }
     `;

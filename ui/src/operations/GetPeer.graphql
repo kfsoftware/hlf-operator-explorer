@@ -3,5 +3,34 @@ query GetPeer($input: NameAndNamespace!) {
     name
     namespace
     yaml
+    storage {
+      peer {
+        used
+        usedGB
+        free
+        freeGB
+        size
+        sizeGB
+        percentageUsed
+      }
+      chaincode {
+        used
+        usedGB
+        free
+        freeGB
+        size
+        sizeGB
+        percentageUsed
+      }
+      couchDB {
+        used
+        usedGB
+        free
+        freeGB
+        size
+        sizeGB
+        percentageUsed
+      }
+    }
   }
 }

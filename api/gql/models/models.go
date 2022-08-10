@@ -42,10 +42,8 @@ type BlocksResponse struct {
 	Blocks []*Block `json:"blocks"`
 }
 
-type Ca struct {
-	Name      string `json:"name"`
-	Namespace string `json:"namespace"`
-	Yaml      string `json:"yaml"`
+type CAStorage struct {
+	Ca *StorageUsage `json:"ca"`
 }
 
 type ChaincodeApproval struct {
@@ -179,12 +177,6 @@ type OUIdentifier struct {
 	OuIdentifier string `json:"ouIdentifier"`
 }
 
-type Orderer struct {
-	Name      string `json:"name"`
-	Namespace string `json:"namespace"`
-	Yaml      string `json:"yaml"`
-}
-
 type OrdererConfig struct {
 	Type          string                  `json:"type"`
 	BatchTimeout  int                     `json:"batchTimeout"`
@@ -222,6 +214,10 @@ type OrdererConfigRaftOptions struct {
 	SnapshotIntervalSize int    `json:"snapshotIntervalSize"`
 }
 
+type OrdererStorage struct {
+	Orderer *StorageUsage `json:"orderer"`
+}
+
 type PDCRead struct {
 	CollectionName string `json:"collectionName"`
 	Key            string `json:"key"`
@@ -236,10 +232,10 @@ type PDCWrite struct {
 	Value          string `json:"value"`
 }
 
-type Peer struct {
-	Name      string `json:"name"`
-	Namespace string `json:"namespace"`
-	Yaml      string `json:"yaml"`
+type PeerStorage struct {
+	Chaincode *StorageUsage `json:"chaincode"`
+	CouchDb   *StorageUsage `json:"couchDB"`
+	Peer      *StorageUsage `json:"peer"`
 }
 
 type PrivateDataCollection struct {
@@ -276,6 +272,16 @@ type SignaturePolicySignedBy struct {
 
 type StorageClass struct {
 	Name string `json:"name"`
+}
+
+type StorageUsage struct {
+	Used           int     `json:"used"`
+	UsedGb         string  `json:"usedGB"`
+	Free           int     `json:"free"`
+	FreeGb         string  `json:"freeGB"`
+	Size           int     `json:"size"`
+	SizeGb         string  `json:"sizeGB"`
+	PercentageUsed float64 `json:"percentageUsed"`
 }
 
 type Transaction struct {

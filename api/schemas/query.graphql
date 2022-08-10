@@ -119,22 +119,47 @@ input NameAndNamespace {
     name: String!
     namespace: String!
 }
+
 type Peer {
     name: String!
     namespace: String!
     yaml: String!
+    storage: PeerStorage
 }
 
 type Orderer {
     name: String!
     namespace: String!
     yaml: String!
+    storage: OrdererStorage
 }
 
 type CA {
     name: String!
     namespace: String!
     yaml: String!
+    storage: CAStorage
+}
+
+type PeerStorage {
+    chaincode: StorageUsage
+    couchDB: StorageUsage!
+    peer: StorageUsage!
+}
+type CAStorage {
+    ca: StorageUsage!
+}
+type OrdererStorage {
+    orderer: StorageUsage!
+}
+type StorageUsage {
+    used: Int!
+    usedGB: String!
+    free: Int!
+    freeGB: String!
+    size: Int!
+    sizeGB: String!
+    percentageUsed: Float!
 }
 
 type Channel {

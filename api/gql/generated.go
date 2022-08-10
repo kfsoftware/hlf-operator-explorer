@@ -37,8 +37,11 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	CA() CAResolver
 	Channel() ChannelResolver
 	Mutation() MutationResolver
+	Orderer() OrdererResolver
+	Peer() PeerResolver
 	Query() QueryResolver
 }
 
@@ -83,7 +86,12 @@ type ComplexityRoot struct {
 	CA struct {
 		Name      func(childComplexity int) int
 		Namespace func(childComplexity int) int
+		Storage   func(childComplexity int) int
 		Yaml      func(childComplexity int) int
+	}
+
+	CAStorage struct {
+		Ca func(childComplexity int) int
 	}
 
 	ChaincodeApproval struct {
@@ -224,6 +232,7 @@ type ComplexityRoot struct {
 	Orderer struct {
 		Name      func(childComplexity int) int
 		Namespace func(childComplexity int) int
+		Storage   func(childComplexity int) int
 		Yaml      func(childComplexity int) int
 	}
 
@@ -264,6 +273,10 @@ type ComplexityRoot struct {
 		TickInterval         func(childComplexity int) int
 	}
 
+	OrdererStorage struct {
+		Orderer func(childComplexity int) int
+	}
+
 	PDCRead struct {
 		Block          func(childComplexity int) int
 		CollectionName func(childComplexity int) int
@@ -281,7 +294,14 @@ type ComplexityRoot struct {
 	Peer struct {
 		Name      func(childComplexity int) int
 		Namespace func(childComplexity int) int
+		Storage   func(childComplexity int) int
 		Yaml      func(childComplexity int) int
+	}
+
+	PeerStorage struct {
+		Chaincode func(childComplexity int) int
+		CouchDb   func(childComplexity int) int
+		Peer      func(childComplexity int) int
 	}
 
 	PrivateDataCollection struct {
@@ -338,6 +358,16 @@ type ComplexityRoot struct {
 		Name func(childComplexity int) int
 	}
 
+	StorageUsage struct {
+		Free           func(childComplexity int) int
+		FreeGb         func(childComplexity int) int
+		PercentageUsed func(childComplexity int) int
+		Size           func(childComplexity int) int
+		SizeGb         func(childComplexity int) int
+		Used           func(childComplexity int) int
+		UsedGb         func(childComplexity int) int
+	}
+
 	Transaction struct {
 		Chaincode func(childComplexity int) int
 		CreatedAt func(childComplexity int) int
@@ -381,6 +411,9 @@ type ComplexityRoot struct {
 	}
 }
 
+type CAResolver interface {
+	Storage(ctx context.Context, obj *models.Ca) (*models.CAStorage, error)
+}
 type ChannelResolver interface {
 	Chaincodes(ctx context.Context, obj *models.Channel) ([]*models.ChannelChaincode, error)
 	Peers(ctx context.Context, obj *models.Channel) ([]*models.ChannelPeer, error)
@@ -392,6 +425,12 @@ type MutationResolver interface {
 	UpdateOrderer(ctx context.Context, filter models.NameAndNamespace, input models.UpdateeOrdererInput) (*models.Orderer, error)
 	CreateCa(ctx context.Context, input models.CreateCAInput) (*models.Ca, error)
 	UpdateCa(ctx context.Context, filter models.NameAndNamespace, input models.UpdateCAInput) (*models.Ca, error)
+}
+type OrdererResolver interface {
+	Storage(ctx context.Context, obj *models.Orderer) (*models.OrdererStorage, error)
+}
+type PeerResolver interface {
+	Storage(ctx context.Context, obj *models.Peer) (*models.PeerStorage, error)
 }
 type QueryResolver interface {
 	Peers(ctx context.Context) ([]*models.Peer, error)
@@ -566,12 +605,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CA.Namespace(childComplexity), true
 
+	case "CA.storage":
+		if e.complexity.CA.Storage == nil {
+			break
+		}
+
+		return e.complexity.CA.Storage(childComplexity), true
+
 	case "CA.yaml":
 		if e.complexity.CA.Yaml == nil {
 			break
 		}
 
 		return e.complexity.CA.Yaml(childComplexity), true
+
+	case "CAStorage.ca":
+		if e.complexity.CAStorage.Ca == nil {
+			break
+		}
+
+		return e.complexity.CAStorage.Ca(childComplexity), true
 
 	case "ChaincodeApproval.approved":
 		if e.complexity.ChaincodeApproval.Approved == nil {
@@ -1142,6 +1195,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Orderer.Namespace(childComplexity), true
 
+	case "Orderer.storage":
+		if e.complexity.Orderer.Storage == nil {
+			break
+		}
+
+		return e.complexity.Orderer.Storage(childComplexity), true
+
 	case "Orderer.yaml":
 		if e.complexity.Orderer.Yaml == nil {
 			break
@@ -1303,6 +1363,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.OrdererConfigRaftOptions.TickInterval(childComplexity), true
 
+	case "OrdererStorage.orderer":
+		if e.complexity.OrdererStorage.Orderer == nil {
+			break
+		}
+
+		return e.complexity.OrdererStorage.Orderer(childComplexity), true
+
 	case "PDCRead.block":
 		if e.complexity.PDCRead.Block == nil {
 			break
@@ -1373,12 +1440,40 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Peer.Namespace(childComplexity), true
 
+	case "Peer.storage":
+		if e.complexity.Peer.Storage == nil {
+			break
+		}
+
+		return e.complexity.Peer.Storage(childComplexity), true
+
 	case "Peer.yaml":
 		if e.complexity.Peer.Yaml == nil {
 			break
 		}
 
 		return e.complexity.Peer.Yaml(childComplexity), true
+
+	case "PeerStorage.chaincode":
+		if e.complexity.PeerStorage.Chaincode == nil {
+			break
+		}
+
+		return e.complexity.PeerStorage.Chaincode(childComplexity), true
+
+	case "PeerStorage.couchDB":
+		if e.complexity.PeerStorage.CouchDb == nil {
+			break
+		}
+
+		return e.complexity.PeerStorage.CouchDb(childComplexity), true
+
+	case "PeerStorage.peer":
+		if e.complexity.PeerStorage.Peer == nil {
+			break
+		}
+
+		return e.complexity.PeerStorage.Peer(childComplexity), true
 
 	case "PrivateDataCollection.blockToLive":
 		if e.complexity.PrivateDataCollection.BlockToLive == nil {
@@ -1650,6 +1745,55 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.StorageClass.Name(childComplexity), true
+
+	case "StorageUsage.free":
+		if e.complexity.StorageUsage.Free == nil {
+			break
+		}
+
+		return e.complexity.StorageUsage.Free(childComplexity), true
+
+	case "StorageUsage.freeGB":
+		if e.complexity.StorageUsage.FreeGb == nil {
+			break
+		}
+
+		return e.complexity.StorageUsage.FreeGb(childComplexity), true
+
+	case "StorageUsage.percentageUsed":
+		if e.complexity.StorageUsage.PercentageUsed == nil {
+			break
+		}
+
+		return e.complexity.StorageUsage.PercentageUsed(childComplexity), true
+
+	case "StorageUsage.size":
+		if e.complexity.StorageUsage.Size == nil {
+			break
+		}
+
+		return e.complexity.StorageUsage.Size(childComplexity), true
+
+	case "StorageUsage.sizeGB":
+		if e.complexity.StorageUsage.SizeGb == nil {
+			break
+		}
+
+		return e.complexity.StorageUsage.SizeGb(childComplexity), true
+
+	case "StorageUsage.used":
+		if e.complexity.StorageUsage.Used == nil {
+			break
+		}
+
+		return e.complexity.StorageUsage.Used(childComplexity), true
+
+	case "StorageUsage.usedGB":
+		if e.complexity.StorageUsage.UsedGb == nil {
+			break
+		}
+
+		return e.complexity.StorageUsage.UsedGb(childComplexity), true
 
 	case "Transaction.chaincode":
 		if e.complexity.Transaction.Chaincode == nil {
@@ -2084,22 +2228,48 @@ input NameAndNamespace {
     name: String!
     namespace: String!
 }
+
 type Peer {
     name: String!
     namespace: String!
     yaml: String!
+    storage: PeerStorage
 }
 
 type Orderer {
     name: String!
     namespace: String!
     yaml: String!
+    storage: OrdererStorage
 }
 
 type CA {
     name: String!
     namespace: String!
     yaml: String!
+    storage: CAStorage
+}
+
+
+type PeerStorage {
+    chaincode: StorageUsage!
+    couchDB: StorageUsage!
+    peer: StorageUsage!
+}
+type CAStorage {
+    ca: StorageUsage!
+}
+type OrdererStorage {
+    orderer: StorageUsage!
+}
+type StorageUsage {
+    used: Int!
+    usedGB: String!
+    free: Int!
+    freeGB: String!
+    size: Int!
+    sizeGB: String!
+    percentageUsed: Float!
 }
 
 type Channel {
@@ -3346,6 +3516,73 @@ func (ec *executionContext) _CA_yaml(ctx context.Context, field graphql.Collecte
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CA_storage(ctx context.Context, field graphql.CollectedField, obj *models.Ca) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CA",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.CA().Storage(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.CAStorage)
+	fc.Result = res
+	return ec.marshalOCAStorage2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐCAStorage(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CAStorage_ca(ctx context.Context, field graphql.CollectedField, obj *models.CAStorage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CAStorage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Ca, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*models.StorageUsage)
+	fc.Result = res
+	return ec.marshalNStorageUsage2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐStorageUsage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ChaincodeApproval_mspID(ctx context.Context, field graphql.CollectedField, obj *models.ChaincodeApproval) (ret graphql.Marshaler) {
@@ -6042,6 +6279,38 @@ func (ec *executionContext) _Orderer_yaml(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Orderer_storage(ctx context.Context, field graphql.CollectedField, obj *models.Orderer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Orderer",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Orderer().Storage(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.OrdererStorage)
+	fc.Result = res
+	return ec.marshalOOrdererStorage2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐOrdererStorage(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _OrdererConfig_type(ctx context.Context, field graphql.CollectedField, obj *models.OrdererConfig) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6800,6 +7069,41 @@ func (ec *executionContext) _OrdererConfigRaftOptions_snapshotIntervalSize(ctx c
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _OrdererStorage_orderer(ctx context.Context, field graphql.CollectedField, obj *models.OrdererStorage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "OrdererStorage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Orderer, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*models.StorageUsage)
+	fc.Result = res
+	return ec.marshalNStorageUsage2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐStorageUsage(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _PDCRead_collectionName(ctx context.Context, field graphql.CollectedField, obj *models.PDCRead) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -7183,6 +7487,143 @@ func (ec *executionContext) _Peer_yaml(ctx context.Context, field graphql.Collec
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Peer_storage(ctx context.Context, field graphql.CollectedField, obj *models.Peer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Peer",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Peer().Storage(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.PeerStorage)
+	fc.Result = res
+	return ec.marshalOPeerStorage2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPeerStorage(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PeerStorage_chaincode(ctx context.Context, field graphql.CollectedField, obj *models.PeerStorage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PeerStorage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Chaincode, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*models.StorageUsage)
+	fc.Result = res
+	return ec.marshalNStorageUsage2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐStorageUsage(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PeerStorage_couchDB(ctx context.Context, field graphql.CollectedField, obj *models.PeerStorage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PeerStorage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CouchDb, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*models.StorageUsage)
+	fc.Result = res
+	return ec.marshalNStorageUsage2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐStorageUsage(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PeerStorage_peer(ctx context.Context, field graphql.CollectedField, obj *models.PeerStorage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PeerStorage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Peer, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*models.StorageUsage)
+	fc.Result = res
+	return ec.marshalNStorageUsage2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐStorageUsage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _PrivateDataCollection_name(ctx context.Context, field graphql.CollectedField, obj *models.PrivateDataCollection) (ret graphql.Marshaler) {
@@ -8700,6 +9141,251 @@ func (ec *executionContext) _StorageClass_name(ctx context.Context, field graphq
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StorageUsage_used(ctx context.Context, field graphql.CollectedField, obj *models.StorageUsage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StorageUsage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Used, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StorageUsage_usedGB(ctx context.Context, field graphql.CollectedField, obj *models.StorageUsage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StorageUsage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UsedGb, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StorageUsage_free(ctx context.Context, field graphql.CollectedField, obj *models.StorageUsage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StorageUsage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Free, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StorageUsage_freeGB(ctx context.Context, field graphql.CollectedField, obj *models.StorageUsage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StorageUsage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FreeGb, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StorageUsage_size(ctx context.Context, field graphql.CollectedField, obj *models.StorageUsage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StorageUsage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Size, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StorageUsage_sizeGB(ctx context.Context, field graphql.CollectedField, obj *models.StorageUsage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StorageUsage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SizeGb, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StorageUsage_percentageUsed(ctx context.Context, field graphql.CollectedField, obj *models.StorageUsage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StorageUsage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PercentageUsed, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Transaction_txID(ctx context.Context, field graphql.CollectedField, obj *models.Transaction) (ret graphql.Marshaler) {
@@ -11352,7 +12038,7 @@ func (ec *executionContext) _CA(ctx context.Context, sel ast.SelectionSet, obj *
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "namespace":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -11362,11 +12048,59 @@ func (ec *executionContext) _CA(ctx context.Context, sel ast.SelectionSet, obj *
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "yaml":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._CA_yaml(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "storage":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CA_storage(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var cAStorageImplementors = []string{"CAStorage"}
+
+func (ec *executionContext) _CAStorage(ctx context.Context, sel ast.SelectionSet, obj *models.CAStorage) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, cAStorageImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CAStorage")
+		case "ca":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._CAStorage_ca(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -12524,7 +13258,7 @@ func (ec *executionContext) _Orderer(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "namespace":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -12534,7 +13268,7 @@ func (ec *executionContext) _Orderer(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "yaml":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -12544,8 +13278,25 @@ func (ec *executionContext) _Orderer(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "storage":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Orderer_storage(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12870,6 +13621,37 @@ func (ec *executionContext) _OrdererConfigRaftOptions(ctx context.Context, sel a
 	return out
 }
 
+var ordererStorageImplementors = []string{"OrdererStorage"}
+
+func (ec *executionContext) _OrdererStorage(ctx context.Context, sel ast.SelectionSet, obj *models.OrdererStorage) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, ordererStorageImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("OrdererStorage")
+		case "orderer":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._OrdererStorage_orderer(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var pDCReadImplementors = []string{"PDCRead"}
 
 func (ec *executionContext) _PDCRead(ctx context.Context, sel ast.SelectionSet, obj *models.PDCRead) graphql.Marshaler {
@@ -13010,7 +13792,7 @@ func (ec *executionContext) _Peer(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "namespace":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -13020,11 +13802,79 @@ func (ec *executionContext) _Peer(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "yaml":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Peer_yaml(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "storage":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Peer_storage(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var peerStorageImplementors = []string{"PeerStorage"}
+
+func (ec *executionContext) _PeerStorage(ctx context.Context, sel ast.SelectionSet, obj *models.PeerStorage) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, peerStorageImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PeerStorage")
+		case "chaincode":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PeerStorage_chaincode(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "couchDB":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PeerStorage_couchDB(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "peer":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PeerStorage_peer(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -13675,6 +14525,97 @@ func (ec *executionContext) _StorageClass(ctx context.Context, sel ast.Selection
 		case "name":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._StorageClass_name(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var storageUsageImplementors = []string{"StorageUsage"}
+
+func (ec *executionContext) _StorageUsage(ctx context.Context, sel ast.SelectionSet, obj *models.StorageUsage) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, storageUsageImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("StorageUsage")
+		case "used":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._StorageUsage_used(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "usedGB":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._StorageUsage_usedGB(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "free":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._StorageUsage_free(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "freeGB":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._StorageUsage_freeGB(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "size":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._StorageUsage_size(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "sizeGB":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._StorageUsage_sizeGB(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "percentageUsed":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._StorageUsage_percentageUsed(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -14644,6 +15585,21 @@ func (ec *executionContext) marshalNCryptoConfig2ᚖgithubᚗcomᚋkfsoftwareᚋ
 	return ec._CryptoConfig(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
+	res := graphql.MarshalFloatContext(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return graphql.WrapContextMarshaler(ctx, res)
+}
+
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -14852,6 +15808,16 @@ func (ec *executionContext) marshalNStorageClass2ᚖgithubᚗcomᚋkfsoftwareᚋ
 		return graphql.Null
 	}
 	return ec._StorageClass(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNStorageUsage2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐStorageUsage(ctx context.Context, sel ast.SelectionSet, v *models.StorageUsage) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._StorageUsage(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -15341,6 +16307,13 @@ func (ec *executionContext) marshalOCA2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoper
 		return graphql.Null
 	}
 	return ec._CA(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOCAStorage2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐCAStorage(ctx context.Context, sel ast.SelectionSet, v *models.CAStorage) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._CAStorage(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOChaincodeApproval2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐChaincodeApprovalᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.ChaincodeApproval) graphql.Marshaler {
@@ -15991,6 +16964,13 @@ func (ec *executionContext) marshalOOrdererConfigRaftConsenter2ᚕᚖgithubᚗco
 	return ret
 }
 
+func (ec *executionContext) marshalOOrdererStorage2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐOrdererStorage(ctx context.Context, sel ast.SelectionSet, v *models.OrdererStorage) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._OrdererStorage(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalOPDCRead2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCReadᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.PDCRead) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -16137,6 +17117,13 @@ func (ec *executionContext) marshalOPeer2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑop
 		return graphql.Null
 	}
 	return ec._Peer(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOPeerStorage2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPeerStorage(ctx context.Context, sel ast.SelectionSet, v *models.PeerStorage) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._PeerStorage(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOPrivateDataCollection2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPrivateDataCollectionᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.PrivateDataCollection) graphql.Marshaler {

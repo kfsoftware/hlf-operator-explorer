@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-config/configtx"
@@ -26,7 +27,10 @@ import (
 	"github.com/kfsoftware/hlf-operator/controllers/utils"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	v12 "k8s.io/api/core/v1"
+	resource2 "k8s.io/apimachinery/pkg/api/resource"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/yaml"
 	"sort"
 )
@@ -871,4 +875,234 @@ func (r *queryResolver) StorageClasses(ctx context.Context) ([]*models.StorageCl
 		})
 	}
 	return result, nil
+}
+
+func (p peerResolver) Storage(ctx context.Context, obj *models.Peer) (*models.PeerStorage, error) {
+	podList, err := p.KubeClient.CoreV1().Pods(obj.Namespace).List(
+		ctx,
+		v1.ListOptions{
+			LabelSelector: fmt.Sprintf("app=hlf-peer,release=%s", obj.Name),
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	if len(podList.Items) == 0 {
+		return nil, errors.Errorf("no pods deployed for release %s", obj.Name)
+	}
+	pod := podList.Items[0]
+	nodeName := pod.Spec.NodeName
+	proxyPod, err := GetVolumesForPod(ctx, p.KubeClient, nodeName, pod)
+	if err != nil {
+		return nil, err
+	}
+	peerStorage := &models.PeerStorage{}
+	for _, volume := range proxyPod.ListOfVolumes {
+		if volume.Name == "data" {
+			peerStorage.Peer = mapVolume(volume)
+		} else if volume.Name == "chaincode" {
+			peerStorage.Chaincode = mapVolume(volume)
+		} else if volume.Name == "couchdb" {
+			peerStorage.CouchDb = mapVolume(volume)
+		}
+	}
+	return peerStorage, nil
+}
+
+type Volume struct {
+	// The time at which these stats were updated.
+	Time v1.Time `json:"time"`
+
+	// Used represents the total bytes used by the Volume.
+	// Note: For block devices this maybe more than the total size of the files.
+	UsedBytes int64 `json:"usedBytes"` // TODO: use uint64 here as well?
+
+	// Capacity represents the total capacity (bytes) of the volume's
+	// underlying storage. For Volumes that share a filesystem with the host
+	// (e.g. emptydir, hostpath) this is the size of the underlying storage,
+	// and will not equal Used + Available as the fs is shared.
+	CapacityBytes int64 `json:"capacityBytes"`
+
+	// Available represents the storage space available (bytes) for the
+	// Volume. For Volumes that share a filesystem with the host (e.g.
+	// emptydir, hostpath), this is the available space on the underlying
+	// storage, and is shared with host processes and other Volumes.
+	AvailableBytes int64 `json:"availableBytes"`
+
+	// InodesUsed represents the total inodes used by the Volume.
+	InodesUsed uint64 `json:"inodesUsed"`
+
+	// Inodes represents the total number of inodes available in the volume.
+	// For volumes that share a filesystem with the host (e.g. emptydir, hostpath),
+	// this is the inodes available in the underlying storage,
+	// and will not equal InodesUsed + InodesFree as the fs is shared.
+	Inodes uint64 `json:"inodes"`
+
+	// InodesFree represent the inodes available for the volume.  For Volumes that share
+	// a filesystem with the host (e.g. emptydir, hostpath), this is the free inodes
+	// on the underlying storage, and is shared with host processes and other volumes
+	InodesFree uint64 `json:"inodesFree"`
+
+	Name   string `json:"name"`
+	PvcRef struct {
+		PvcName      string `json:"name"`
+		PvcNamespace string `json:"namespace"`
+	} `json:"pvcRef"`
+}
+
+func mapVolume(volume *Volume) *models.StorageUsage {
+	availableBytes := resource2.NewQuantity(volume.AvailableBytes, resource2.BinarySI)
+	capacityBytes := resource2.NewQuantity(volume.CapacityBytes, resource2.BinarySI)
+	usedBytes := resource2.NewQuantity(volume.UsedBytes, resource2.BinarySI)
+	percentageUsed := (float64(volume.UsedBytes) / float64(volume.CapacityBytes)) * 100.0
+	return &models.StorageUsage{
+		PercentageUsed: percentageUsed,
+		Used:           int(volume.UsedBytes),
+		UsedGb:         ConvertQuantityValueToHumanReadableIECString(usedBytes),
+		Free:           int(volume.AvailableBytes),
+		FreeGb:         ConvertQuantityValueToHumanReadableIECString(availableBytes),
+		Size:           int(volume.CapacityBytes),
+		SizeGb:         ConvertQuantityValueToHumanReadableIECString(capacityBytes),
+	}
+}
+
+func (o ordererResolver) Storage(ctx context.Context, obj *models.Orderer) (*models.OrdererStorage, error) {
+	podList, err := o.KubeClient.CoreV1().Pods(obj.Namespace).List(
+		ctx,
+		v1.ListOptions{
+			LabelSelector: fmt.Sprintf("app=hlf-ordnode,release=%s", obj.Name),
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	if len(podList.Items) == 0 {
+		return nil, errors.Errorf("no pods deployed for release %s", obj.Name)
+	}
+	pod := podList.Items[0]
+	nodeName := pod.Spec.NodeName
+	proxyPod, err := GetVolumesForPod(ctx, o.KubeClient, nodeName, pod)
+	if err != nil {
+		return nil, err
+	}
+	caStorage := &models.OrdererStorage{}
+	for _, volume := range proxyPod.ListOfVolumes {
+		if volume.Name == "data" {
+			caStorage.Orderer = mapVolume(volume)
+		}
+	}
+	return caStorage, nil
+}
+func (c caResolver) Storage(ctx context.Context, obj *models.Ca) (*models.CAStorage, error) {
+	podList, err := c.KubeClient.CoreV1().Pods(obj.Namespace).List(
+		ctx,
+		v1.ListOptions{
+			LabelSelector: fmt.Sprintf("app=hlf-ca,release=%s", obj.Name),
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	if len(podList.Items) == 0 {
+		return nil, errors.Errorf("no pods deployed for release %s", obj.Name)
+	}
+	pod := podList.Items[0]
+	nodeName := pod.Spec.NodeName
+	proxyPod, err := GetVolumesForPod(ctx, c.KubeClient, nodeName, pod)
+	if err != nil {
+		return nil, err
+	}
+	caStorage := &models.CAStorage{}
+	for _, volume := range proxyPod.ListOfVolumes {
+		if volume.Name == "data" {
+			caStorage.Ca = mapVolume(volume)
+		}
+	}
+	return caStorage, nil
+}
+
+// ServerResponseStruct represents the response at the node endpoint
+type ServerResponseStruct struct {
+	Pods []*Pod `json:"pods"`
+}
+
+// Pod represents pod spec in the server response
+type Pod struct {
+	/*
+		EXAMPLE:
+		"podRef": {
+		     "name": "configs-service-59c9c7586b-5jchj",
+		     "namespace": "onprem",
+		     "uid": "5fbb63da-d0a3-4493-8d27-6576b63119f5"
+		    }
+	*/
+	PodRef struct {
+		Name      string `json:"name"`
+		Namespace string `json:"namespace"`
+	} `json:"podRef"`
+	/*
+		EXAMPLE:
+		"volume": [
+		     {...},
+		     {...}
+		    ]
+	*/
+	ListOfVolumes []*Volume `json:"volume"`
+}
+
+func GetVolumesForPod(ctx context.Context, kubeClient kubernetes.Interface, nodeName string, pod v12.Pod) (*Pod, error) {
+	request := kubeClient.CoreV1().RESTClient().Get().Resource("nodes").Name(nodeName).SubResource("proxy").Suffix("stats/summary")
+	res := request.Do(ctx)
+	responseRawArrayOfBytes, err := res.Raw()
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get stats from node")
+	}
+	var jsonConvertedIntoStruct ServerResponseStruct
+	err = json.Unmarshal(responseRawArrayOfBytes, &jsonConvertedIntoStruct)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to convert the response from server")
+	}
+
+	for _, podProxy := range jsonConvertedIntoStruct.Pods {
+		if pod.Name == podProxy.PodRef.Name && pod.Namespace == podProxy.PodRef.Namespace {
+			return podProxy, nil
+		}
+	}
+	return nil, errors.Errorf("pod %s not found in node %s", pod.Name, nodeName)
+}
+
+// ConvertQuantityValueToHumanReadableIECString converts value to human readable IEC format
+// https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+func ConvertQuantityValueToHumanReadableIECString(quantity *resource2.Quantity) string {
+	var val = quantity.Value()
+	var suffix string
+
+	// https://en.wikipedia.org/wiki/Tebibyte
+	// 1 TiB = 2^40 bytes = 1099511627776 bytes = 1024 gibibytes
+	TiConvertedVal := val / 1099511627776
+	// https://en.wikipedia.org/wiki/Gibibyte
+	// 1 GiB = 2^30 bytes = 1073741824 bytes = 1024 mebibytes
+	GiConvertedVal := val / 1073741824
+	// https://en.wikipedia.org/wiki/Mebibyte
+	// 1 MiB = 2^20 bytes = 1048576 bytes = 1024 kibibytes
+	MiConvertedVal := val / 1048576
+	// https://en.wikipedia.org/wiki/Kibibyte
+	// 1 KiB = 2^10 bytes = 1024 bytes
+	KiConvertedVal := val / 1024
+
+	if 1 < TiConvertedVal {
+		suffix = "Ti"
+		return fmt.Sprintf("%d%s", TiConvertedVal, suffix)
+	} else if 1 < GiConvertedVal {
+		suffix = "Gi"
+		return fmt.Sprintf("%d%s", GiConvertedVal, suffix)
+	} else if 1 < MiConvertedVal {
+		suffix = "Mi"
+		return fmt.Sprintf("%d%s", MiConvertedVal, suffix)
+	} else if 1 < KiConvertedVal {
+		suffix = "Ki"
+		return fmt.Sprintf("%d%s", KiConvertedVal, suffix)
+	} else {
+		return fmt.Sprintf("%d", val)
+	}
 }

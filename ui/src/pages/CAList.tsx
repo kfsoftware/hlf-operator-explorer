@@ -1,11 +1,26 @@
 import { useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
+  Ca,
   useGetCAsQuery,
   useGetOrderersQuery,
   useGetPeersQuery,
 } from "../operations";
+import {
+  Column,
+  TableState,
+  usePagination,
+  useSortBy,
+  UseSortByColumnOptions,
+  useTable,
+} from "react-table";
 import { parse } from "yaml";
+import { Table } from "../components/table";
+import Badge from "../components/Badge";
+import TimeAgo from "timeago-react";
+interface CaWithYaml extends Ca {
+  yamlData: any;
+}
 export default function CAList() {
   const { data, error, loading } = useGetCAsQuery();
   const navigate = useNavigate();
@@ -19,6 +34,76 @@ export default function CAList() {
       })) || []
     );
   }, [data]);
+
+  const columns = useMemo(
+    () =>
+      [
+        {
+          Header: "Name",
+          accessor: "name",
+          Cell: function Cell({ row: { original } }) {
+            return <div className="flex items-center">{original.name}</div>;
+          },
+        },
+        {
+          Header: "Namespace",
+          accessor: "namespace",
+          Cell: function Cell({ row: { original } }) {
+            return (
+              <div className="flex items-center">{original.namespace}</div>
+            );
+          },
+        },
+        {
+          Header: "Created",
+          id: "createdAt",
+          accessor: "yamlData.metadata.creationTimestamp",
+          Cell: ({ row: { original } }) => {
+            return (
+              <div className="flex items-center">
+                <TimeAgo
+                  datetime={original.yamlData.metadata.creationTimestamp}
+                  title={original.yamlData.metadata.creationTimestamp}
+                  live={true}
+                />
+              </div>
+            );
+          },
+        },
+        {
+          Header: "Status",
+          accessor: "yamlData.status.status",
+          Cell: ({ row: { original } }) => {
+            return original.status === "PENDING" ? (
+              <Badge badgeType="pending">Pending</Badge>
+            ) : original.status !== "FAILED" ? (
+              <Badge badgeType="success">{original.yamlData.status.status}</Badge>
+            ) : (
+              <Badge badgeType="error">Failed</Badge>
+            );
+          },
+        },
+      ] as (Column<CaWithYaml> & UseSortByColumnOptions<CaWithYaml>)[],
+    []
+  );
+  const table = useTable(
+    {
+      columns: columns,
+      data: cas,
+      initialState: {
+        pageIndex: 0,
+        pageSize: 10,
+        sortBy: [
+          {
+            id: "createdAt",
+            desc: true,
+          },
+        ],
+      } as TableState<CaWithYaml>,
+    },
+    useSortBy,
+    usePagination
+  );
   return (
     <div className="py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -41,67 +126,17 @@ export default function CAList() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
         <div className="py-4">
           <div className="flex flex-col">
-            <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+          <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
               <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
                 <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Name
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Namespace
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Status
-                        </th>
-                        <th scope="col" className="relative px-6 py-3">
-                          <span className="sr-only">Edit</span>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {cas.map((ca, caIdx) => (
-                        <tr
-                          onClick={() => {
-                            navigate(`/cas/${ca.namespace}/${ca.name}`);
-                          }}
-                          key={`${ca.name}-${ca.namespace}`}
-                          className={`cursor-pointer hover:bg-gray-50 ${
-                            caIdx % 2 === 0 ? "bg-white" : "bg-gray-50"
-                          }`}
-                        >
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {ca.name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {ca.namespace}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {ca.yamlData.status.status}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a
-                              href="#"
-                              className="text-indigo-600 hover:text-indigo-900"
-                            >
-                              Edit
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <Table
+                    table={table as any}
+                    loading={loading}
+                    error={error}
+                    onRowClick={(ca: CaWithYaml) => {
+                      navigate(`/cas/${ca.namespace}/${ca.name}`);
+                    }}
+                  />
                 </div>
               </div>
             </div>

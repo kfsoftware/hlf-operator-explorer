@@ -3,5 +3,16 @@ query GetCA($input: NameAndNamespace!) {
     name
     namespace
     yaml
+    storage {
+      ca {
+        used
+        usedGB
+        free
+        freeGB
+        size
+        sizeGB
+        percentageUsed
+      }
+    }
   }
 }

@@ -1,4 +1,5 @@
 import { ExclamationCircleIcon } from "@heroicons/react/outline";
+import { get } from "lodash";
 import React from "react";
 import {
   RegisterOptions,
@@ -27,7 +28,8 @@ export default function TextField({
   ...rest
 }: InputProps) {
   const methods = useFormContext();
-  const errorMessage = methods?.formState?.errors?.[name]?.message;
+
+  const errorMessage = get(methods?.formState?.errors, name)?.message;
   const attrs: any = {};
   if (autoFocus) {
     attrs.autoFocus = true;

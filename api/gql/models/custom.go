@@ -9,3 +9,19 @@ type Channel struct {
 	Orderer       *OrdererConfig     `json:"orderer"`
 	Height        int                `json:"height"`
 }
+
+type Peer struct {
+	Name      string `json:"name"`
+	Namespace string `json:"namespace"`
+	Yaml      string `json:"yaml"`
+}
+type Orderer struct {
+	Name      string `json:"name"`
+	Namespace string `json:"namespace"`
+	Yaml      string `json:"yaml"`
+}
+type Ca struct {
+	Name      string `json:"name"`
+	Namespace string `json:"namespace"`
+	Yaml      string `json:"yaml"`
+}

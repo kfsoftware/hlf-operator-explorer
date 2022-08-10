@@ -3,5 +3,16 @@ query GetOrderer($input: NameAndNamespace!) {
     name
     namespace
     yaml
+    storage {
+      orderer {
+        used
+        usedGB
+        free
+        freeGB
+        size
+        sizeGB
+        percentageUsed
+      }
+    }
   }
 }

@@ -1,0 +1,7 @@
+mutation CreateCA($input: CreateCAInput!) {
+  createCA(input: $input) {
+    name
+    namespace
+    yaml
+  }
+}
