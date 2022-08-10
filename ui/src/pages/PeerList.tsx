@@ -1,21 +1,19 @@
+import { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Peer, useGetPeersQuery } from "../operations";
 import {
-  Column,
+  TableInstance,
   TableOptions,
   TableState,
   usePagination,
+  UsePaginationInstanceProps,
   UsePaginationOptions,
-  useSortBy,
-  UseSortByColumnOptions,
-  UseSortByState,
-  useTable,
+  useSortBy, useTable
 } from "react-table";
-import { useMemo } from "react";
-import { parse } from "yaml";
-import { Table } from "../components/table";
-import Badge from "../components/Badge";
 import TimeAgo from "timeago-react";
+import { parse } from "yaml";
+import Badge from "../components/Badge";
+import { Table } from "../components/table";
+import { Peer, useGetPeersQuery } from "../operations";
 interface PeerWithYaml extends Peer {
   yamlData: any;
 }
@@ -28,7 +26,7 @@ export default function PeerList() {
       {
         Header: "Name",
         accessor: "yamlData.metadata.name",
-        Cell: function Cell({ row: { original } }) {
+        Cell: function Cell({ row: { original } }: any) {
           return (
             <div className="flex items-center">
               {original.yamlData.metadata.name}
@@ -39,7 +37,7 @@ export default function PeerList() {
       {
         Header: "Namespace",
         accessor: "yamlData.metadata.namespace",
-        Cell: function Cell({ row: { original } }) {
+        Cell: function Cell({ row: { original } }: any) {
           return (
             <div className="flex items-center">
               {original.yamlData.metadata.namespace}
@@ -50,7 +48,7 @@ export default function PeerList() {
       {
         Header: "MSP ID",
         accessor: "yamlData.spec.mspID",
-        Cell: function Cell({ row: { original } }) {
+        Cell: function Cell({ row: { original } }: any) {
           return (
             <div className="flex items-center">
               {original.yamlData.spec.mspID}
@@ -62,7 +60,7 @@ export default function PeerList() {
         Header: "Created",
         id: "createdAt",
         accessor: "yamlData.metadata.creationTimestamp",
-        Cell: ({ row: { original } }) => {
+        Cell: ({ row: { original } }: any) => {
           return (
             <div className="flex items-center">
               <TimeAgo
@@ -77,7 +75,7 @@ export default function PeerList() {
       {
         Header: "Status",
         accessor: "yamlData.status.status",
-        Cell: ({ row: { original } }) => {
+        Cell: ({ row: { original } }: any) => {
           return original.status === "PENDING" ? (
             <Badge badgeType="pending">Pending</Badge>
           ) : original.status !== "FAILED" ? (
@@ -116,10 +114,10 @@ export default function PeerList() {
           },
         ],
       } as TableState<PeerWithYaml>,
-    },
+    } as TableOptions<PeerWithYaml> & UsePaginationOptions<PeerWithYaml>,
     useSortBy,
     usePagination
-  );
+  ) as TableInstance<PeerWithYaml> & UsePaginationInstanceProps<PeerWithYaml>;
   return (
     <div className="py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

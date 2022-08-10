@@ -58,7 +58,7 @@ export default function CAList() {
           Header: "Created",
           id: "createdAt",
           accessor: "yamlData.metadata.creationTimestamp",
-          Cell: ({ row: { original } }) => {
+          Cell: ({ row: { original } }: any) => {
             return (
               <div className="flex items-center">
                 <TimeAgo
@@ -73,7 +73,7 @@ export default function CAList() {
         {
           Header: "Status",
           accessor: "yamlData.status.status",
-          Cell: ({ row: { original } }) => {
+          Cell: ({ row: { original } }: any) => {
             return original.status === "PENDING" ? (
               <Badge badgeType="pending">Pending</Badge>
             ) : original.status !== "FAILED" ? (
@@ -88,7 +88,7 @@ export default function CAList() {
   );
   const table = useTable(
     {
-      columns: columns,
+      columns: columns as any[],
       data: cas,
       initialState: {
         pageIndex: 0,

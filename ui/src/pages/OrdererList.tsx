@@ -2,10 +2,14 @@ import { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Column,
+  TableInstance,
   TableState,
   usePagination,
+  UsePaginationInstanceProps,
+  UsePaginationState,
   useSortBy,
   UseSortByColumnOptions,
+  UseSortByState,
   useTable,
 } from "react-table";
 import TimeAgo from "timeago-react";
@@ -53,7 +57,7 @@ export default function OrdererList() {
           Header: "Created",
           id: "createdAt",
           accessor: "yamlData.metadata.creationTimestamp",
-          Cell: ({ row: { original } }) => {
+          Cell: ({ row: { original } }: any) => {
             return (
               <div className="flex items-center">
                 <TimeAgo
@@ -68,7 +72,7 @@ export default function OrdererList() {
         {
           Header: "Status",
           accessor: "yamlData.status.status",
-          Cell: ({ row: { original } }) => {
+          Cell: ({ row: { original } }: any) => {
             return original.status === "PENDING" ? (
               <Badge badgeType="pending">Pending</Badge>
             ) : original.status !== "FAILED" ? (
@@ -86,7 +90,7 @@ export default function OrdererList() {
   );
   const table = useTable(
     {
-      columns: columns,
+      columns: columns as any[],
       data: orderers,
       initialState: {
         pageIndex: 0,
@@ -97,11 +101,14 @@ export default function OrdererList() {
           },
         ],
         pageSize: 10,
-      } as TableState<OrdererWithYaml>,
+      } as TableState<OrdererWithYaml> &
+        UsePaginationState<OrdererWithYaml> &
+        UseSortByState<OrdererWithYaml>,
     },
     useSortBy,
     usePagination
-  );
+  ) as TableInstance<OrdererWithYaml> &
+    UsePaginationInstanceProps<OrdererWithYaml>;
   return (
     <div className="py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -132,7 +139,9 @@ export default function OrdererList() {
                     loading={loading}
                     error={error}
                     onRowClick={(orderer: OrdererWithYaml) => {
-                      navigate(`/orderers/${orderer.namespace}/${orderer.name}`);
+                      navigate(
+                        `/orderers/${orderer.namespace}/${orderer.name}`
+                      );
                     }}
                   />
                 </div>
