@@ -7,10 +7,10 @@ import {
   useFormContext,
   UseFormRegister,
 } from "react-hook-form";
-
+import { get } from "lodash";
 import { classNames } from "../utils";
 
-interface SelectItem {
+export interface SelectItem {
   name: string;
   id: string;
 }
@@ -27,14 +27,13 @@ export default function SelectField({
   items,
   options = {},
 }: SelectFieldProps) {
-  const cachedItems = useMemo(() => items, []);
   const {
     formState,
     watch,
     register: registerField,
     setValue,
   } = useFormContext();
-  const errorMessage = formState?.errors?.[name]?.message;
+  const errorMessage = get(formState?.errors, name)?.message;
   const selectValue: SelectItem | null = watch(name) || null;
   useEffect(() => {
     registerField(name, options);
@@ -44,7 +43,7 @@ export default function SelectField({
   };
   const hasError = !!errorMessage;
   return (
-    <div style={{ width: "400px" }}>
+    <div>
       <Listbox value={selectValue} onChange={handleChange}>
         {({ open }) => (
           <>
@@ -83,9 +82,9 @@ export default function SelectField({
               >
                 <Listbox.Options
                   static
-                  className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm w-100"
+                  className="absolute z-50 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm"
                 >
-                  {cachedItems.map((item) => (
+                  {items.map((item) => (
                     <Listbox.Option
                       key={item.id}
                       className={({ active }) =>

@@ -1,5 +1,5 @@
 import { Switch } from "@headlessui/react";
-import { useMemo } from "react";
+import { ReactNode, useMemo } from "react";
 import {
   RegisterOptions,
   useFormContext,
@@ -11,7 +11,7 @@ import { classNames } from "../utils";
 interface InputProps {
   name: string;
   label: string;
-  description?: string;
+  description?: ReactNode;
   register?: UseFormRegister<any>;
   options?: RegisterOptions;
   autocomplete?: string;

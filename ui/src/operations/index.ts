@@ -558,6 +558,19 @@ export type CreateCaMutation = (
   )> }
 );
 
+export type CreatePeerMutationVariables = Exact<{
+  input: CreatePeerInput;
+}>;
+
+
+export type CreatePeerMutation = (
+  { __typename?: 'Mutation' }
+  & { createPeer?: Maybe<(
+    { __typename?: 'Peer' }
+    & Pick<Peer, 'name' | 'namespace' | 'yaml'>
+  )> }
+);
+
 export type GetBlockQueryVariables = Exact<{
   channelID: Scalars['String'];
   blockNumber: Scalars['Int'];
@@ -957,6 +970,41 @@ export function useCreateCaMutation(baseOptions?: Apollo.MutationHookOptions<Cre
 export type CreateCaMutationHookResult = ReturnType<typeof useCreateCaMutation>;
 export type CreateCaMutationResult = Apollo.MutationResult<CreateCaMutation>;
 export type CreateCaMutationOptions = Apollo.BaseMutationOptions<CreateCaMutation, CreateCaMutationVariables>;
+export const CreatePeerDocument = gql`
+    mutation CreatePeer($input: CreatePeerInput!) {
+  createPeer(input: $input) {
+    name
+    namespace
+    yaml
+  }
+}
+    `;
+export type CreatePeerMutationFn = Apollo.MutationFunction<CreatePeerMutation, CreatePeerMutationVariables>;
+
+/**
+ * __useCreatePeerMutation__
+ *
+ * To run a mutation, you first call `useCreatePeerMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreatePeerMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createPeerMutation, { data, loading, error }] = useCreatePeerMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreatePeerMutation(baseOptions?: Apollo.MutationHookOptions<CreatePeerMutation, CreatePeerMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreatePeerMutation, CreatePeerMutationVariables>(CreatePeerDocument, options);
+      }
+export type CreatePeerMutationHookResult = ReturnType<typeof useCreatePeerMutation>;
+export type CreatePeerMutationResult = Apollo.MutationResult<CreatePeerMutation>;
+export type CreatePeerMutationOptions = Apollo.BaseMutationOptions<CreatePeerMutation, CreatePeerMutationVariables>;
 export const GetBlockDocument = gql`
     query GetBlock($channelID: String!, $blockNumber: Int!) {
   block(channelID: $channelID, blockNumber: $blockNumber) {

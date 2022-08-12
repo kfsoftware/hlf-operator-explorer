@@ -2,31 +2,23 @@ import {
   Link,
   Route,
   Routes,
-  useLocation,
-  useNavigate,
-  useParams,
+  useLocation, useParams
 } from "react-router-dom";
-import {
-  Block,
-  BlockWithPrivateData,
-  Channel,
-  ChannelOrg,
-  LightChannel,
-  Transaction,
-  TransactionWithPrivateData,
-  useChannelQuery,
-  useChannelsQuery,
-  useGetBlockQuery,
-  useGetBlockWithPrivateDataQuery,
-} from "../operations";
 import {
   Column,
   TableInstance,
   usePagination,
   UsePaginationInstanceProps,
   UseSortByColumnOptions,
-  useTable,
+  useTable
 } from "react-table";
+import {
+  BlockWithPrivateData,
+  Channel,
+  ChannelOrg,
+  LightChannel, TransactionWithPrivateData,
+  useChannelQuery, useGetBlockWithPrivateDataQuery
+} from "../operations";
 
 export default function ChannelDetail() {
   const { name, org } = useParams();
@@ -352,12 +344,16 @@ function ChannelDetailComponent({ channel }: ChannelDetailComponentProps) {
   );
 }
 
+import { Listbox, Transition } from "@headlessui/react";
 import {
   CheckIcon,
-  DotsVerticalIcon,
-  PaperClipIcon,
-  SelectorIcon,
+  DotsVerticalIcon, SelectorIcon, UsersIcon
 } from "@heroicons/react/solid";
+import { Fragment, useMemo } from "react";
+import TimeAgo from "timeago-react";
+import BlockList from "../components/BlockList";
+import PageSkeleton from "../components/skeletons/PageSkeleton";
+import { Table } from "../components/table";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -556,13 +552,6 @@ function OrgDetailCard({
     </div>
   );
 }
-import { UsersIcon } from "@heroicons/react/solid";
-import { Listbox, Transition } from "@headlessui/react";
-import { Fragment, useEffect, useMemo } from "react";
-import BlockList from "../components/BlockList";
-import TimeAgo from "timeago-react";
-import { Table } from "../components/table";
-import PageSkeleton from "../components/skeletons/PageSkeleton";
 
 /* This example requires Tailwind CSS v2.0+ */
 interface IChannelDetailCardProps {

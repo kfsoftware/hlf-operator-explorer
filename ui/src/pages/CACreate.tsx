@@ -1,39 +1,25 @@
-import { Listbox, RadioGroup, Transition } from "@headlessui/react";
 import {
-  CheckIcon,
-  PlusSmIcon as PlusSmIconSolid,
   MinusSmIcon as MinusSmIconSolid,
-  SelectorIcon,
+  PlusSmIcon as PlusSmIconSolid,
 } from "@heroicons/react/solid";
-import {
-  forwardRef,
-  Fragment,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import {
-  FormProvider,
-  RegisterOptions,
-  useFieldArray,
-  useForm,
-  useFormContext,
-} from "react-hook-form";
-import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useCallback, useEffect, useMemo } from "react";
+import { FormProvider, useFieldArray, useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { parse, stringify } from "yaml";
+import * as yup from "yup";
+import AlertError from "../components/AlertError";
+import ArrayField from "../components/inputs/ArrayField";
+import SelectField from "../components/inputs/SelectField";
 import TextField from "../components/inputs/TextField";
+import ToggleField from "../components/inputs/ToggleField";
+import SectionHeader from "../components/SectionHeader";
+import SubmitButton from "../components/SubmitButton";
 import {
   useCreateCaMutation,
   useGetNamespacesQuery,
   useGetStorageClassesQuery,
 } from "../operations";
-import ToggleField from "../components/inputs/ToggleField";
-import ArrayField from "../components/inputs/ArrayField";
-import SubmitButton from "../components/SubmitButton";
-import { useNavigate } from "react-router-dom";
-import AlertError from "../components/AlertError";
 
 /* This example requires Tailwind CSS v2.0+ */
 function Heading() {
@@ -47,274 +33,13 @@ function Heading() {
     </div>
   );
 }
-/* This example requires Tailwind CSS v2.0+ */
-function SectionHeader({ title }: { title: string }) {
-  return (
-    <div className="pb-5 border-b border-gray-200">
-      <h3 className="text-lg leading-6 font-medium text-gray-900">{title}</h3>
-    </div>
-  );
-}
-interface InputTextProps {
-  label: string;
-  onChange: any;
-  onBlur: any;
-  name: any;
-}
-const InputText = forwardRef(
-  ({ label, name, onBlur, onChange, ...props }: InputTextProps, ref) => {
-    const id = useMemo(() => label, [label]);
-    const methods = useFormContext();
-    return (
-      <div className="sm:col-span-3">
-        <label htmlFor={id} className="block text-sm font-medium text-gray-700">
-          {label}
-        </label>
-        <div className="mt-1">
-          <input
-            ref={ref as any}
-            type="text"
-            {...props}
-            onBlur={onBlur}
-            onChange={onChange}
-            name={name}
-            id={id}
-            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-          />
-        </div>
-      </div>
-    );
-  }
-);
-interface InputTextProps {
-  label: string;
-}
-
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(" ");
-}
-interface IOption {
-  id: string;
-  name: string;
-}
-interface InputSelectProps {
-  name: string;
-  label: string;
-  items: IOption[];
-  options?: RegisterOptions;
-}
-const InputSelect = forwardRef(
-  ({ label, options, items, name }: InputSelectProps, ref) => {
-    const cachedItems = useMemo(() => items, []);
-    const {
-      formState,
-      watch,
-      register: registerField,
-      setValue,
-    } = useFormContext();
-    const errorMessage = formState?.errors?.[name]?.message;
-    const selectValue: IOption | null = watch(name) || null;
-    useEffect(() => {
-      registerField(name, options);
-    }, [registerField]);
-    const handleChange = (val: IOption) => {
-      setValue(name, val, { shouldValidate: true });
-    };
-
-    return (
-      <div>
-        <Listbox value={selectValue || null} onChange={handleChange}>
-          {({ open }) => (
-            <>
-              <Listbox.Label className="block text-sm font-medium text-gray-700">
-                {label}
-              </Listbox.Label>
-              <div className="mt-1 relative">
-                <Listbox.Button className="bg-white relative w-full border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                  <span className="block truncate">
-                    {selectValue ? selectValue.name : ""}
-                  </span>
-                  <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                    <SelectorIcon
-                      className="h-5 w-5 text-gray-400"
-                      aria-hidden="true"
-                    />
-                  </span>
-                </Listbox.Button>
-
-                <Transition
-                  show={open}
-                  as={Fragment}
-                  leave="transition ease-in duration-100"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0"
-                >
-                  <Listbox.Options className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
-                    {items.map((item) => (
-                      <Listbox.Option
-                        key={item.id}
-                        className={({ active }) =>
-                          classNames(
-                            active
-                              ? "text-white bg-indigo-600"
-                              : "text-gray-900",
-                            "cursor-default select-none relative py-2 pl-3 pr-9"
-                          )
-                        }
-                        value={item}
-                      >
-                        {({ selected, active }) => (
-                          <>
-                            <span
-                              className={classNames(
-                                selected ? "font-semibold" : "font-normal",
-                                "block truncate"
-                              )}
-                            >
-                              {item.name}
-                            </span>
-
-                            {selected ? (
-                              <span
-                                className={classNames(
-                                  active ? "text-white" : "text-indigo-600",
-                                  "absolute inset-y-0 right-0 flex items-center pr-4"
-                                )}
-                              >
-                                <CheckIcon
-                                  className="h-5 w-5"
-                                  aria-hidden="true"
-                                />
-                              </span>
-                            ) : null}
-                          </>
-                        )}
-                      </Listbox.Option>
-                    ))}
-                  </Listbox.Options>
-                </Transition>
-              </div>
-            </>
-          )}
-        </Listbox>
-      </div>
-    );
-  }
-);
 
 interface SelectItem {
   name: string;
   id: string;
   description?: string;
 }
-interface RadioGroupProps {
-  name: string;
-  label: string;
-  options: RegisterOptions;
-  items: SelectItem[];
-}
-function RadioGroupField({ name, label, items, options }: RadioGroupProps) {
-  const cachedItems = useMemo(() => items, []);
-  const { formState, watch, register, setValue } = useFormContext();
-  const errorMessage = formState?.errors?.[name]?.message;
-  const selectValue: string | null = watch(name) || null;
-  useEffect(() => {
-    register(name, options);
-  }, [name, options]);
-  const handleChange = (val: string) =>
-    setValue(name, val, { shouldValidate: true });
-  const hasError = !!errorMessage;
 
-  return (
-    <RadioGroup value={selectValue} onChange={handleChange}>
-      <RadioGroup.Label
-        className={classNames(
-          "block text-sm font-medium ",
-          hasError ? "text-red-700" : "text-gray-700"
-        )}
-      >
-        {label}
-      </RadioGroup.Label>
-      <div className="bg-white rounded-md -space-y-px">
-        {cachedItems.map((setting, settingIdx) => (
-          <RadioGroup.Option
-            key={setting.name}
-            value={setting.id}
-            className={({ checked }) => {
-              console.log(checked);
-
-              return classNames(
-                settingIdx === 0 ? "rounded-tl-md rounded-tr-md" : "",
-                settingIdx === cachedItems.length - 1
-                  ? "rounded-bl-md rounded-br-md"
-                  : "",
-                "relative pr-4 pt-4 pb-4 flex cursor-pointer focus:outline-none"
-              );
-            }}
-          >
-            {({ active, checked }) => {
-              console.log(active, checked);
-
-              return (
-                <>
-                  <span
-                    className={classNames(
-                      checked
-                        ? "bg-indigo-600 border-transparent"
-                        : "bg-white border-gray-300",
-                      active ? "ring-2 ring-offset-2 ring-indigo-500" : "",
-                      "h-4 w-4 mt-0.5 cursor-pointer rounded-full border flex items-center justify-center"
-                    )}
-                    aria-hidden="true"
-                  >
-                    <span className="rounded-full bg-white w-1.5 h-1.5" />
-                  </span>
-                  <div className="ml-3 flex flex-col">
-                    <RadioGroup.Label
-                      as="span"
-                      className={classNames(
-                        checked ? "text-indigo-900" : "text-gray-900",
-                        "block text-sm font-medium"
-                      )}
-                    >
-                      {setting.name}
-                    </RadioGroup.Label>
-                    <RadioGroup.Description
-                      as="span"
-                      className={classNames(
-                        checked ? "text-indigo-700" : "text-gray-500",
-                        "block text-sm"
-                      )}
-                    >
-                      {setting.description}
-                    </RadioGroup.Description>
-                  </div>
-                </>
-              );
-            }}
-          </RadioGroup.Option>
-        ))}
-      </div>
-      {errorMessage ? (
-        <p className="mt-2 text-sm text-red-600" id="email-error">
-          {errorMessage}
-        </p>
-      ) : null}
-    </RadioGroup>
-  );
-}
-const worldStates = [
-  {
-    name: "LevelDB",
-    id: "LevelDB",
-    description: "LevelDB world state",
-  },
-  {
-    name: "CouchDB",
-    id: "CouchDB",
-    description: "CouchDB world state",
-  },
-];
 interface CAForm {
   db: {
     datasource: string;
@@ -522,12 +247,12 @@ spec:
         type: client
       max_enrollments: -1
     subject:
-      C: ES
-      L: Alicante
-      O: Kung Fu Software
-      OU: Tech
-      ST: Alicante
-      cn: tlsca
+      C: California
+      L: ""
+      O: Hyperledger
+      OU: Fabric
+      ST: ""
+      cn: ca
     tlsCa: null
   tolerations: null
   version: 1.4.9
@@ -597,15 +322,7 @@ export const schema = yup.object().shape({
         ),
     }),
 });
-// missing:
-// - component for array string
-// - component for users (username, password, affiliation, type, attrs) -> Structure done, missing add button, remove button, default peers/orderers/client
-// - parametrize subject (c,l,o,ou,st,cn)
-// - service monitor
-// TLS CA properties + CA properties
-//
-// Service type (NodePort, LoadBalancer, ClusterIP)
-// Image pull secrets
+
 export default function CACreate() {
   const methods = useForm({
     resolver: yupResolver(schema),
@@ -640,11 +357,11 @@ export default function CACreate() {
       istioEnabled: false,
       ingressGateway: "",
       subject: {
-        C: "ES",
-        L: "Alicante",
-        O: "Kung Fu Software",
+        C: "US",
+        L: "",
+        O: "Hyperledger",
         OU: "Tech",
-        ST: "Alicante",
+        ST: "North carolina",
       },
       serviceType: {
         id: "ClusterIP",
@@ -720,13 +437,8 @@ export default function CACreate() {
     control: methods.control,
     name: "users", // unique name for your Field Array
   });
-  const hostsField = useFieldArray<any>({
-    control: methods.control,
-    name: "hosts", // unique name for your Field Array
-  });
   const {
     register,
-    handleSubmit,
     formState: { errors },
     getValues,
     watch,
@@ -878,7 +590,7 @@ export default function CACreate() {
                       name="name"
                       register={methods.register}
                     />
-                    <InputSelect
+                    <SelectField
                       label="Namespace"
                       name="namespace"
                       items={namespaces.map((namespace) => ({
@@ -1038,7 +750,7 @@ export default function CACreate() {
                   </div>
                   <SectionHeader title="Storage" />
                   <div className="space-y-8 ">
-                    <InputSelect
+                    <SelectField
                       label="Storage class"
                       name="storageClass"
                       items={storageClasses.map((storageClass) => ({
@@ -1086,7 +798,7 @@ export default function CACreate() {
                       </>
                     )}
                     {/* service type */}
-                    <InputSelect
+                    <SelectField
                       label="Service Type"
                       name="serviceType"
                       items={serviceTypes.map((storageClass) => ({

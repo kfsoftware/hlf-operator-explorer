@@ -48,7 +48,7 @@ export default function ArrayField({
           <ul>
             {methods.getValues(name).map((_: string, idx: number) => (
               <>
-                <li className="flex items-center  py-3">
+                <li key={idx} className="flex items-center  py-3">
                   <div className="flex items-center">
                     <TextField
                       autoFocus={true}

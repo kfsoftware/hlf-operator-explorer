@@ -1,0 +1,7 @@
+mutation CreatePeer($input: CreatePeerInput!) {
+  createPeer(input: $input) {
+    name
+    namespace
+    yaml
+  }
+}
