@@ -43,7 +43,9 @@ function PeerDetailCard({ ca }: PeerDetailProps) {
               </dd>
             </div>
             <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">TLS Cert Peer</dt>
+              <dt className="text-sm font-medium text-gray-500">
+                TLS Cert Peer
+              </dt>
               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 <CertificateDetail certificate={ca.status.tlsCert} />
               </dd>
@@ -54,6 +56,14 @@ function PeerDetailCard({ ca }: PeerDetailProps) {
               </dt>
               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 <CertificateDetail certificate={ca.status.signCert} />
+              </dd>
+            </div>
+            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-500">
+                Status message
+              </dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {ca.status.message}
               </dd>
             </div>
           </dl>
@@ -87,12 +97,12 @@ export default function PeerDetail() {
         name: parsedPeer.metadata.name,
         namespace: parsedPeer.metadata.namespace,
       };
-      
-      return stringify(newParsedPeer)
+
+      return stringify(newParsedPeer);
     }
     return stringify({});
   }, [parsedPeer]);
-  
+
   const [showRawConfiguration, setShowRawConfiguration] = useState(false);
   return (
     <div className="py-6">

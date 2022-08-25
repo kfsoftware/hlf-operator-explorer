@@ -1,0 +1,7 @@
+mutation CreateOrderer($input: CreateOrdererInput!) {
+  createOrderer(input: $input) {
+    name
+    namespace
+    yaml
+  }
+}

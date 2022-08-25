@@ -191,7 +191,7 @@ spec:
       O: Hyperledger
       OU: Fabric
       ST: ""
-      cn: ca
+      cn: tlsca
   service:
     type: NodePort
   serviceMonitor: null
@@ -252,7 +252,7 @@ spec:
       O: Hyperledger
       OU: Fabric
       ST: ""
-      cn: ca
+      cn: tlsca
     tlsCa: null
   tolerations: null
   version: 1.4.9

@@ -558,6 +558,19 @@ export type CreateCaMutation = (
   )> }
 );
 
+export type CreateOrdererMutationVariables = Exact<{
+  input: CreateOrdererInput;
+}>;
+
+
+export type CreateOrdererMutation = (
+  { __typename?: 'Mutation' }
+  & { createOrderer?: Maybe<(
+    { __typename?: 'Orderer' }
+    & Pick<Orderer, 'name' | 'namespace' | 'yaml'>
+  )> }
+);
+
 export type CreatePeerMutationVariables = Exact<{
   input: CreatePeerInput;
 }>;
@@ -970,6 +983,41 @@ export function useCreateCaMutation(baseOptions?: Apollo.MutationHookOptions<Cre
 export type CreateCaMutationHookResult = ReturnType<typeof useCreateCaMutation>;
 export type CreateCaMutationResult = Apollo.MutationResult<CreateCaMutation>;
 export type CreateCaMutationOptions = Apollo.BaseMutationOptions<CreateCaMutation, CreateCaMutationVariables>;
+export const CreateOrdererDocument = gql`
+    mutation CreateOrderer($input: CreateOrdererInput!) {
+  createOrderer(input: $input) {
+    name
+    namespace
+    yaml
+  }
+}
+    `;
+export type CreateOrdererMutationFn = Apollo.MutationFunction<CreateOrdererMutation, CreateOrdererMutationVariables>;
+
+/**
+ * __useCreateOrdererMutation__
+ *
+ * To run a mutation, you first call `useCreateOrdererMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateOrdererMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createOrdererMutation, { data, loading, error }] = useCreateOrdererMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreateOrdererMutation(baseOptions?: Apollo.MutationHookOptions<CreateOrdererMutation, CreateOrdererMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateOrdererMutation, CreateOrdererMutationVariables>(CreateOrdererDocument, options);
+      }
+export type CreateOrdererMutationHookResult = ReturnType<typeof useCreateOrdererMutation>;
+export type CreateOrdererMutationResult = Apollo.MutationResult<CreateOrdererMutation>;
+export type CreateOrdererMutationOptions = Apollo.BaseMutationOptions<CreateOrdererMutation, CreateOrdererMutationVariables>;
 export const CreatePeerDocument = gql`
     mutation CreatePeer($input: CreatePeerInput!) {
   createPeer(input: $input) {

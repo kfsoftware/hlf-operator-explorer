@@ -1,28 +1,26 @@
-import { Listbox, RadioGroup, Transition } from "@headlessui/react";
-import { CheckIcon, SelectorIcon } from "@heroicons/react/solid";
-import { forwardRef, Fragment, useCallback, useEffect, useMemo } from "react";
+import { RadioGroup } from "@headlessui/react";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { forwardRef, useCallback, useEffect, useMemo } from "react";
 import {
   FormProvider,
   RegisterOptions,
   useForm,
   useFormContext,
-  UseFormRegister,
+  UseFormRegister
 } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { parse, stringify } from "yaml";
+import * as yup from "yup";
+import ArrayField from "../components/inputs/ArrayField";
 import SelectField from "../components/inputs/SelectField";
 import TextField from "../components/inputs/TextField";
-import {
-  useCreateCaMutation,
-  useCreatePeerMutation,
-  useGetCAsQuery,
-  useGetNamespacesQuery,
-} from "../operations";
-import * as yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
-import ArrayField from "../components/inputs/ArrayField";
 import ToggleField from "../components/inputs/ToggleField";
 import SubmitButton from "../components/SubmitButton";
-import { useNavigate } from "react-router-dom";
+import {
+  useCreatePeerMutation,
+  useGetCAsQuery,
+  useGetNamespacesQuery
+} from "../operations";
 
 /* This example requires Tailwind CSS v2.0+ */
 function Heading() {
@@ -298,7 +296,7 @@ spec:
       component:
         cahost: ""
         caname: ca
-        caport: 443
+        caport: 7054
         catls:
           cacert: ""
         enrollid: peer
@@ -306,7 +304,7 @@ spec:
       tls:
         cahost: ""
         caname: tlsca
-        caport: 443
+        caport: 7054
         catls:
           cacert: ""
         csr:
