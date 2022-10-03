@@ -218,7 +218,7 @@ function TransactionList({ transactions }: TransactionListProps) {
                   })}
                   {!!original.pdcWriteHashes?.length ? (
                     <>
-                      <h3 className="font-medium">PDC Write hashes</h3>
+                      <h3 className="font-medium text-lg">PDC Write hashes</h3>
                       {original.pdcWriteHashes?.map((write) => {
                         return (
                           <li key={write.keyHash}>
@@ -277,6 +277,7 @@ function TransactionList({ transactions }: TransactionListProps) {
                   })}
                   {!!original.pdcReadHashes?.length ? (
                     <>
+                      <h3 className="font-medium text-lg">PDC Read hashes</h3>
                       {original.pdcReadHashes?.map((read) => {
                         return (
                           <li key={read.keyHash}>
