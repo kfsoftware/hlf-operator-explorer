@@ -9,7 +9,7 @@ require (
 	github.com/hyperledger/fabric-sdk-go v1.0.1-0.20220124135247-4f34271d9b0f
 	github.com/spf13/cobra v1.3.0
 	github.com/vektah/gqlparser/v2 v2.4.0
-	k8s.io/api v0.20.2 // indirect
+	k8s.io/api v0.20.2
 	k8s.io/apimachinery v0.20.2
 	k8s.io/client-go v0.20.2
 )

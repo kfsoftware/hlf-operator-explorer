@@ -15,4 +15,10 @@ model:
 models:
   Channel:
     model: github.com/kfsoftware/hlf-operator-ui/api/gql/models.Channel
+  Peer:
+    model: github.com/kfsoftware/hlf-operator-ui/api/gql/models.Peer
+  Orderer:
+    model: github.com/kfsoftware/hlf-operator-ui/api/gql/models.Orderer
+  CA:
+    model: github.com/kfsoftware/hlf-operator-ui/api/gql/models.Ca
 

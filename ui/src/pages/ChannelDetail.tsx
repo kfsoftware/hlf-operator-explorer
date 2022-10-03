@@ -1,23 +1,20 @@
-import {
-  Link,
-  Route,
-  Routes,
-  useLocation, useParams
-} from "react-router-dom";
+import { Link, Route, Routes, useLocation, useParams } from "react-router-dom";
 import {
   Column,
   TableInstance,
   usePagination,
   UsePaginationInstanceProps,
   UseSortByColumnOptions,
-  useTable
+  useTable,
 } from "react-table";
 import {
   BlockWithPrivateData,
   Channel,
   ChannelOrg,
-  LightChannel, TransactionWithPrivateData,
-  useChannelQuery, useGetBlockWithPrivateDataQuery
+  LightChannel,
+  TransactionWithPrivateData,
+  useChannelQuery,
+  useGetBlockWithPrivateDataQuery,
 } from "../operations";
 
 export default function ChannelDetail() {
@@ -219,6 +216,38 @@ function TransactionList({ transactions }: TransactionListProps) {
                       </li>
                     );
                   })}
+                  {!!original.pdcWriteHashes?.length ? (
+                    <>
+                      <h3 className="font-medium">PDC Write hashes</h3>
+                      {original.pdcWriteHashes?.map((write) => {
+                        return (
+                          <li key={write.keyHash}>
+                            <pre>
+                              PDC Name = {write.pdcName}
+                              <br />
+                              Key = {write.keyHash}
+                              <br />
+                              Value = {write.valueHash}
+                              {write.isDelete ? (
+                                <>
+                                  <br /> Deleted ={" Yes"}{" "}
+                                </>
+                              ) : null}
+                              {write.isPurge ? (
+                                <>
+                                  {" "}
+                                  <br /> Purged ={" Yes"}{" "}
+                                </>
+                              ) : null}
+                              <br />
+                              {write.rwSetHash}
+                              <br />
+                            </pre>
+                          </li>
+                        );
+                      })}
+                    </>
+                  ) : null}
                 </ul>
               </div>
             );
@@ -246,6 +275,25 @@ function TransactionList({ transactions }: TransactionListProps) {
                       </li>
                     );
                   })}
+                  {!!original.pdcReadHashes?.length ? (
+                    <>
+                      {original.pdcReadHashes?.map((read) => {
+                        return (
+                          <li key={read.keyHash}>
+                            <pre>
+                              PDC Name = {read.pdcName}
+                              <br />
+                              Key = {read.keyHash}
+                              <br />
+                              {read.rwSetHash}
+                              <br />
+                              {read.version?.blockNum} / {read.version?.txNum}
+                            </pre>
+                          </li>
+                        );
+                      })}
+                    </>
+                  ) : null}
                 </ul>
               </div>
             );
@@ -347,7 +395,9 @@ function ChannelDetailComponent({ channel }: ChannelDetailComponentProps) {
 import { Listbox, Transition } from "@headlessui/react";
 import {
   CheckIcon,
-  DotsVerticalIcon, SelectorIcon, UsersIcon
+  DotsVerticalIcon,
+  SelectorIcon,
+  UsersIcon,
 } from "@heroicons/react/solid";
 import { Fragment, useMemo } from "react";
 import TimeAgo from "timeago-react";

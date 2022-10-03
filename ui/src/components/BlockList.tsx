@@ -2,6 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
+  SearchIcon
+} from "@heroicons/react/solid";
+import {
   Column,
   TableInstance,
   TableOptions,
@@ -11,23 +14,17 @@ import {
   UsePaginationOptions,
   UsePaginationState,
   UseSortByColumnOptions,
-  useTable,
+  useTable
 } from "react-table";
-import {
-  ChevronDownIcon,
-  SearchIcon,
-  SortAscendingIcon,
-} from "@heroicons/react/solid";
 import TimeAgo from "timeago-react";
 import {
   Block,
   TransactionType,
   useGetBlockByTxidLazyQuery,
-  useGetBlockLazyQuery,
-  useGetBlockQuery,
-  useGetBlocksQuery,
+  useGetBlockLazyQuery, useGetBlocksQuery
 } from "../operations";
 import { Table } from "./table";
+
 interface BlockListProps {
   channel: string;
 }

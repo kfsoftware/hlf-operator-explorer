@@ -225,11 +225,32 @@ type PDCRead struct {
 	TxNum          int    `json:"txNum"`
 }
 
+type PDCReadHash struct {
+	PdcName   string          `json:"pdcName"`
+	KeyHash   string          `json:"keyHash"`
+	RwSetHash string          `json:"rwSetHash"`
+	Version   *PDCReadVersion `json:"version"`
+}
+
+type PDCReadVersion struct {
+	BlockNum int `json:"blockNum"`
+	TxNum    int `json:"txNum"`
+}
+
 type PDCWrite struct {
 	CollectionName string `json:"collectionName"`
 	Deleted        bool   `json:"deleted"`
 	Key            string `json:"key"`
 	Value          string `json:"value"`
+}
+
+type PDCWriteHash struct {
+	PdcName   string `json:"pdcName"`
+	KeyHash   string `json:"keyHash"`
+	RwSetHash string `json:"rwSetHash"`
+	ValueHash string `json:"valueHash"`
+	IsDelete  bool   `json:"isDelete"`
+	IsPurge   bool   `json:"isPurge"`
 }
 
 type PeerStorage struct {
@@ -305,18 +326,20 @@ type TransactionRead struct {
 }
 
 type TransactionWithPrivateData struct {
-	TxID      string              `json:"txID"`
-	Type      TransactionType     `json:"type"`
-	CreatedAt time.Time           `json:"createdAt"`
-	Version   string              `json:"version"`
-	Path      *string             `json:"path"`
-	Response  *string             `json:"response"`
-	Request   *string             `json:"request"`
-	Chaincode string              `json:"chaincode"`
-	Writes    []*TransactionWrite `json:"writes"`
-	Reads     []*TransactionRead  `json:"reads"`
-	PdcWrites []*PDCWrite         `json:"pdcWrites"`
-	PdcReads  []*PDCRead          `json:"pdcReads"`
+	TxID           string              `json:"txID"`
+	Type           TransactionType     `json:"type"`
+	CreatedAt      time.Time           `json:"createdAt"`
+	Version        string              `json:"version"`
+	Path           *string             `json:"path"`
+	Response       *string             `json:"response"`
+	Request        *string             `json:"request"`
+	Chaincode      string              `json:"chaincode"`
+	Writes         []*TransactionWrite `json:"writes"`
+	Reads          []*TransactionRead  `json:"reads"`
+	PdcWrites      []*PDCWrite         `json:"pdcWrites"`
+	PdcReads       []*PDCRead          `json:"pdcReads"`
+	PdcWriteHashes []*PDCWriteHash     `json:"pdcWriteHashes"`
+	PdcReadHashes  []*PDCReadHash      `json:"pdcReadHashes"`
 }
 
 type TransactionWrite struct {

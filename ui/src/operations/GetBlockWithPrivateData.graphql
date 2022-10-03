@@ -11,31 +11,54 @@ query GetBlockWithPrivateData($channelID: String!, $blockNumber: Int!) {
       chaincode
       path
       createdAt
-      path
+
       reads {
         blockNumVersion
         chaincodeID
         key
         txNumVersion
       }
+
       writes {
         chaincodeID
         deleted
         key
         value
       }
+
       pdcWrites {
         collectionName
         deleted
         key
         value
       }
+
       pdcReads {
         collectionName
         key
         block
         txNum
       }
+
+      pdcWriteHashes {
+        pdcName
+        keyHash
+        rwSetHash
+        valueHash
+        isDelete
+        isPurge
+      }
+
+      pdcReadHashes {
+        pdcName
+        keyHash
+        rwSetHash
+        version {
+          blockNum
+          txNum
+        }
+      }
+
       txID
       type
       version

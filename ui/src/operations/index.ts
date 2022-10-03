@@ -335,12 +335,36 @@ export type PdcRead = {
   txNum: Scalars['Int'];
 };
 
+export type PdcReadHash = {
+  __typename?: 'PDCReadHash';
+  pdcName: Scalars['String'];
+  keyHash: Scalars['String'];
+  rwSetHash: Scalars['String'];
+  version?: Maybe<PdcReadVersion>;
+};
+
+export type PdcReadVersion = {
+  __typename?: 'PDCReadVersion';
+  blockNum: Scalars['Int'];
+  txNum: Scalars['Int'];
+};
+
 export type PdcWrite = {
   __typename?: 'PDCWrite';
   collectionName: Scalars['String'];
   deleted: Scalars['Boolean'];
   key: Scalars['String'];
   value: Scalars['String'];
+};
+
+export type PdcWriteHash = {
+  __typename?: 'PDCWriteHash';
+  pdcName: Scalars['String'];
+  keyHash: Scalars['String'];
+  rwSetHash: Scalars['String'];
+  valueHash: Scalars['String'];
+  isDelete: Scalars['Boolean'];
+  isPurge: Scalars['Boolean'];
 };
 
 export type Peer = {
@@ -353,7 +377,7 @@ export type Peer = {
 
 export type PeerStorage = {
   __typename?: 'PeerStorage';
-  chaincode: StorageUsage;
+  chaincode?: Maybe<StorageUsage>;
   couchDB: StorageUsage;
   peer: StorageUsage;
 };
@@ -523,6 +547,8 @@ export type TransactionWithPrivateData = {
   reads?: Maybe<Array<TransactionRead>>;
   pdcWrites?: Maybe<Array<PdcWrite>>;
   pdcReads?: Maybe<Array<PdcRead>>;
+  pdcWriteHashes?: Maybe<Array<PdcWriteHash>>;
+  pdcReadHashes?: Maybe<Array<PdcReadHash>>;
 };
 
 export type TransactionWrite = {
@@ -635,6 +661,16 @@ export type GetBlockWithPrivateDataQuery = (
       )>>, pdcReads?: Maybe<Array<(
         { __typename?: 'PDCRead' }
         & Pick<PdcRead, 'collectionName' | 'key' | 'block' | 'txNum'>
+      )>>, pdcWriteHashes?: Maybe<Array<(
+        { __typename?: 'PDCWriteHash' }
+        & Pick<PdcWriteHash, 'pdcName' | 'keyHash' | 'rwSetHash' | 'valueHash' | 'isDelete' | 'isPurge'>
+      )>>, pdcReadHashes?: Maybe<Array<(
+        { __typename?: 'PDCReadHash' }
+        & Pick<PdcReadHash, 'pdcName' | 'keyHash' | 'rwSetHash'>
+        & { version?: Maybe<(
+          { __typename?: 'PDCReadVersion' }
+          & Pick<PdcReadVersion, 'blockNum' | 'txNum'>
+        )> }
       )>> }
     )>> }
   ) }
@@ -881,10 +917,10 @@ export type GetPeerQuery = (
       & { peer: (
         { __typename?: 'StorageUsage' }
         & Pick<StorageUsage, 'used' | 'usedGB' | 'free' | 'freeGB' | 'size' | 'sizeGB' | 'percentageUsed'>
-      ), chaincode: (
+      ), chaincode?: Maybe<(
         { __typename?: 'StorageUsage' }
         & Pick<StorageUsage, 'used' | 'usedGB' | 'free' | 'freeGB' | 'size' | 'sizeGB' | 'percentageUsed'>
-      ), couchDB: (
+      )>, couchDB: (
         { __typename?: 'StorageUsage' }
         & Pick<StorageUsage, 'used' | 'usedGB' | 'free' | 'freeGB' | 'size' | 'sizeGB' | 'percentageUsed'>
       ) }
@@ -1124,7 +1160,6 @@ export const GetBlockWithPrivateDataDocument = gql`
       chaincode
       path
       createdAt
-      path
       reads {
         blockNumVersion
         chaincodeID
@@ -1148,6 +1183,23 @@ export const GetBlockWithPrivateDataDocument = gql`
         key
         block
         txNum
+      }
+      pdcWriteHashes {
+        pdcName
+        keyHash
+        rwSetHash
+        valueHash
+        isDelete
+        isPurge
+      }
+      pdcReadHashes {
+        pdcName
+        keyHash
+        rwSetHash
+        version {
+          blockNum
+          txNum
+        }
       }
       txID
       type

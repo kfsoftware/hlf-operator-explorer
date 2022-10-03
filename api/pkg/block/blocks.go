@@ -27,18 +27,20 @@ const (
 )
 
 type Transaction struct {
-	ID          string
-	Type        TxType
-	ChannelID   string
-	CreatedAt   time.Time
-	ChaincodeID string
-	Version     string
-	Path        string
-	Response    []byte
-	Request     []byte
-	Event       TransactionEvent
-	Writes      []*TransactionWrite
-	Reads       []*TransactionRead
+	ID             string
+	Type           TxType
+	ChannelID      string
+	CreatedAt      time.Time
+	ChaincodeID    string
+	Version        string
+	Path           string
+	Response       []byte
+	Request        []byte
+	Event          TransactionEvent
+	Writes         []*TransactionWrite
+	Reads          []*TransactionRead
+	PDCWriteHashes []*PDCWriteHash
+	PDCReadHashes  []*PDCReadHash
 }
 type TransactionEvent struct {
 	Name  string
@@ -55,6 +57,24 @@ type TransactionRead struct {
 	Key             string
 	BlockNumVersion int
 	TxNumVersion    int
+}
+type PDCReadHash struct {
+	PDCName   string
+	KeyHash   []byte
+	RWSetHash []byte
+	Version   *PDCReadVersion
+}
+type PDCReadVersion struct {
+	BlockNum uint64
+	TXNum    uint64
+}
+type PDCWriteHash struct {
+	PDCName   string
+	KeyHash   []byte
+	ValueHash []byte
+	RWSetHash []byte
+	IsDelete  bool
+	IsPurge   bool
 }
 type Block struct {
 	Number       int
@@ -173,9 +193,37 @@ func GetBlock(ledgerClient *ledger.Client, blockNumber int) (*Block, error) {
 				}
 				var writes []*TransactionWrite
 				var reads []*TransactionRead
+				var pdcWrites []*PDCWriteHash
+				var pdcReads []*PDCReadHash
 				for _, set := range txRWSet.NsRwSets {
 					chaincodeID := set.NameSpace
-
+					for _, collHashedRwSet := range set.CollHashedRwSets {
+						for _, kvWriteHash := range collHashedRwSet.HashedRwSet.HashedWrites {
+							pdcWrites = append(pdcWrites, &PDCWriteHash{
+								PDCName:   collHashedRwSet.CollectionName,
+								KeyHash:   kvWriteHash.KeyHash,
+								ValueHash: kvWriteHash.ValueHash,
+								RWSetHash: collHashedRwSet.PvtRwSetHash,
+								IsDelete:  kvWriteHash.IsDelete,
+								IsPurge:   kvWriteHash.IsPurge,
+							})
+						}
+						for _, kvReadHash := range collHashedRwSet.HashedRwSet.HashedReads {
+							var version *PDCReadVersion
+							if kvReadHash.Version != nil {
+								version = &PDCReadVersion{
+									BlockNum: kvReadHash.Version.BlockNum,
+									TXNum:    kvReadHash.Version.TxNum,
+								}
+							}
+							pdcReads = append(pdcReads, &PDCReadHash{
+								PDCName:   collHashedRwSet.CollectionName,
+								KeyHash:   kvReadHash.KeyHash,
+								Version:   version,
+								RWSetHash: collHashedRwSet.PvtRwSetHash,
+							})
+						}
+					}
 					for _, rw := range set.KvRwSet.Writes {
 						write := &TransactionWrite{
 							ChaincodeID: chaincodeID,
@@ -187,7 +235,6 @@ func GetBlock(ledgerClient *ledger.Client, blockNumber int) (*Block, error) {
 					}
 
 					for _, rw := range set.KvRwSet.Reads {
-
 						read := &TransactionRead{
 							ChaincodeID: chaincodeID,
 							Key:         rw.Key,
@@ -202,6 +249,8 @@ func GetBlock(ledgerClient *ledger.Client, blockNumber int) (*Block, error) {
 				}
 				transaction.Writes = writes
 				transaction.Reads = reads
+				transaction.PDCWriteHashes = pdcWrites
+				transaction.PDCReadHashes = pdcReads
 			}
 		case common.HeaderType_ORDERER_TRANSACTION:
 			txType = ORDERER_TRANSACTION

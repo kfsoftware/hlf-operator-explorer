@@ -284,11 +284,32 @@ type ComplexityRoot struct {
 		TxNum          func(childComplexity int) int
 	}
 
+	PDCReadHash struct {
+		KeyHash   func(childComplexity int) int
+		PdcName   func(childComplexity int) int
+		RwSetHash func(childComplexity int) int
+		Version   func(childComplexity int) int
+	}
+
+	PDCReadVersion struct {
+		BlockNum func(childComplexity int) int
+		TxNum    func(childComplexity int) int
+	}
+
 	PDCWrite struct {
 		CollectionName func(childComplexity int) int
 		Deleted        func(childComplexity int) int
 		Key            func(childComplexity int) int
 		Value          func(childComplexity int) int
+	}
+
+	PDCWriteHash struct {
+		IsDelete  func(childComplexity int) int
+		IsPurge   func(childComplexity int) int
+		KeyHash   func(childComplexity int) int
+		PdcName   func(childComplexity int) int
+		RwSetHash func(childComplexity int) int
+		ValueHash func(childComplexity int) int
 	}
 
 	Peer struct {
@@ -389,18 +410,20 @@ type ComplexityRoot struct {
 	}
 
 	TransactionWithPrivateData struct {
-		Chaincode func(childComplexity int) int
-		CreatedAt func(childComplexity int) int
-		Path      func(childComplexity int) int
-		PdcReads  func(childComplexity int) int
-		PdcWrites func(childComplexity int) int
-		Reads     func(childComplexity int) int
-		Request   func(childComplexity int) int
-		Response  func(childComplexity int) int
-		TxID      func(childComplexity int) int
-		Type      func(childComplexity int) int
-		Version   func(childComplexity int) int
-		Writes    func(childComplexity int) int
+		Chaincode      func(childComplexity int) int
+		CreatedAt      func(childComplexity int) int
+		Path           func(childComplexity int) int
+		PdcReadHashes  func(childComplexity int) int
+		PdcReads       func(childComplexity int) int
+		PdcWriteHashes func(childComplexity int) int
+		PdcWrites      func(childComplexity int) int
+		Reads          func(childComplexity int) int
+		Request        func(childComplexity int) int
+		Response       func(childComplexity int) int
+		TxID           func(childComplexity int) int
+		Type           func(childComplexity int) int
+		Version        func(childComplexity int) int
+		Writes         func(childComplexity int) int
 	}
 
 	TransactionWrite struct {
@@ -1398,6 +1421,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PDCRead.TxNum(childComplexity), true
 
+	case "PDCReadHash.keyHash":
+		if e.complexity.PDCReadHash.KeyHash == nil {
+			break
+		}
+
+		return e.complexity.PDCReadHash.KeyHash(childComplexity), true
+
+	case "PDCReadHash.pdcName":
+		if e.complexity.PDCReadHash.PdcName == nil {
+			break
+		}
+
+		return e.complexity.PDCReadHash.PdcName(childComplexity), true
+
+	case "PDCReadHash.rwSetHash":
+		if e.complexity.PDCReadHash.RwSetHash == nil {
+			break
+		}
+
+		return e.complexity.PDCReadHash.RwSetHash(childComplexity), true
+
+	case "PDCReadHash.version":
+		if e.complexity.PDCReadHash.Version == nil {
+			break
+		}
+
+		return e.complexity.PDCReadHash.Version(childComplexity), true
+
+	case "PDCReadVersion.blockNum":
+		if e.complexity.PDCReadVersion.BlockNum == nil {
+			break
+		}
+
+		return e.complexity.PDCReadVersion.BlockNum(childComplexity), true
+
+	case "PDCReadVersion.txNum":
+		if e.complexity.PDCReadVersion.TxNum == nil {
+			break
+		}
+
+		return e.complexity.PDCReadVersion.TxNum(childComplexity), true
+
 	case "PDCWrite.collectionName":
 		if e.complexity.PDCWrite.CollectionName == nil {
 			break
@@ -1425,6 +1490,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PDCWrite.Value(childComplexity), true
+
+	case "PDCWriteHash.isDelete":
+		if e.complexity.PDCWriteHash.IsDelete == nil {
+			break
+		}
+
+		return e.complexity.PDCWriteHash.IsDelete(childComplexity), true
+
+	case "PDCWriteHash.isPurge":
+		if e.complexity.PDCWriteHash.IsPurge == nil {
+			break
+		}
+
+		return e.complexity.PDCWriteHash.IsPurge(childComplexity), true
+
+	case "PDCWriteHash.keyHash":
+		if e.complexity.PDCWriteHash.KeyHash == nil {
+			break
+		}
+
+		return e.complexity.PDCWriteHash.KeyHash(childComplexity), true
+
+	case "PDCWriteHash.pdcName":
+		if e.complexity.PDCWriteHash.PdcName == nil {
+			break
+		}
+
+		return e.complexity.PDCWriteHash.PdcName(childComplexity), true
+
+	case "PDCWriteHash.rwSetHash":
+		if e.complexity.PDCWriteHash.RwSetHash == nil {
+			break
+		}
+
+		return e.complexity.PDCWriteHash.RwSetHash(childComplexity), true
+
+	case "PDCWriteHash.valueHash":
+		if e.complexity.PDCWriteHash.ValueHash == nil {
+			break
+		}
+
+		return e.complexity.PDCWriteHash.ValueHash(childComplexity), true
 
 	case "Peer.name":
 		if e.complexity.Peer.Name == nil {
@@ -1914,12 +2021,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TransactionWithPrivateData.Path(childComplexity), true
 
+	case "TransactionWithPrivateData.pdcReadHashes":
+		if e.complexity.TransactionWithPrivateData.PdcReadHashes == nil {
+			break
+		}
+
+		return e.complexity.TransactionWithPrivateData.PdcReadHashes(childComplexity), true
+
 	case "TransactionWithPrivateData.pdcReads":
 		if e.complexity.TransactionWithPrivateData.PdcReads == nil {
 			break
 		}
 
 		return e.complexity.TransactionWithPrivateData.PdcReads(childComplexity), true
+
+	case "TransactionWithPrivateData.pdcWriteHashes":
+		if e.complexity.TransactionWithPrivateData.PdcWriteHashes == nil {
+			break
+		}
+
+		return e.complexity.TransactionWithPrivateData.PdcWriteHashes(childComplexity), true
 
 	case "TransactionWithPrivateData.pdcWrites":
 		if e.complexity.TransactionWithPrivateData.PdcWrites == nil {
@@ -2181,6 +2302,26 @@ type Transaction {
     writes: [TransactionWrite!]
     reads: [TransactionRead!]
 }
+type PDCReadHash {
+    pdcName: String!
+    keyHash: String!
+    rwSetHash: String!
+    version: PDCReadVersion
+}
+type PDCReadVersion {
+    blockNum: Int!
+    txNum: Int!
+}
+
+type PDCWriteHash {
+    pdcName: String!
+    keyHash: String!
+    rwSetHash: String!
+    valueHash: String!
+    isDelete: Boolean!
+    isPurge: Boolean!
+}
+
 type TransactionWithPrivateData {
     txID: String!
     type: TransactionType!
@@ -2195,6 +2336,9 @@ type TransactionWithPrivateData {
 
     pdcWrites: [PDCWrite!]
     pdcReads: [PDCRead!]
+
+    pdcWriteHashes: [PDCWriteHash!]
+    pdcReadHashes: [PDCReadHash!]
 }
 type PDCRead {
     collectionName: String!
@@ -2250,9 +2394,8 @@ type CA {
     storage: CAStorage
 }
 
-
 type PeerStorage {
-    chaincode: StorageUsage!
+    chaincode: StorageUsage
     couchDB: StorageUsage!
     peer: StorageUsage!
 }
@@ -7244,6 +7387,213 @@ func (ec *executionContext) _PDCRead_txNum(ctx context.Context, field graphql.Co
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _PDCReadHash_pdcName(ctx context.Context, field graphql.CollectedField, obj *models.PDCReadHash) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PDCReadHash",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PdcName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PDCReadHash_keyHash(ctx context.Context, field graphql.CollectedField, obj *models.PDCReadHash) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PDCReadHash",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.KeyHash, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PDCReadHash_rwSetHash(ctx context.Context, field graphql.CollectedField, obj *models.PDCReadHash) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PDCReadHash",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RwSetHash, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PDCReadHash_version(ctx context.Context, field graphql.CollectedField, obj *models.PDCReadHash) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PDCReadHash",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Version, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.PDCReadVersion)
+	fc.Result = res
+	return ec.marshalOPDCReadVersion2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCReadVersion(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PDCReadVersion_blockNum(ctx context.Context, field graphql.CollectedField, obj *models.PDCReadVersion) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PDCReadVersion",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BlockNum, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PDCReadVersion_txNum(ctx context.Context, field graphql.CollectedField, obj *models.PDCReadVersion) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PDCReadVersion",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TxNum, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _PDCWrite_collectionName(ctx context.Context, field graphql.CollectedField, obj *models.PDCWrite) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -7382,6 +7732,216 @@ func (ec *executionContext) _PDCWrite_value(ctx context.Context, field graphql.C
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PDCWriteHash_pdcName(ctx context.Context, field graphql.CollectedField, obj *models.PDCWriteHash) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PDCWriteHash",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PdcName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PDCWriteHash_keyHash(ctx context.Context, field graphql.CollectedField, obj *models.PDCWriteHash) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PDCWriteHash",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.KeyHash, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PDCWriteHash_rwSetHash(ctx context.Context, field graphql.CollectedField, obj *models.PDCWriteHash) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PDCWriteHash",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RwSetHash, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PDCWriteHash_valueHash(ctx context.Context, field graphql.CollectedField, obj *models.PDCWriteHash) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PDCWriteHash",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ValueHash, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PDCWriteHash_isDelete(ctx context.Context, field graphql.CollectedField, obj *models.PDCWriteHash) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PDCWriteHash",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsDelete, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PDCWriteHash_isPurge(ctx context.Context, field graphql.CollectedField, obj *models.PDCWriteHash) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PDCWriteHash",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsPurge, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Peer_name(ctx context.Context, field graphql.CollectedField, obj *models.Peer) (ret graphql.Marshaler) {
@@ -7546,14 +8106,11 @@ func (ec *executionContext) _PeerStorage_chaincode(ctx context.Context, field gr
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(*models.StorageUsage)
 	fc.Result = res
-	return ec.marshalNStorageUsage2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐStorageUsage(ctx, field.Selections, res)
+	return ec.marshalOStorageUsage2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐStorageUsage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _PeerStorage_couchDB(ctx context.Context, field graphql.CollectedField, obj *models.PeerStorage) (ret graphql.Marshaler) {
@@ -10254,6 +10811,70 @@ func (ec *executionContext) _TransactionWithPrivateData_pdcReads(ctx context.Con
 	res := resTmp.([]*models.PDCRead)
 	fc.Result = res
 	return ec.marshalOPDCRead2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCReadᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TransactionWithPrivateData_pdcWriteHashes(ctx context.Context, field graphql.CollectedField, obj *models.TransactionWithPrivateData) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TransactionWithPrivateData",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PdcWriteHashes, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*models.PDCWriteHash)
+	fc.Result = res
+	return ec.marshalOPDCWriteHash2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCWriteHashᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TransactionWithPrivateData_pdcReadHashes(ctx context.Context, field graphql.CollectedField, obj *models.TransactionWithPrivateData) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TransactionWithPrivateData",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PdcReadHashes, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*models.PDCReadHash)
+	fc.Result = res
+	return ec.marshalOPDCReadHash2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCReadHashᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _TransactionWrite_chaincodeID(ctx context.Context, field graphql.CollectedField, obj *models.TransactionWrite) (ret graphql.Marshaler) {
@@ -13713,6 +14334,105 @@ func (ec *executionContext) _PDCRead(ctx context.Context, sel ast.SelectionSet, 
 	return out
 }
 
+var pDCReadHashImplementors = []string{"PDCReadHash"}
+
+func (ec *executionContext) _PDCReadHash(ctx context.Context, sel ast.SelectionSet, obj *models.PDCReadHash) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, pDCReadHashImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PDCReadHash")
+		case "pdcName":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PDCReadHash_pdcName(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "keyHash":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PDCReadHash_keyHash(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "rwSetHash":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PDCReadHash_rwSetHash(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "version":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PDCReadHash_version(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var pDCReadVersionImplementors = []string{"PDCReadVersion"}
+
+func (ec *executionContext) _PDCReadVersion(ctx context.Context, sel ast.SelectionSet, obj *models.PDCReadVersion) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, pDCReadVersionImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PDCReadVersion")
+		case "blockNum":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PDCReadVersion_blockNum(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "txNum":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PDCReadVersion_txNum(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var pDCWriteImplementors = []string{"PDCWrite"}
 
 func (ec *executionContext) _PDCWrite(ctx context.Context, sel ast.SelectionSet, obj *models.PDCWrite) graphql.Marshaler {
@@ -13756,6 +14476,87 @@ func (ec *executionContext) _PDCWrite(ctx context.Context, sel ast.SelectionSet,
 		case "value":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._PDCWrite_value(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var pDCWriteHashImplementors = []string{"PDCWriteHash"}
+
+func (ec *executionContext) _PDCWriteHash(ctx context.Context, sel ast.SelectionSet, obj *models.PDCWriteHash) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, pDCWriteHashImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PDCWriteHash")
+		case "pdcName":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PDCWriteHash_pdcName(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "keyHash":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PDCWriteHash_keyHash(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "rwSetHash":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PDCWriteHash_rwSetHash(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "valueHash":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PDCWriteHash_valueHash(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "isDelete":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PDCWriteHash_isDelete(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "isPurge":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PDCWriteHash_isPurge(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -13859,9 +14660,6 @@ func (ec *executionContext) _PeerStorage(ctx context.Context, sel ast.SelectionS
 
 			out.Values[i] = innerFunc(ctx)
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "couchDB":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._PeerStorage_couchDB(ctx, field, obj)
@@ -14904,6 +15702,20 @@ func (ec *executionContext) _TransactionWithPrivateData(ctx context.Context, sel
 
 			out.Values[i] = innerFunc(ctx)
 
+		case "pdcWriteHashes":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._TransactionWithPrivateData_pdcWriteHashes(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "pdcReadHashes":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._TransactionWithPrivateData_pdcReadHashes(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -15750,6 +16562,16 @@ func (ec *executionContext) marshalNPDCRead2ᚖgithubᚗcomᚋkfsoftwareᚋhlf�
 	return ec._PDCRead(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNPDCReadHash2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCReadHash(ctx context.Context, sel ast.SelectionSet, v *models.PDCReadHash) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._PDCReadHash(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNPDCWrite2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCWrite(ctx context.Context, sel ast.SelectionSet, v *models.PDCWrite) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -15758,6 +16580,16 @@ func (ec *executionContext) marshalNPDCWrite2ᚖgithubᚗcomᚋkfsoftwareᚋhlf�
 		return graphql.Null
 	}
 	return ec._PDCWrite(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNPDCWriteHash2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCWriteHash(ctx context.Context, sel ast.SelectionSet, v *models.PDCWriteHash) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._PDCWriteHash(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNPeer2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPeer(ctx context.Context, sel ast.SelectionSet, v *models.Peer) graphql.Marshaler {
@@ -17018,6 +17850,60 @@ func (ec *executionContext) marshalOPDCRead2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhl
 	return ret
 }
 
+func (ec *executionContext) marshalOPDCReadHash2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCReadHashᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.PDCReadHash) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNPDCReadHash2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCReadHash(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalOPDCReadVersion2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCReadVersion(ctx context.Context, sel ast.SelectionSet, v *models.PDCReadVersion) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._PDCReadVersion(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalOPDCWrite2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCWriteᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.PDCWrite) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -17046,6 +17932,53 @@ func (ec *executionContext) marshalOPDCWrite2ᚕᚖgithubᚗcomᚋkfsoftwareᚋh
 				defer wg.Done()
 			}
 			ret[i] = ec.marshalNPDCWrite2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCWrite(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalOPDCWriteHash2ᚕᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCWriteHashᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.PDCWriteHash) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNPDCWriteHash2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPDCWriteHash(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -17286,6 +18219,13 @@ func (ec *executionContext) marshalOStorageClass2ᚕᚖgithubᚗcomᚋkfsoftware
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalOStorageUsage2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐStorageUsage(ctx context.Context, sel ast.SelectionSet, v *models.StorageUsage) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._StorageUsage(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {

@@ -72,6 +72,26 @@ type Transaction {
     writes: [TransactionWrite!]
     reads: [TransactionRead!]
 }
+type PDCReadHash {
+    pdcName: String!
+    keyHash: String!
+    rwSetHash: String!
+    version: PDCReadVersion
+}
+type PDCReadVersion {
+    blockNum: Int!
+    txNum: Int!
+}
+
+type PDCWriteHash {
+    pdcName: String!
+    keyHash: String!
+    rwSetHash: String!
+    valueHash: String!
+    isDelete: Boolean!
+    isPurge: Boolean!
+}
+
 type TransactionWithPrivateData {
     txID: String!
     type: TransactionType!
@@ -86,6 +106,9 @@ type TransactionWithPrivateData {
 
     pdcWrites: [PDCWrite!]
     pdcReads: [PDCRead!]
+
+    pdcWriteHashes: [PDCWriteHash!]
+    pdcReadHashes: [PDCReadHash!]
 }
 type PDCRead {
     collectionName: String!

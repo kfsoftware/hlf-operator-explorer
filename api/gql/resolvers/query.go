@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/golang/protobuf/proto"
@@ -801,25 +802,59 @@ func (r *queryResolver) BlockWithPrivateData(ctx context.Context, channelID stri
 		return nil, err
 	}
 	privateDataBlock := <-eee
-	block := mapBlock(blck)
+	blockData := mapBlock(blck)
 	txsWithPrivateData := []*models.TransactionWithPrivateData{}
 
-	for _, transaction := range block.Transactions {
+	for _, transaction := range blockData.Transactions {
 		txsWithPrivateData = append(txsWithPrivateData, &models.TransactionWithPrivateData{
-			TxID:      transaction.TxID,
-			Type:      transaction.Type,
-			CreatedAt: transaction.CreatedAt,
-			Version:   transaction.Version,
-			Path:      transaction.Path,
-			Response:  transaction.Response,
-			Request:   transaction.Request,
-			Chaincode: transaction.Chaincode,
-			Writes:    transaction.Writes,
-			Reads:     transaction.Reads,
-			PdcWrites: []*models.PDCWrite{},
-			PdcReads:  []*models.PDCRead{},
+			TxID:           transaction.TxID,
+			Type:           transaction.Type,
+			CreatedAt:      transaction.CreatedAt,
+			Version:        transaction.Version,
+			Path:           transaction.Path,
+			Response:       transaction.Response,
+			Request:        transaction.Request,
+			Chaincode:      transaction.Chaincode,
+			Writes:         transaction.Writes,
+			Reads:          transaction.Reads,
+			PdcWrites:      []*models.PDCWrite{},
+			PdcReads:       []*models.PDCRead{},
+			PdcWriteHashes: []*models.PDCWriteHash{},
+			PdcReadHashes:  []*models.PDCReadHash{},
 		})
 	}
+	for idx, tx := range blck.Transactions {
+		var pdcWrites []*models.PDCWriteHash
+		var pdcReads []*models.PDCReadHash
+		for _, pdcReadHash := range tx.PDCReadHashes {
+			var version *models.PDCReadVersion
+			if pdcReadHash.Version != nil {
+				version = &models.PDCReadVersion{
+					BlockNum: int(pdcReadHash.Version.BlockNum),
+					TxNum:    int(pdcReadHash.Version.TXNum),
+				}
+			}
+			pdcReads = append(pdcReads, &models.PDCReadHash{
+				PdcName:   pdcReadHash.PDCName,
+				KeyHash:   hex.EncodeToString(pdcReadHash.KeyHash),
+				Version:   version,
+				RwSetHash: hex.EncodeToString(pdcReadHash.RWSetHash),
+			})
+		}
+		for _, pdcWriteHash := range tx.PDCWriteHashes {
+			pdcWrites = append(pdcWrites, &models.PDCWriteHash{
+				PdcName:   pdcWriteHash.PDCName,
+				KeyHash:   hex.EncodeToString(pdcWriteHash.KeyHash),
+				ValueHash: hex.EncodeToString(pdcWriteHash.ValueHash),
+				RwSetHash: hex.EncodeToString(pdcWriteHash.RWSetHash),
+				IsDelete:  pdcWriteHash.IsDelete,
+				IsPurge:   pdcWriteHash.IsPurge,
+			})
+		}
+		txsWithPrivateData[idx].PdcWriteHashes = pdcWrites
+		txsWithPrivateData[idx].PdcReadHashes = pdcReads
+	}
+
 	for txIdx, value := range privateDataBlock.GetPrivateDataMap() {
 		transactionWithPrivateData := txsWithPrivateData[txIdx]
 		for _, set := range value.NsPvtRwset {
@@ -850,10 +885,10 @@ func (r *queryResolver) BlockWithPrivateData(ctx context.Context, channelID stri
 		}
 	}
 	blockWithPrivateData := &models.BlockWithPrivateData{
-		BlockNumber:     block.BlockNumber,
-		DataHash:        block.DataHash,
-		NumTransactions: block.NumTransactions,
-		CreatedAt:       block.CreatedAt,
+		BlockNumber:     blockData.BlockNumber,
+		DataHash:        blockData.DataHash,
+		NumTransactions: blockData.NumTransactions,
+		CreatedAt:       blockData.CreatedAt,
 		Transactions:    txsWithPrivateData,
 	}
 	return blockWithPrivateData, nil
