@@ -74,10 +74,12 @@ export default function CAList() {
           Header: "Status",
           accessor: "yamlData.status.status",
           Cell: ({ row: { original } }: any) => {
-            return original.status === "PENDING" ? (
+            return original.yamlData.status.status === "PENDING" ? (
               <Badge badgeType="pending">Pending</Badge>
-            ) : original.status !== "FAILED" ? (
-              <Badge badgeType="success">{original.yamlData.status.status}</Badge>
+            ) : original.yamlData.status.status !== "FAILED" ? (
+              <Badge badgeType="success">
+                {original.yamlData.status.status}
+              </Badge>
             ) : (
               <Badge badgeType="error">Failed</Badge>
             );
@@ -126,7 +128,7 @@ export default function CAList() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
         <div className="py-4">
           <div className="flex flex-col">
-          <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
               <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
                 <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
                   <Table

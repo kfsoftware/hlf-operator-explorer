@@ -7,7 +7,8 @@ import {
   usePagination,
   UsePaginationInstanceProps,
   UsePaginationOptions,
-  useSortBy, useTable
+  useSortBy,
+  useTable,
 } from "react-table";
 import TimeAgo from "timeago-react";
 import { parse } from "yaml";
@@ -76,9 +77,9 @@ export default function PeerList() {
         Header: "Status",
         accessor: "yamlData.status.status",
         Cell: ({ row: { original } }: any) => {
-          return original.status === "PENDING" ? (
+          return original.yamlData.status.status === "PENDING" ? (
             <Badge badgeType="pending">Pending</Badge>
-          ) : original.status !== "FAILED" ? (
+          ) : original.yamlData.status.status !== "FAILED" ? (
             <Badge badgeType="success">{original.yamlData.status.status}</Badge>
           ) : (
             <Badge badgeType="error">Failed</Badge>

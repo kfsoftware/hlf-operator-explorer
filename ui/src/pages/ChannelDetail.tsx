@@ -480,12 +480,12 @@ function PeerOrgList({ channel }: { channel: Channel }) {
             </div>
             <div className="flex-1 flex items-center justify-between border-t border-r border-b border-gray-200 bg-white rounded-r-md truncate">
               <div className="flex-1 px-4 py-2 text-sm truncate">
-                <a
-                  href={`/channels/${channel.name}/peerorg/${org.mspID}`}
+                <Link
+                  to={`/channels/${channel.name}/peerorg/${org.mspID}`}
                   className="text-gray-900 font-medium hover:text-gray-600"
                 >
                   {org.mspID}
-                </a>
+                </Link>
                 <p className="text-gray-500">
                   {org.anchorPeer?.length || 0} Anchor peers
                 </p>
