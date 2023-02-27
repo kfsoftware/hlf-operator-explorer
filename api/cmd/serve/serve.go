@@ -5,6 +5,7 @@ import (
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
+	"embed"
 	"fmt"
 	gqlgengraphql "github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -16,6 +17,7 @@ import (
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
 	"github.com/form3tech-oss/jwt-go"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/hyperledger/fabric-gateway/pkg/client"
 	"github.com/hyperledger/fabric-gateway/pkg/identity"
@@ -23,9 +25,11 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	apiconfig "github.com/kfsoftware/hlf-operator-ui/api/config"
+	cmdconfig "github.com/kfsoftware/hlf-operator-ui/api/config"
 	"github.com/kfsoftware/hlf-operator-ui/api/gql"
 	"github.com/kfsoftware/hlf-operator-ui/api/gql/resolvers"
 	"github.com/kfsoftware/hlf-operator-ui/api/log"
+	"github.com/kfsoftware/hlf-operator-ui/api/ui"
 	"github.com/kfsoftware/hlf-operator/controllers/utils"
 	operatorv1 "github.com/kfsoftware/hlf-operator/pkg/client/clientset/versioned"
 	"github.com/lestrrat-go/jwx/jwk"
@@ -64,6 +68,7 @@ type serveCmd struct {
 	authJWKS   string
 	authIssuer string
 	config     string
+	views      embed.FS
 }
 
 type IdentityStruct struct {
@@ -240,6 +245,10 @@ func (s serveCmd) run() error {
 		},
 		MaxAge: 12 * time.Hour,
 	}))
+
+	fileSystem := ui.NewFileSystemUI(s.views, "dist")
+	serverMux.Use(static.Serve("/", fileSystem))
+
 	graphqlHandler := gin.HandlerFunc(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -319,7 +328,7 @@ func newGrpcConnection(peerEndpoint string, tlsCert []byte) (*grpc.ClientConn, e
 	return connection, nil
 }
 
-func NewServeCommand() *cobra.Command {
+func NewServeCommand(cmdConfig cmdconfig.ConfigCMD) *cobra.Command {
 	conf := &serveConfig{}
 	cmd := &cobra.Command{
 		Use:   "serve",
@@ -334,6 +343,7 @@ func NewServeCommand() *cobra.Command {
 				authJWKS:   conf.authJWKS,
 				authIssuer: conf.authIssuer,
 				config:     conf.config,
+				views:      cmdConfig.Views,
 			}
 			return s.run()
 		},

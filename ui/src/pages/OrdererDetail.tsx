@@ -16,7 +16,7 @@ import PageSkeleton from "../components/skeletons/PageSkeleton";
 import { classNames } from "../components/utils";
 import {
   Orderer,
-  useGetChannelLazyQuery,
+  useChannelLazyQuery,
   useGetOrdererQuery,
   useGetUpdatedChannelMutation,
   useRenewOrdererCertificatesMutation,
@@ -147,7 +147,7 @@ export default function OrdererDetail() {
   const [updateChannel, updateChannelData] = useUpdateChannelMutation();
   const [getUpdatedChannel, getUpdatedChannelData] =
     useGetUpdatedChannelMutation();
-  const [getChannel, getChannelData] = useGetChannelLazyQuery();
+  const [getChannel, getChannelData] = useChannelLazyQuery();
 
   const [showRawConfiguration, setShowRawConfiguration] = useState(false);
   return (

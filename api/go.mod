@@ -18,6 +18,7 @@ require (
 	github.com/auth0/go-jwt-middleware v1.0.1
 	github.com/form3tech-oss/jwt-go v3.2.2+incompatible
 	github.com/gin-contrib/cors v1.4.0
+	github.com/gin-contrib/static v0.0.1
 	github.com/gin-gonic/gin v1.8.1
 	github.com/golang/protobuf v1.5.2
 	github.com/hyperledger/fabric v2.1.1+incompatible
@@ -29,6 +30,7 @@ require (
 	github.com/slok/go-http-metrics v0.10.0
 	github.com/spf13/viper v1.10.1
 	google.golang.org/grpc v1.43.0
+	gopkg.in/yaml.v3 v3.0.1
 	sigs.k8s.io/yaml v1.2.0
 )
 
@@ -105,7 +107,6 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.18.4 // indirect
 	k8s.io/klog/v2 v2.30.0 // indirect
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed // indirect

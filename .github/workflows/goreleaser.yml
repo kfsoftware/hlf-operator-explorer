@@ -13,6 +13,25 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+
+      - name: Install dependencies
+        uses: bahmutov/npm-install@v1
+        with:
+          working-directory: ./ui
+
+      - name: Build project
+        run: npm run build
+        working-directory: ./ui
+
+      - name: Copy build to api
+        run: cp -r ./ui/dist ./api/dist
+        working-directory: .
+
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
@@ -33,3 +52,4 @@ jobs:
           workdir: ./api
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UI_PATH: ./ui/dist
