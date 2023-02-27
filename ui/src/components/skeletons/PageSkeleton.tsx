@@ -1,4 +1,4 @@
-import { ScaleIcon } from "@heroicons/react/outline";
+import { ScaleIcon } from "@heroicons/react/24/outline";
 import React from "react";
 
 import { SkeletonAvatar, SkeletonText } from "./Skeletons";

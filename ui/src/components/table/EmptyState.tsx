@@ -1,4 +1,4 @@
-import { FolderAddIcon, PlusIcon } from '@heroicons/react/outline';
+import { FolderPlusIcon, PlusIcon } from '@heroicons/react/24/outline';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 interface ChecksEmptyStateProps {
@@ -15,7 +15,7 @@ export default function EmptyState({
   title,
   className = "",
   description,
-  icon: Icon = FolderAddIcon,
+  icon: Icon = FolderPlusIcon,
 }: ChecksEmptyStateProps) {
   return (
     <div className={`h-full text-center ${className}`}>

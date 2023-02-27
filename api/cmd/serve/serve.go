@@ -6,14 +6,13 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	gqlgengraphql "github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/apollotracing"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
-
-	gqlgengraphql "github.com/99designs/gqlgen/graphql"
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
 	"github.com/form3tech-oss/jwt-go"
 	"github.com/gin-contrib/cors"
@@ -23,6 +22,7 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/core"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
+	apiconfig "github.com/kfsoftware/hlf-operator-ui/api/config"
 	"github.com/kfsoftware/hlf-operator-ui/api/gql"
 	"github.com/kfsoftware/hlf-operator-ui/api/gql/resolvers"
 	"github.com/kfsoftware/hlf-operator-ui/api/log"
@@ -36,7 +36,9 @@ import (
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"gopkg.in/yaml.v3"
 	"io"
+	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"net/http"
@@ -52,6 +54,7 @@ type serveConfig struct {
 	mspID      string
 	authJWKS   string
 	authIssuer string
+	config     string
 }
 type serveCmd struct {
 	address    string
@@ -60,7 +63,9 @@ type serveCmd struct {
 	mspID      string
 	authJWKS   string
 	authIssuer string
+	config     string
 }
+
 type IdentityStruct struct {
 	Identity identity.Identity
 	Sign     identity.Sign
@@ -98,6 +103,7 @@ func (s serveCmd) run() error {
 	var sdk *fabsdk.FabricSDK
 	var cfgProvider []core.ConfigBackend
 	var gw *client.Gateway
+	var fConfig *apiconfig.FileConfig
 	if s.hlfConfig != "" {
 		configBackend := config.FromFile(s.hlfConfig)
 		cfgProvider, err = configBackend()
@@ -171,6 +177,21 @@ func (s serveCmd) run() error {
 			return err
 		}
 	}
+	organizations := map[string]apiconfig.OrganizationConfig{}
+	if s.config != "" {
+		fileBytes, err := ioutil.ReadFile(s.config)
+		if err != nil {
+			return errors.Wrapf(err, "failed to read config file %s", s.config)
+		}
+		err = yaml.Unmarshal(fileBytes, &fConfig)
+		if err != nil {
+			return errors.Wrapf(err, "failed to unmarshal config file %s", s.config)
+		}
+		for _, organization := range fConfig.Organizations {
+			organizations[organization.MSPID] = organization
+		}
+	}
+
 	gqlConfig := gql.Config{
 		Resolvers: &resolvers.Resolver{
 			MSPID:          s.mspID,
@@ -181,6 +202,7 @@ func (s serveCmd) run() error {
 			FabricSDK:      sdk,
 			ConfigBackends: cfgProvider,
 			Gateway:        gw,
+			Organizations:  organizations,
 		},
 	}
 	gqlConfig.Directives.RequiresAuth = func(ctx context.Context, obj interface{}, next gqlgengraphql.Resolver) (interface{}, error) {
@@ -311,6 +333,7 @@ func NewServeCommand() *cobra.Command {
 				mspID:      conf.mspID,
 				authJWKS:   conf.authJWKS,
 				authIssuer: conf.authIssuer,
+				config:     conf.config,
 			}
 			return s.run()
 		},
@@ -322,6 +345,7 @@ func NewServeCommand() *cobra.Command {
 	f.StringVar(&conf.user, "user", "", "User to use for the HLF configuration")
 	f.StringVarP(&conf.authJWKS, "auth-jwks", "", "", "auth jwks")
 	f.StringVarP(&conf.authIssuer, "auth-issuer", "", "", "auth issuer")
+	f.StringVarP(&conf.config, "config", "", "", "API configuration file")
 	return cmd
 }
 

@@ -5,8 +5,10 @@ interface SubmitButtonProps {
   loading: boolean;
   disabled: boolean;
   className: string;
+  onClick?: () => any;
 }
 export default function SubmitButton({
+  onClick,
   children,
   loading,
   disabled,
@@ -15,6 +17,7 @@ export default function SubmitButton({
   const isDisabled = disabled || loading;
   return (
     <button
+      onClick={onClick}
       type="submit"
       className={`
       ${className}

@@ -1,4 +1,4 @@
-import { ExclamationCircleIcon } from "@heroicons/react/outline";
+import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 import React from "react"
 import { RegisterOptions, useFormContext, UseFormRegister } from "react-hook-form"
 import { classNames } from "../utils";

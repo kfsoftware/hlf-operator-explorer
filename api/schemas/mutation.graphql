@@ -7,6 +7,161 @@ type Mutation {
 
     createCA(input: CreateCAInput!): CA
     updateCA(filter: NameAndNamespace!, input: UpdateCAInput!): CA
+
+    renewPeerCertificates(input: RenewPeerCertificatesInput!): RenewPeerCertificatesResponse!
+    renewOrdererCertificates(input: RenewOrdererCertificatesInput!): RenewOrdererCertificatesResponse!
+
+    updateChannel(input: UpdateChannelInput!): UpdateChannelResponse!
+    getUpdateChannelBlock(input: GetUpdateChannelBlockInput!): GetUpdateChannelBlockResponse!
+}
+type GetUpdateChannelBlockResponse {
+    errors: [Error!]
+    block: String!
+    configUpdate: String!
+}
+
+input UpdateChannelInput {
+    name: String!
+    block: String!
+    rawSignatures: [RawSignature!]
+    mspSignatures: [MSPSignature!]
+}
+type UpdateChannelResponse {
+    errors: [Error!]
+    transactionID: String!
+}
+input RawSignature {
+    raw: String!
+}
+input MSPSignature {
+    mspID: String!
+}
+
+input GetUpdateChannelBlockInput {
+    channelID: String!
+    application: ApplicationConfigInput!
+    orderer: OrdererConfigInput
+    channel: ChannelConfigInput!
+}
+
+input OrdererConfigInput {
+    batchTimeout: Int
+    state: String
+    etcdRaft: EtcdRaftInput
+    addPolicies: [PolicyInput!]
+    addCapabilities: [String!]
+    addOrganizations: [ChannelOrganization]
+    delOrganizations: [String!]
+    batchSize: OrdererConfigBatchSizeInput
+}
+input ChannelOrganization {
+    mspID: String!
+    modPolicy: String!
+    policies: [PolicyInput!]
+    msp: MSPInput!
+    anchorPeers: [NetworkAddressInput!]
+    ordererEndpoints: [String!]
+}
+input OrdererConfigBatchSizeInput {
+    maxMessageCount: Int!
+    absoluteMaxBytes: Int!
+    preferredMaxBytes: Int!
+}
+input MSPInput {
+    name: String!
+    rootCerts: [String!]
+    intermediateCerts: [String!]
+    admins: [String!]
+    revocationList: [String!]
+    ous: [OUIdentifierInput!]
+    tlsRootCerts: [String!]
+    tlsIntermediateCerts: [String!]
+    nodeOUs: NodeOUsInput!
+    cryptoConfig: CryptoConfigInput!
+}
+
+input NodeOUsInput {
+    enable: Boolean!
+    clientOUIdentifier: OUIdentifierInput!
+    peerOUIdentifier: OUIdentifierInput!
+    adminOUIdentifier: OUIdentifierInput!
+    ordererOUIdentifier: OUIdentifierInput!
+}
+input CryptoConfigInput {
+    signatureHashFamily: String! = "SHA2"
+    identityIdentifierHashFunction: String! = "SHA256"
+}
+input OUIdentifierInput {
+    certificate: String!
+    ouIdentifier: String!
+}
+input EtcdRaftInput {
+    addConsenters: [OrdererConfigRaftConsenterInput!]
+    delConsenters: [OrdererConfigRaftConsenterInput!]
+    options: OrdererConfigRaftOptionsInput
+}
+input OrdererConfigRaftOptionsInput {
+    tickInterval: String!
+    electionTick: Int!
+    heartbeatTick: Int!
+    maxInflightBlocks: Int!
+    snapshotIntervalSize: Int!
+}
+input NetworkAddressInput {
+    host: String!
+    port: Int!
+}
+input OrdererConfigRaftConsenterInput {
+    address: NetworkAddressInput!
+    clientTlsCert: String!
+    serverTlsCert: String!
+}
+input ApplicationConfigInput {
+    policies: [PolicyInput!]
+    acls: [ChannelACLInput!]
+    capabilities: [String!]
+    addOrgs: [ChannelOrganization!]
+    delOrgs: [String!]
+}
+
+input ChannelACLInput {
+    key: String!
+    value: String!
+}
+input ChannelConfigInput {
+    policies: [PolicyInput!]
+    capabilities: [String!]
+}
+input PolicyInput {
+    key: String!
+    type: String!
+    rule: String!
+    modPolicy: String!
+}
+
+input RenewOrdererCertificatesInput {
+    namespace: String!
+    name: String!
+    force: Boolean
+}
+
+type RenewOrdererCertificatesResponse {
+    orderer: Orderer
+    errors: [Error!]
+}
+
+input RenewPeerCertificatesInput {
+    namespace: String!
+    name: String!
+}
+
+type RenewPeerCertificatesResponse {
+    peer: Peer
+    errors: [Error!]
+}
+
+type Error {
+    message: String!
 }
 
 

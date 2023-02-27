@@ -1,0 +1,11 @@
+mutation renewPeerCertificates($input: RenewPeerCertificatesInput!) {
+  renewPeerCertificates(input: $input) {
+    errors {
+      message
+    }
+    peer {
+      name
+      namespace
+    }
+  }
+}

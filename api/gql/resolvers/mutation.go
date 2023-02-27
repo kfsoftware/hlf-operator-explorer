@@ -6,6 +6,7 @@ import (
 	"github.com/kfsoftware/hlf-operator/api/hlf.kungfusoftware.es/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
+	"time"
 )
 
 func (r *mutationResolver) CreatePeer(ctx context.Context, input models.CreatePeerInput) (*models.Peer, error) {
@@ -91,4 +92,47 @@ func (r *mutationResolver) UpdateCa(ctx context.Context, filter models.NameAndNa
 		return nil, err
 	}
 	return mapCA(*fabricCAResponse)
+}
+
+func (r *mutationResolver) RenewPeerCertificates(ctx context.Context, input models.RenewPeerCertificatesInput) (*models.RenewPeerCertificatesResponse, error) {
+	fabricPeer, err := r.HLFClient.HlfV1alpha1().FabricPeers(input.Namespace).Get(ctx, input.Name, v1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	now := v1.NewTime(time.Now())
+	fabricPeer.Spec.UpdateCertificateTime = &now
+	fabricPeerResponse, err := r.HLFClient.HlfV1alpha1().FabricPeers(fabricPeer.Namespace).Update(ctx, fabricPeer, v1.UpdateOptions{})
+	if err != nil {
+		return nil, err
+	}
+	peerGQL, err := mapPeer(*fabricPeerResponse)
+	if err != nil {
+		return nil, err
+	}
+	return &models.RenewPeerCertificatesResponse{
+		Peer:   peerGQL,
+		Errors: []*models.Error{},
+	}, nil
+
+}
+
+func (r *mutationResolver) RenewOrdererCertificates(ctx context.Context, input models.RenewOrdererCertificatesInput) (*models.RenewOrdererCertificatesResponse, error) {
+	fabricOrderer, err := r.HLFClient.HlfV1alpha1().FabricOrdererNodes(input.Namespace).Get(ctx, input.Name, v1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	now := v1.NewTime(time.Now())
+	fabricOrderer.Spec.UpdateCertificateTime = &now
+	fabricOrdererResponse, err := r.HLFClient.HlfV1alpha1().FabricOrdererNodes(fabricOrderer.Namespace).Update(ctx, fabricOrderer, v1.UpdateOptions{})
+	if err != nil {
+		return nil, err
+	}
+	ordererGQL, err := mapOrderer(*fabricOrdererResponse)
+	if err != nil {
+		return nil, err
+	}
+	return &models.RenewOrdererCertificatesResponse{
+		Orderer: ordererGQL,
+		Errors:  []*models.Error{},
+	}, nil
 }

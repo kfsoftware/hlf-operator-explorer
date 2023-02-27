@@ -1,6 +1,7 @@
 query channel($channelID: String!) {
   channel(channelID: $channelID) {
     name
+    rawConfig
     peers {
       mspID
       url

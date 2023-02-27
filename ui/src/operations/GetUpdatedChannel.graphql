@@ -1,0 +1,9 @@
+mutation getUpdatedChannel($input: GetUpdateChannelBlockInput!) {
+  getUpdateChannelBlock(input: $input) {
+    errors {
+      message
+    }
+    block
+    configUpdate
+  }
+}

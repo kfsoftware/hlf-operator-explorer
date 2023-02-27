@@ -1,13 +1,26 @@
 /* This example requires Tailwind CSS v2.0+ */
 import { Dialog, Transition } from "@headlessui/react";
+// import {
+//   CircleStackIcon,
+//   FolderIcon,
+//   HomeIcon,
+//   MenuIcon,
+//   UsersIcon,
+//   XIcon,
+// } from "@heroicons/react/24/outline";
 import {
-  DatabaseIcon,
+  Bars3BottomLeftIcon,
+  BellIcon,
+  CalendarIcon,
+  ChartBarIcon,
   FolderIcon,
   HomeIcon,
-  MenuIcon,
+  InboxIcon,
   UsersIcon,
-  XIcon,
-} from "@heroicons/react/outline";
+  XMarkIcon,
+  CircleStackIcon,
+} from "@heroicons/react/24/outline";
+
 import { Fragment, useEffect, useMemo, useState } from "react";
 import useAuth from "../hooks/useAuth";
 import { Link, useLocation } from "react-router-dom";
@@ -59,7 +72,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       nav.push({
         name: "Channels",
         href: "/channels",
-        icon: DatabaseIcon,
+        icon: CircleStackIcon,
         current: false,
       });
     }
@@ -119,7 +132,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       onClick={() => setSidebarOpen(false)}
                     >
                       <span className="sr-only">Close sidebar</span>
-                      <XIcon
+                      <XMarkIcon
                         className="h-6 w-6 text-white"
                         aria-hidden="true"
                       />
@@ -231,7 +244,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 ))}
               </nav>
             </div>
-            
           </div>
         </div>
         <div className="md:pl-64 flex flex-col flex-1">
@@ -242,7 +254,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               onClick={() => setSidebarOpen(true)}
             >
               <span className="sr-only">Open sidebar</span>
-              <MenuIcon className="h-6 w-6" aria-hidden="true" />
+              <Bars3BottomLeftIcon className="h-6 w-6" aria-hidden="true" />
             </button>
           </div>
           <main className="flex-1">{children}</main>

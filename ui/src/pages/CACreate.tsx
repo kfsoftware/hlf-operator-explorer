@@ -1,7 +1,7 @@
 import {
-  MinusSmIcon as MinusSmIconSolid,
-  PlusSmIcon as PlusSmIconSolid,
-} from "@heroicons/react/solid";
+  MinusSmallIcon as MinusSmIconSolid,
+  PlusSmallIcon as PlusSmIconSolid,
+} from "@heroicons/react/24/solid";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useCallback, useEffect, useMemo } from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";

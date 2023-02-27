@@ -6,6 +6,7 @@ import (
 	"github.com/hyperledger/fabric-gateway/pkg/client"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/core"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
+	apiconfig "github.com/kfsoftware/hlf-operator-ui/api/config"
 	"github.com/kfsoftware/hlf-operator-ui/api/gql"
 	operatorv1 "github.com/kfsoftware/hlf-operator/pkg/client/clientset/versioned"
 	"k8s.io/client-go/kubernetes"
@@ -21,6 +22,7 @@ type Resolver struct {
 	FabricSDK      *fabsdk.FabricSDK
 	ConfigBackends []core.ConfigBackend
 	Gateway        *client.Gateway
+	Organizations  map[string]apiconfig.OrganizationConfig
 }
 
 func (r *Resolver) CA() gql.CAResolver {
@@ -43,6 +45,7 @@ func (r *Resolver) Query() gql.QueryResolver     { return &queryResolver{r} }
 func (r *Resolver) Channel() gql.ChannelResolver { return &channelResolver{r} }
 
 type mutationResolver struct{ *Resolver }
+
 type queryResolver struct{ *Resolver }
 
 type channelResolver struct{ *Resolver }

@@ -1,0 +1,8 @@
+mutation updateChannel($input: UpdateChannelInput!) {
+  updateChannel(input: $input) {
+    errors {
+      message
+    }
+    transactionID
+  }
+}

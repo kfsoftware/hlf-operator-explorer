@@ -1,9 +1,6 @@
-import { RadioGroup } from '@headlessui/react'
-import { Listbox, Transition } from '@headlessui/react';
-import { CheckIcon, SelectorIcon } from '@heroicons/react/solid';
-import React, { useEffect } from 'react';
-import { Fragment, useMemo, useState } from 'react';
-import { RegisterOptions, useFormContext, UseFormRegister } from 'react-hook-form';
+import { RadioGroup } from '@headlessui/react';
+import { useEffect, useMemo } from 'react';
+import { RegisterOptions, useFormContext } from 'react-hook-form';
 
 import { classNames } from '../utils';
 

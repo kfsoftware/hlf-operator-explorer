@@ -1,4 +1,4 @@
-import { CalendarIcon, ScaleIcon } from "@heroicons/react/outline";
+import { CalendarIcon, ScaleIcon } from "@heroicons/react/24/outline";
 import React from "react";
 
 import { SkeletonText } from "./skeletons";

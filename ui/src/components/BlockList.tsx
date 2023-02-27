@@ -2,8 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
-  SearchIcon
-} from "@heroicons/react/solid";
+  MagnifyingGlassIcon
+  // SearchIcon
+} from "@heroicons/react/24/solid";
 import {
   Column,
   TableInstance,
@@ -183,7 +184,7 @@ export default function BlockList({ channel }: BlockListProps) {
             <div className="flex rounded-md shadow-sm">
               <div className="relative flex-grow focus-within:z-10">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <SearchIcon
+                  <MagnifyingGlassIcon
                     className="h-5 w-5 text-gray-400"
                     aria-hidden="true"
                   />

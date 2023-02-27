@@ -16,6 +16,14 @@ type ApplicationConfig struct {
 	Organizations []*ChannelOrg    `json:"organizations"`
 }
 
+type ApplicationConfigInput struct {
+	Policies     []*PolicyInput         `json:"policies"`
+	Acls         []*ChannelACLInput     `json:"acls"`
+	Capabilities []string               `json:"capabilities"`
+	AddOrgs      []*ChannelOrganization `json:"addOrgs"`
+	DelOrgs      []string               `json:"delOrgs"`
+}
+
 type ApplicationPolicy struct {
 	ChannelConfigPolicy string           `json:"channelConfigPolicy"`
 	SignaturePolicy     *SignaturePolicy `json:"signaturePolicy"`
@@ -56,6 +64,11 @@ type ChannelACL struct {
 	Value string `json:"value"`
 }
 
+type ChannelACLInput struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
 type ChannelAnchorPeer struct {
 	MspID string `json:"mspID"`
 	Host  string `json:"host"`
@@ -79,6 +92,11 @@ type ChannelConfig struct {
 	Capabilities []string         `json:"capabilities"`
 }
 
+type ChannelConfigInput struct {
+	Policies     []*PolicyInput `json:"policies"`
+	Capabilities []string       `json:"capabilities"`
+}
+
 type ChannelMsp struct {
 	Name                 string   `json:"name"`
 	RootCerts            []string `json:"rootCerts"`
@@ -99,6 +117,15 @@ type ChannelOrg struct {
 	NodeOUs          *NodeOUs          `json:"nodeOUs"`
 	CryptoConfig     *CryptoConfig     `json:"cryptoConfig"`
 	Ous              []*OUIdentifier   `json:"ous"`
+}
+
+type ChannelOrganization struct {
+	MspID            string                 `json:"mspID"`
+	ModPolicy        string                 `json:"modPolicy"`
+	Policies         []*PolicyInput         `json:"policies"`
+	Msp              *MSPInput              `json:"msp"`
+	AnchorPeers      []*NetworkAddressInput `json:"anchorPeers"`
+	OrdererEndpoints []string               `json:"ordererEndpoints"`
 }
 
 type ChannelPeer struct {
@@ -131,8 +158,49 @@ type CryptoConfig struct {
 	IdentityIdentifierHashFunction string `json:"identityIdentifierHashFunction"`
 }
 
+type CryptoConfigInput struct {
+	SignatureHashFamily            string `json:"signatureHashFamily"`
+	IdentityIdentifierHashFunction string `json:"identityIdentifierHashFunction"`
+}
+
+type Error struct {
+	Message string `json:"message"`
+}
+
+type EtcdRaftInput struct {
+	AddConsenters []*OrdererConfigRaftConsenterInput `json:"addConsenters"`
+	DelConsenters []*OrdererConfigRaftConsenterInput `json:"delConsenters"`
+	Options       *OrdererConfigRaftOptionsInput     `json:"options"`
+}
+
+type GetUpdateChannelBlockInput struct {
+	ChannelID   string                  `json:"channelID"`
+	Application *ApplicationConfigInput `json:"application"`
+	Orderer     *OrdererConfigInput     `json:"orderer"`
+	Channel     *ChannelConfigInput     `json:"channel"`
+}
+
+type GetUpdateChannelBlockResponse struct {
+	Errors       []*Error `json:"errors"`
+	Block        string   `json:"block"`
+	ConfigUpdate string   `json:"configUpdate"`
+}
+
 type LightChannel struct {
 	Name string `json:"name"`
+}
+
+type MSPInput struct {
+	Name                 string               `json:"name"`
+	RootCerts            []string             `json:"rootCerts"`
+	IntermediateCerts    []string             `json:"intermediateCerts"`
+	Admins               []string             `json:"admins"`
+	RevocationList       []string             `json:"revocationList"`
+	Ous                  []*OUIdentifierInput `json:"ous"`
+	TLSRootCerts         []string             `json:"tlsRootCerts"`
+	TLSIntermediateCerts []string             `json:"tlsIntermediateCerts"`
+	NodeOUs              *NodeOUsInput        `json:"nodeOUs"`
+	CryptoConfig         *CryptoConfigInput   `json:"cryptoConfig"`
 }
 
 type MSPPrincipal struct {
@@ -150,6 +218,10 @@ type MSPPrincipalRole struct {
 	Role  string `json:"role"`
 }
 
+type MSPSignature struct {
+	MspID string `json:"mspID"`
+}
+
 type NameAndNamespace struct {
 	Name      string `json:"name"`
 	Namespace string `json:"namespace"`
@@ -164,6 +236,11 @@ type NetworkAddress struct {
 	Port int    `json:"port"`
 }
 
+type NetworkAddressInput struct {
+	Host string `json:"host"`
+	Port int    `json:"port"`
+}
+
 type NodeOUs struct {
 	Enable              bool          `json:"enable"`
 	ClientOUIdentifier  *OUIdentifier `json:"clientOUIdentifier"`
@@ -172,7 +249,20 @@ type NodeOUs struct {
 	OrdererOUIdentifier *OUIdentifier `json:"ordererOUIdentifier"`
 }
 
+type NodeOUsInput struct {
+	Enable              bool               `json:"enable"`
+	ClientOUIdentifier  *OUIdentifierInput `json:"clientOUIdentifier"`
+	PeerOUIdentifier    *OUIdentifierInput `json:"peerOUIdentifier"`
+	AdminOUIdentifier   *OUIdentifierInput `json:"adminOUIdentifier"`
+	OrdererOUIdentifier *OUIdentifierInput `json:"ordererOUIdentifier"`
+}
+
 type OUIdentifier struct {
+	Certificate  string `json:"certificate"`
+	OuIdentifier string `json:"ouIdentifier"`
+}
+
+type OUIdentifierInput struct {
 	Certificate  string `json:"certificate"`
 	OuIdentifier string `json:"ouIdentifier"`
 }
@@ -195,6 +285,23 @@ type OrdererConfigBatchSize struct {
 	PreferredMaxBytes int `json:"preferredMaxBytes"`
 }
 
+type OrdererConfigBatchSizeInput struct {
+	MaxMessageCount   int `json:"maxMessageCount"`
+	AbsoluteMaxBytes  int `json:"absoluteMaxBytes"`
+	PreferredMaxBytes int `json:"preferredMaxBytes"`
+}
+
+type OrdererConfigInput struct {
+	BatchTimeout     *int                         `json:"batchTimeout"`
+	State            *string                      `json:"state"`
+	EtcdRaft         *EtcdRaftInput               `json:"etcdRaft"`
+	AddPolicies      []*PolicyInput               `json:"addPolicies"`
+	AddCapabilities  []string                     `json:"addCapabilities"`
+	AddOrganizations []*ChannelOrganization       `json:"addOrganizations"`
+	DelOrganizations []string                     `json:"delOrganizations"`
+	BatchSize        *OrdererConfigBatchSizeInput `json:"batchSize"`
+}
+
 type OrdererConfigRaft struct {
 	Consenters []*OrdererConfigRaftConsenter `json:"consenters"`
 	Options    *OrdererConfigRaftOptions     `json:"options"`
@@ -206,7 +313,21 @@ type OrdererConfigRaftConsenter struct {
 	ServerTLSCert string          `json:"serverTlsCert"`
 }
 
+type OrdererConfigRaftConsenterInput struct {
+	Address       *NetworkAddressInput `json:"address"`
+	ClientTLSCert string               `json:"clientTlsCert"`
+	ServerTLSCert string               `json:"serverTlsCert"`
+}
+
 type OrdererConfigRaftOptions struct {
+	TickInterval         string `json:"tickInterval"`
+	ElectionTick         int    `json:"electionTick"`
+	HeartbeatTick        int    `json:"heartbeatTick"`
+	MaxInflightBlocks    int    `json:"maxInflightBlocks"`
+	SnapshotIntervalSize int    `json:"snapshotIntervalSize"`
+}
+
+type OrdererConfigRaftOptionsInput struct {
 	TickInterval         string `json:"tickInterval"`
 	ElectionTick         int    `json:"electionTick"`
 	HeartbeatTick        int    `json:"heartbeatTick"`
@@ -259,6 +380,13 @@ type PeerStorage struct {
 	Peer      *StorageUsage `json:"peer"`
 }
 
+type PolicyInput struct {
+	Key       string `json:"key"`
+	Type      string `json:"type"`
+	Rule      string `json:"rule"`
+	ModPolicy string `json:"modPolicy"`
+}
+
 type PrivateDataCollection struct {
 	Name              string             `json:"name"`
 	RequiredPeerCount int                `json:"requiredPeerCount"`
@@ -268,6 +396,31 @@ type PrivateDataCollection struct {
 	MemberOnlyWrite   bool               `json:"memberOnlyWrite"`
 	EndorsementPolicy *ApplicationPolicy `json:"endorsementPolicy"`
 	MemberOrgsPolicy  *SignaturePolicy   `json:"memberOrgsPolicy"`
+}
+
+type RawSignature struct {
+	Raw string `json:"raw"`
+}
+
+type RenewOrdererCertificatesInput struct {
+	Namespace string `json:"namespace"`
+	Name      string `json:"name"`
+	Force     *bool  `json:"force"`
+}
+
+type RenewOrdererCertificatesResponse struct {
+	Orderer *Orderer `json:"orderer"`
+	Errors  []*Error `json:"errors"`
+}
+
+type RenewPeerCertificatesInput struct {
+	Namespace string `json:"namespace"`
+	Name      string `json:"name"`
+}
+
+type RenewPeerCertificatesResponse struct {
+	Peer   *Peer    `json:"peer"`
+	Errors []*Error `json:"errors"`
 }
 
 type SignaturePolicy struct {
@@ -351,6 +504,18 @@ type TransactionWrite struct {
 
 type UpdateCAInput struct {
 	Yaml string `json:"yaml"`
+}
+
+type UpdateChannelInput struct {
+	Name          string          `json:"name"`
+	Block         string          `json:"block"`
+	RawSignatures []*RawSignature `json:"rawSignatures"`
+	MspSignatures []*MSPSignature `json:"mspSignatures"`
+}
+
+type UpdateChannelResponse struct {
+	Errors        []*Error `json:"errors"`
+	TransactionID string   `json:"transactionID"`
 }
 
 type UpdateeOrdererInput struct {

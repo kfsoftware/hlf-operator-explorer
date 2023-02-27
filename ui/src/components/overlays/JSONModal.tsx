@@ -1,6 +1,6 @@
 import { Dialog, Transition } from "@headlessui/react";
 import React, { Fragment } from "react";
-import { XIcon } from "@heroicons/react/outline";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 
 interface JSONModalProps {
   data: any;
@@ -52,7 +52,7 @@ export default function JSONModal({ data, open, setOpen }: JSONModalProps) {
                   onClick={() => setOpen(false)}
                 >
                   <span className="sr-only">Close</span>
-                  <XIcon className="h-6 w-6" aria-hidden="true" />
+                  <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                 </button>
               </div>
               <div>

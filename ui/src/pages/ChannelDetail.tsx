@@ -33,68 +33,87 @@ export default function ChannelDetail() {
     () => location.pathname === `/channels/${name!}`,
     [location]
   );
+  const [showRawConfiguration, setShowRawConfiguration] = useState(false);
   return (
-    <div className="py-6">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="md:flex md:items-center md:justify-between">
-          <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-              Channel {name!}
-            </h2>
-          </div>
-          <div className="mt-4 flex md:mt-0 md:ml-4">
-            <Link
-              to={`/channels/${name!}`}
-              className={
-                isConfigActive
-                  ? `inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`
-                  : `inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`
-              }
-            >
-              Config
-            </Link>
-            <Link
-              to={`/channels/${name!}/blocks`}
-              className={
-                isBlockActive
-                  ? `ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`
-                  : `ml-3 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`
-              }
-            >
-              Blocks
-            </Link>
+    <>
+      {showRawConfiguration ? (
+        <JSONModal
+          open={showRawConfiguration}
+          setOpen={setShowRawConfiguration}
+          data={data?.channel.rawConfig}
+        />
+      ) : null}
+      <div className="py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="md:flex md:items-center md:justify-between">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+                Channel {name!}
+              </h2>
+            </div>
+            <div className="mt-4 flex md:mt-0 md:ml-4">
+              <button
+                onClick={() => setShowRawConfiguration(true)}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                View full resource
+              </button>
+              <Link
+                to={`/channels/${name!}`}
+                className={
+                  isConfigActive
+                    ? `ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`
+                    : `ml-3 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`
+                }
+              >
+                Config
+              </Link>
+              <Link
+                to={`/channels/${name!}/blocks`}
+                className={
+                  isBlockActive
+                    ? `ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`
+                    : `ml-3 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`
+                }
+              >
+                Blocks
+              </Link>
+            </div>
           </div>
         </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mt-8">
+          {loading ? (
+            <>
+              <PageSkeleton />
+            </>
+          ) : data?.channel ? (
+            <>
+              <Routes>
+                <Route
+                  path="ordererorg/:org"
+                  element={<OrdererOrgDetail channel={data.channel as any} />}
+                />
+                <Route
+                  path="peerorg/:org"
+                  element={<PeerOrgDetail channel={data.channel as any} />}
+                />
+                <Route path="blocks" element={<BlockList channel={name!} />} />
+                <Route
+                  path="blocks/:blockNumber"
+                  element={<BlockDetailPage />}
+                />
+                <Route
+                  index
+                  element={
+                    <ChannelDetailComponent channel={data.channel as any} />
+                  }
+                />
+              </Routes>
+            </>
+          ) : null}
+        </div>
       </div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mt-8">
-        {loading ? (
-          <>
-            <PageSkeleton />
-          </>
-        ) : data?.channel ? (
-          <>
-            <Routes>
-              <Route
-                path="ordererorg/:org"
-                element={<OrdererOrgDetail channel={data.channel as any} />}
-              />
-              <Route
-                path="peerorg/:org"
-                element={<PeerOrgDetail channel={data.channel as any} />}
-              />
-              <Route path="blocks" element={<BlockList channel={name!} />} />
-              <Route path="blocks/:blockNumber" element={<BlockDetailPage />} />
-              <Route
-                index
-                element={
-                  <ChannelDetailComponent channel={data.channel as any} />
-                }
-              />
-            </Routes>
-          </>
-        ) : null}
-      </div>
-    </div>
+    </>
   );
 }
 function BlockDetailPage() {
@@ -394,17 +413,18 @@ function ChannelDetailComponent({ channel }: ChannelDetailComponentProps) {
 }
 
 import { Listbox, Transition } from "@headlessui/react";
+import { CheckIcon, UsersIcon } from "@heroicons/react/24/solid";
 import {
-  CheckIcon,
-  DotsVerticalIcon,
-  SelectorIcon,
-  UsersIcon,
-} from "@heroicons/react/solid";
-import { Fragment, useMemo } from "react";
+  EllipsisVerticalIcon,
+  ChevronUpDownIcon,
+} from "@heroicons/react/20/solid";
+import { Fragment, useMemo, useState } from "react";
 import TimeAgo from "timeago-react";
 import BlockList from "../components/BlockList";
 import PageSkeleton from "../components/skeletons/PageSkeleton";
 import { Table } from "../components/table";
+import CertificateDetail from "../components/CertificateDetail";
+import JSONModal from "../components/overlays/JSONModal";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -440,12 +460,12 @@ function OrdererOrgList({ channel }: { channel: Channel }) {
             </div>
             <div className="flex-1 flex items-center justify-between border-t border-r border-b border-gray-200 bg-white rounded-r-md truncate">
               <div className="flex-1 px-4 py-2 text-sm truncate">
-                <a
-                  href={`/channels/${channel.name}/ordererorg/${org.mspID}`}
+                <Link
+                  to={`/channels/${channel.name}/ordererorg/${org.mspID}`}
                   className="text-gray-900 font-medium hover:text-gray-600"
                 >
                   {org.mspID}
-                </a>
+                </Link>
                 <p className="text-gray-500">
                   {org.ordererEndpoints?.length || 0} orderer endpoints
                 </p>
@@ -496,7 +516,10 @@ function PeerOrgList({ channel }: { channel: Channel }) {
                   className="w-8 h-8 bg-white inline-flex items-center justify-center text-gray-400 rounded-full bg-transparent hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   <span className="sr-only">Open options</span>
-                  <DotsVerticalIcon className="w-5 h-5" aria-hidden="true" />
+                  <EllipsisVerticalIcon
+                    className="w-5 h-5"
+                    aria-hidden="true"
+                  />
                 </button>
               </div>
             </div>
@@ -580,9 +603,7 @@ function OrgDetailCard({
             </dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
               {org.msp?.rootCerts?.map((cert, idx) => (
-                <pre key={idx} className="select-all">
-                  {cert}
-                </pre>
+                <CertificateDetail key={idx} certificate={cert} />
               ))}
             </dd>
           </div>
@@ -592,9 +613,7 @@ function OrgDetailCard({
             </dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
               {org.msp?.tlsRootCerts?.map((cert, idx) => (
-                <pre key={idx} className="select-all">
-                  {cert}
-                </pre>
+                <CertificateDetail key={idx} certificate={cert} />
               ))}
             </dd>
           </div>
@@ -604,7 +623,6 @@ function OrgDetailCard({
   );
 }
 
-/* This example requires Tailwind CSS v2.0+ */
 interface IChannelDetailCardProps {
   channel: Pick<Channel, "name" | "height" | "application" | "orderer">;
 }
@@ -715,7 +733,7 @@ function ChannelSelector({ channels, value, setValue }: ChannelSelectorProps) {
             <Listbox.Button className="relative w-full bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
               <span className="block truncate">{value}</span>
               <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                <SelectorIcon
+                <ChevronUpDownIcon
                   className="h-5 w-5 text-gray-400"
                   aria-hidden="true"
                 />

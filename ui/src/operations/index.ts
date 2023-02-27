@@ -24,6 +24,14 @@ export type ApplicationConfig = {
   organizations?: Maybe<Array<ChannelOrg>>;
 };
 
+export type ApplicationConfigInput = {
+  policies?: Maybe<Array<PolicyInput>>;
+  acls?: Maybe<Array<ChannelAclInput>>;
+  capabilities?: Maybe<Array<Scalars['String']>>;
+  addOrgs?: Maybe<Array<ChannelOrganization>>;
+  delOrgs?: Maybe<Array<Scalars['String']>>;
+};
+
 export type ApplicationPolicy = {
   __typename?: 'ApplicationPolicy';
   channelConfigPolicy: Scalars['String'];
@@ -92,6 +100,11 @@ export type ChannelAcl = {
   value: Scalars['String'];
 };
 
+export type ChannelAclInput = {
+  key: Scalars['String'];
+  value: Scalars['String'];
+};
+
 export type ChannelAnchorPeer = {
   __typename?: 'ChannelAnchorPeer';
   mspID: Scalars['String'];
@@ -118,6 +131,11 @@ export type ChannelConfig = {
   capabilities?: Maybe<Array<Scalars['String']>>;
 };
 
+export type ChannelConfigInput = {
+  policies?: Maybe<Array<PolicyInput>>;
+  capabilities?: Maybe<Array<Scalars['String']>>;
+};
+
 export type ChannelMsp = {
   __typename?: 'ChannelMSP';
   name: Scalars['String'];
@@ -140,6 +158,15 @@ export type ChannelOrg = {
   nodeOUs: NodeOUs;
   cryptoConfig: CryptoConfig;
   ous?: Maybe<Array<OuIdentifier>>;
+};
+
+export type ChannelOrganization = {
+  mspID: Scalars['String'];
+  modPolicy: Scalars['String'];
+  policies?: Maybe<Array<PolicyInput>>;
+  msp: MspInput;
+  anchorPeers?: Maybe<Array<NetworkAddressInput>>;
+  ordererEndpoints?: Maybe<Array<Scalars['String']>>;
 };
 
 export type ChannelPeer = {
@@ -175,9 +202,52 @@ export type CryptoConfig = {
   identityIdentifierHashFunction: Scalars['String'];
 };
 
+export type CryptoConfigInput = {
+  signatureHashFamily?: Scalars['String'];
+  identityIdentifierHashFunction?: Scalars['String'];
+};
+
+export type Error = {
+  __typename?: 'Error';
+  message: Scalars['String'];
+};
+
+export type EtcdRaftInput = {
+  addConsenters?: Maybe<Array<OrdererConfigRaftConsenterInput>>;
+  delConsenters?: Maybe<Array<OrdererConfigRaftConsenterInput>>;
+  options?: Maybe<OrdererConfigRaftOptionsInput>;
+};
+
+export type GetUpdateChannelBlockInput = {
+  channelID: Scalars['String'];
+  application: ApplicationConfigInput;
+  orderer?: Maybe<OrdererConfigInput>;
+  channel: ChannelConfigInput;
+};
+
+export type GetUpdateChannelBlockResponse = {
+  __typename?: 'GetUpdateChannelBlockResponse';
+  errors?: Maybe<Array<Error>>;
+  block: Scalars['String'];
+  configUpdate: Scalars['String'];
+};
+
 export type LightChannel = {
   __typename?: 'LightChannel';
   name: Scalars['String'];
+};
+
+export type MspInput = {
+  name: Scalars['String'];
+  rootCerts?: Maybe<Array<Scalars['String']>>;
+  intermediateCerts?: Maybe<Array<Scalars['String']>>;
+  admins?: Maybe<Array<Scalars['String']>>;
+  revocationList?: Maybe<Array<Scalars['String']>>;
+  ous?: Maybe<Array<OuIdentifierInput>>;
+  tlsRootCerts?: Maybe<Array<Scalars['String']>>;
+  tlsIntermediateCerts?: Maybe<Array<Scalars['String']>>;
+  nodeOUs: NodeOUsInput;
+  cryptoConfig: CryptoConfigInput;
 };
 
 export type MspPrincipal = {
@@ -198,6 +268,10 @@ export type MspPrincipalRole = {
   role: Scalars['String'];
 };
 
+export type MspSignature = {
+  mspID: Scalars['String'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   createPeer?: Maybe<Peer>;
@@ -206,6 +280,10 @@ export type Mutation = {
   updateOrderer?: Maybe<Orderer>;
   createCA?: Maybe<Ca>;
   updateCA?: Maybe<Ca>;
+  renewPeerCertificates: RenewPeerCertificatesResponse;
+  renewOrdererCertificates: RenewOrdererCertificatesResponse;
+  updateChannel: UpdateChannelResponse;
+  getUpdateChannelBlock: GetUpdateChannelBlockResponse;
 };
 
 
@@ -241,6 +319,26 @@ export type MutationUpdateCaArgs = {
   input: UpdateCaInput;
 };
 
+
+export type MutationRenewPeerCertificatesArgs = {
+  input: RenewPeerCertificatesInput;
+};
+
+
+export type MutationRenewOrdererCertificatesArgs = {
+  input: RenewOrdererCertificatesInput;
+};
+
+
+export type MutationUpdateChannelArgs = {
+  input: UpdateChannelInput;
+};
+
+
+export type MutationGetUpdateChannelBlockArgs = {
+  input: GetUpdateChannelBlockInput;
+};
+
 export type NameAndNamespace = {
   name: Scalars['String'];
   namespace: Scalars['String'];
@@ -257,6 +355,11 @@ export type NetworkAddress = {
   port: Scalars['Int'];
 };
 
+export type NetworkAddressInput = {
+  host: Scalars['String'];
+  port: Scalars['Int'];
+};
+
 export type NodeOUs = {
   __typename?: 'NodeOUs';
   enable: Scalars['Boolean'];
@@ -266,8 +369,21 @@ export type NodeOUs = {
   ordererOUIdentifier: OuIdentifier;
 };
 
+export type NodeOUsInput = {
+  enable: Scalars['Boolean'];
+  clientOUIdentifier: OuIdentifierInput;
+  peerOUIdentifier: OuIdentifierInput;
+  adminOUIdentifier: OuIdentifierInput;
+  ordererOUIdentifier: OuIdentifierInput;
+};
+
 export type OuIdentifier = {
   __typename?: 'OUIdentifier';
+  certificate: Scalars['String'];
+  ouIdentifier: Scalars['String'];
+};
+
+export type OuIdentifierInput = {
   certificate: Scalars['String'];
   ouIdentifier: Scalars['String'];
 };
@@ -300,6 +416,23 @@ export type OrdererConfigBatchSize = {
   preferredMaxBytes: Scalars['Int'];
 };
 
+export type OrdererConfigBatchSizeInput = {
+  maxMessageCount: Scalars['Int'];
+  absoluteMaxBytes: Scalars['Int'];
+  preferredMaxBytes: Scalars['Int'];
+};
+
+export type OrdererConfigInput = {
+  batchTimeout?: Maybe<Scalars['Int']>;
+  state?: Maybe<Scalars['String']>;
+  etcdRaft?: Maybe<EtcdRaftInput>;
+  addPolicies?: Maybe<Array<PolicyInput>>;
+  addCapabilities?: Maybe<Array<Scalars['String']>>;
+  addOrganizations?: Maybe<Array<Maybe<ChannelOrganization>>>;
+  delOrganizations?: Maybe<Array<Scalars['String']>>;
+  batchSize?: Maybe<OrdererConfigBatchSizeInput>;
+};
+
 export type OrdererConfigRaft = {
   __typename?: 'OrdererConfigRaft';
   consenters?: Maybe<Array<OrdererConfigRaftConsenter>>;
@@ -313,8 +446,22 @@ export type OrdererConfigRaftConsenter = {
   serverTlsCert: Scalars['String'];
 };
 
+export type OrdererConfigRaftConsenterInput = {
+  address: NetworkAddressInput;
+  clientTlsCert: Scalars['String'];
+  serverTlsCert: Scalars['String'];
+};
+
 export type OrdererConfigRaftOptions = {
   __typename?: 'OrdererConfigRaftOptions';
+  tickInterval: Scalars['String'];
+  electionTick: Scalars['Int'];
+  heartbeatTick: Scalars['Int'];
+  maxInflightBlocks: Scalars['Int'];
+  snapshotIntervalSize: Scalars['Int'];
+};
+
+export type OrdererConfigRaftOptionsInput = {
   tickInterval: Scalars['String'];
   electionTick: Scalars['Int'];
   heartbeatTick: Scalars['Int'];
@@ -380,6 +527,13 @@ export type PeerStorage = {
   chaincode?: Maybe<StorageUsage>;
   couchDB: StorageUsage;
   peer: StorageUsage;
+};
+
+export type PolicyInput = {
+  key: Scalars['String'];
+  type: Scalars['String'];
+  rule: Scalars['String'];
+  modPolicy: Scalars['String'];
 };
 
 export type PrivateDataCollection = {
@@ -457,6 +611,33 @@ export type QueryBlockWithPrivateDataArgs = {
 export type QueryBlockByTxidArgs = {
   channelID: Scalars['String'];
   transactionID: Scalars['String'];
+};
+
+export type RawSignature = {
+  raw: Scalars['String'];
+};
+
+export type RenewOrdererCertificatesInput = {
+  namespace: Scalars['String'];
+  name: Scalars['String'];
+  force?: Maybe<Scalars['Boolean']>;
+};
+
+export type RenewOrdererCertificatesResponse = {
+  __typename?: 'RenewOrdererCertificatesResponse';
+  orderer?: Maybe<Orderer>;
+  errors?: Maybe<Array<Error>>;
+};
+
+export type RenewPeerCertificatesInput = {
+  namespace: Scalars['String'];
+  name: Scalars['String'];
+};
+
+export type RenewPeerCertificatesResponse = {
+  __typename?: 'RenewPeerCertificatesResponse';
+  peer?: Maybe<Peer>;
+  errors?: Maybe<Array<Error>>;
 };
 
 export type SignaturePolicy = {
@@ -561,6 +742,19 @@ export type TransactionWrite = {
 
 export type UpdateCaInput = {
   yaml: Scalars['String'];
+};
+
+export type UpdateChannelInput = {
+  name: Scalars['String'];
+  block: Scalars['String'];
+  rawSignatures?: Maybe<Array<RawSignature>>;
+  mspSignatures?: Maybe<Array<MspSignature>>;
+};
+
+export type UpdateChannelResponse = {
+  __typename?: 'UpdateChannelResponse';
+  errors?: Maybe<Array<Error>>;
+  transactionID: Scalars['String'];
 };
 
 export type UpdateeOrdererInput = {
@@ -747,7 +941,7 @@ export type ChannelQuery = (
   { __typename?: 'Query' }
   & { channel: (
     { __typename?: 'Channel' }
-    & Pick<Channel, 'name' | 'height'>
+    & Pick<Channel, 'name' | 'rawConfig' | 'height'>
     & { peers?: Maybe<Array<(
       { __typename?: 'ChannelPeer' }
       & Pick<ChannelPeer, 'mspID' | 'url' | 'height'>
@@ -975,12 +1169,84 @@ export type GetBlockByTxidQuery = (
   ) }
 );
 
+export type GetUpdatedChannelMutationVariables = Exact<{
+  input: GetUpdateChannelBlockInput;
+}>;
+
+
+export type GetUpdatedChannelMutation = (
+  { __typename?: 'Mutation' }
+  & { getUpdateChannelBlock: (
+    { __typename?: 'GetUpdateChannelBlockResponse' }
+    & Pick<GetUpdateChannelBlockResponse, 'block' | 'configUpdate'>
+    & { errors?: Maybe<Array<(
+      { __typename?: 'Error' }
+      & Pick<Error, 'message'>
+    )>> }
+  ) }
+);
+
 export type NetworkConfigEnabledQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type NetworkConfigEnabledQuery = (
   { __typename?: 'Query' }
   & Pick<Query, 'networkConfigEnabled'>
+);
+
+export type RenewOrdererCertificatesMutationVariables = Exact<{
+  input: RenewOrdererCertificatesInput;
+}>;
+
+
+export type RenewOrdererCertificatesMutation = (
+  { __typename?: 'Mutation' }
+  & { renewOrdererCertificates: (
+    { __typename?: 'RenewOrdererCertificatesResponse' }
+    & { errors?: Maybe<Array<(
+      { __typename?: 'Error' }
+      & Pick<Error, 'message'>
+    )>>, orderer?: Maybe<(
+      { __typename?: 'Orderer' }
+      & Pick<Orderer, 'name' | 'namespace'>
+    )> }
+  ) }
+);
+
+export type RenewPeerCertificatesMutationVariables = Exact<{
+  input: RenewPeerCertificatesInput;
+}>;
+
+
+export type RenewPeerCertificatesMutation = (
+  { __typename?: 'Mutation' }
+  & { renewPeerCertificates: (
+    { __typename?: 'RenewPeerCertificatesResponse' }
+    & { errors?: Maybe<Array<(
+      { __typename?: 'Error' }
+      & Pick<Error, 'message'>
+    )>>, peer?: Maybe<(
+      { __typename?: 'Peer' }
+      & Pick<Peer, 'name' | 'namespace'>
+    )> }
+  ) }
+);
+
+export type UpdateChannelMutationVariables = Exact<{
+  input: UpdateChannelInput;
+}>;
+
+
+export type UpdateChannelMutation = (
+  { __typename?: 'Mutation' }
+  & { updateChannel: (
+    { __typename?: 'UpdateChannelResponse' }
+    & Pick<UpdateChannelResponse, 'transactionID'>
+    & { errors?: Maybe<Array<(
+      { __typename?: 'Error' }
+      & Pick<Error, 'message'>
+    )>> }
+  ) }
 );
 
 
@@ -1390,6 +1656,7 @@ export const ChannelDocument = gql`
     query channel($channelID: String!) {
   channel(channelID: $channelID) {
     name
+    rawConfig
     peers {
       mspID
       url
@@ -1910,6 +2177,43 @@ export function useGetBlockByTxidLazyQuery(baseOptions?: Apollo.LazyQueryHookOpt
 export type GetBlockByTxidQueryHookResult = ReturnType<typeof useGetBlockByTxidQuery>;
 export type GetBlockByTxidLazyQueryHookResult = ReturnType<typeof useGetBlockByTxidLazyQuery>;
 export type GetBlockByTxidQueryResult = Apollo.QueryResult<GetBlockByTxidQuery, GetBlockByTxidQueryVariables>;
+export const GetUpdatedChannelDocument = gql`
+    mutation getUpdatedChannel($input: GetUpdateChannelBlockInput!) {
+  getUpdateChannelBlock(input: $input) {
+    errors {
+      message
+    }
+    block
+    configUpdate
+  }
+}
+    `;
+export type GetUpdatedChannelMutationFn = Apollo.MutationFunction<GetUpdatedChannelMutation, GetUpdatedChannelMutationVariables>;
+
+/**
+ * __useGetUpdatedChannelMutation__
+ *
+ * To run a mutation, you first call `useGetUpdatedChannelMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useGetUpdatedChannelMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [getUpdatedChannelMutation, { data, loading, error }] = useGetUpdatedChannelMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useGetUpdatedChannelMutation(baseOptions?: Apollo.MutationHookOptions<GetUpdatedChannelMutation, GetUpdatedChannelMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<GetUpdatedChannelMutation, GetUpdatedChannelMutationVariables>(GetUpdatedChannelDocument, options);
+      }
+export type GetUpdatedChannelMutationHookResult = ReturnType<typeof useGetUpdatedChannelMutation>;
+export type GetUpdatedChannelMutationResult = Apollo.MutationResult<GetUpdatedChannelMutation>;
+export type GetUpdatedChannelMutationOptions = Apollo.BaseMutationOptions<GetUpdatedChannelMutation, GetUpdatedChannelMutationVariables>;
 export const NetworkConfigEnabledDocument = gql`
     query networkConfigEnabled {
   networkConfigEnabled
@@ -1942,3 +2246,117 @@ export function useNetworkConfigEnabledLazyQuery(baseOptions?: Apollo.LazyQueryH
 export type NetworkConfigEnabledQueryHookResult = ReturnType<typeof useNetworkConfigEnabledQuery>;
 export type NetworkConfigEnabledLazyQueryHookResult = ReturnType<typeof useNetworkConfigEnabledLazyQuery>;
 export type NetworkConfigEnabledQueryResult = Apollo.QueryResult<NetworkConfigEnabledQuery, NetworkConfigEnabledQueryVariables>;
+export const RenewOrdererCertificatesDocument = gql`
+    mutation renewOrdererCertificates($input: RenewOrdererCertificatesInput!) {
+  renewOrdererCertificates(input: $input) {
+    errors {
+      message
+    }
+    orderer {
+      name
+      namespace
+    }
+  }
+}
+    `;
+export type RenewOrdererCertificatesMutationFn = Apollo.MutationFunction<RenewOrdererCertificatesMutation, RenewOrdererCertificatesMutationVariables>;
+
+/**
+ * __useRenewOrdererCertificatesMutation__
+ *
+ * To run a mutation, you first call `useRenewOrdererCertificatesMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRenewOrdererCertificatesMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [renewOrdererCertificatesMutation, { data, loading, error }] = useRenewOrdererCertificatesMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useRenewOrdererCertificatesMutation(baseOptions?: Apollo.MutationHookOptions<RenewOrdererCertificatesMutation, RenewOrdererCertificatesMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RenewOrdererCertificatesMutation, RenewOrdererCertificatesMutationVariables>(RenewOrdererCertificatesDocument, options);
+      }
+export type RenewOrdererCertificatesMutationHookResult = ReturnType<typeof useRenewOrdererCertificatesMutation>;
+export type RenewOrdererCertificatesMutationResult = Apollo.MutationResult<RenewOrdererCertificatesMutation>;
+export type RenewOrdererCertificatesMutationOptions = Apollo.BaseMutationOptions<RenewOrdererCertificatesMutation, RenewOrdererCertificatesMutationVariables>;
+export const RenewPeerCertificatesDocument = gql`
+    mutation renewPeerCertificates($input: RenewPeerCertificatesInput!) {
+  renewPeerCertificates(input: $input) {
+    errors {
+      message
+    }
+    peer {
+      name
+      namespace
+    }
+  }
+}
+    `;
+export type RenewPeerCertificatesMutationFn = Apollo.MutationFunction<RenewPeerCertificatesMutation, RenewPeerCertificatesMutationVariables>;
+
+/**
+ * __useRenewPeerCertificatesMutation__
+ *
+ * To run a mutation, you first call `useRenewPeerCertificatesMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRenewPeerCertificatesMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [renewPeerCertificatesMutation, { data, loading, error }] = useRenewPeerCertificatesMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useRenewPeerCertificatesMutation(baseOptions?: Apollo.MutationHookOptions<RenewPeerCertificatesMutation, RenewPeerCertificatesMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RenewPeerCertificatesMutation, RenewPeerCertificatesMutationVariables>(RenewPeerCertificatesDocument, options);
+      }
+export type RenewPeerCertificatesMutationHookResult = ReturnType<typeof useRenewPeerCertificatesMutation>;
+export type RenewPeerCertificatesMutationResult = Apollo.MutationResult<RenewPeerCertificatesMutation>;
+export type RenewPeerCertificatesMutationOptions = Apollo.BaseMutationOptions<RenewPeerCertificatesMutation, RenewPeerCertificatesMutationVariables>;
+export const UpdateChannelDocument = gql`
+    mutation updateChannel($input: UpdateChannelInput!) {
+  updateChannel(input: $input) {
+    errors {
+      message
+    }
+    transactionID
+  }
+}
+    `;
+export type UpdateChannelMutationFn = Apollo.MutationFunction<UpdateChannelMutation, UpdateChannelMutationVariables>;
+
+/**
+ * __useUpdateChannelMutation__
+ *
+ * To run a mutation, you first call `useUpdateChannelMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateChannelMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateChannelMutation, { data, loading, error }] = useUpdateChannelMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateChannelMutation(baseOptions?: Apollo.MutationHookOptions<UpdateChannelMutation, UpdateChannelMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateChannelMutation, UpdateChannelMutationVariables>(UpdateChannelDocument, options);
+      }
+export type UpdateChannelMutationHookResult = ReturnType<typeof useUpdateChannelMutation>;
+export type UpdateChannelMutationResult = Apollo.MutationResult<UpdateChannelMutation>;
+export type UpdateChannelMutationOptions = Apollo.BaseMutationOptions<UpdateChannelMutation, UpdateChannelMutationVariables>;

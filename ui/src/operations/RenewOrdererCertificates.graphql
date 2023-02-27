@@ -1,0 +1,11 @@
+mutation renewOrdererCertificates($input: RenewOrdererCertificatesInput!) {
+  renewOrdererCertificates(input: $input) {
+    errors {
+      message
+    }
+    orderer {
+      name
+      namespace
+    }
+  }
+}

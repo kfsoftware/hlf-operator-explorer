@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-import { CalendarIcon } from "@heroicons/react/solid";
+import { CalendarIcon } from "@heroicons/react/24/solid";
 import TimeAgo from "timeago-react";
 
 interface ListProps {

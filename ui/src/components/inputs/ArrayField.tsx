@@ -1,4 +1,4 @@
-import { PlusSmIcon as PlusSmIconSolid } from "@heroicons/react/solid";
+import { PlusIcon as PlusSmIconSolid } from "@heroicons/react/24/solid";
 import {
   RegisterOptions,
   useFieldArray,
