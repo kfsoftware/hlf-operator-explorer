@@ -7,7 +7,7 @@ import (
 	"github.com/kfsoftware/hlf-operator-ui/api/config"
 )
 
-//go:embed dist/*
+//go:embed web/*
 var views embed.FS
 
 func main() {

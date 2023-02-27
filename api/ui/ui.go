@@ -16,7 +16,6 @@ type FileSystemUI struct {
 
 func (f FileSystemUI) Open(name string) (http.File, error) {
 	fullPath := path.Join(fmt.Sprintf("/%s", f.basePath), name)
-
 	fsFile, err := f.fsViews.Open(
 		fullPath[1:],
 	)
@@ -33,7 +32,7 @@ func (f FileSystemUI) Exists(prefix string, filePath string) bool {
 	} else {
 		fullPath = path.Join(fmt.Sprintf("/%s", f.basePath), fullPath)
 	}
-	log.Infof("FileSystemUI.Exists: %s", fullPath)
+	log.Debugf("FileSystemUI.Exists: %s", fullPath)
 	file, err := f.views.Open(fullPath[1:])
 	if err != nil {
 		return false

@@ -246,7 +246,7 @@ func (s serveCmd) run() error {
 		MaxAge: 12 * time.Hour,
 	}))
 
-	fileSystem := ui.NewFileSystemUI(s.views, "dist")
+	fileSystem := ui.NewFileSystemUI(s.views, "web")
 	serverMux.Use(static.Serve("/", fileSystem))
 
 	graphqlHandler := gin.HandlerFunc(func(c *gin.Context) {

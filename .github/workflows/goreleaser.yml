@@ -29,7 +29,7 @@ jobs:
         working-directory: ./ui
 
       - name: Copy build to api
-        run: cp -r ./ui/dist ./api/dist
+        run: cp -r ./ui/dist ./api/web
         working-directory: .
 
       - name: Set up Go
@@ -52,4 +52,3 @@ jobs:
           workdir: ./api
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          UI_PATH: ./ui/dist
