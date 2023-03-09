@@ -248,6 +248,7 @@ func (s serveCmd) run() error {
 
 	fileSystem := ui.NewFileSystemUI(s.views, "web")
 	serverMux.Use(static.Serve("/", fileSystem))
+	serverMux.NoRoute(ReturnPublic())
 
 	graphqlHandler := gin.HandlerFunc(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
@@ -298,6 +299,17 @@ func (s serveCmd) run() error {
 	}
 	log.Infof("Server listening on %s", s.address)
 	return http.ListenAndServe(s.address, httpHandler)
+}
+
+func ReturnPublic() gin.HandlerFunc {
+	return func(context *gin.Context) {
+		method := context.Request.Method
+		if method == "GET" {
+			context.File("/Users/davidviejo/projects/kfs/hlf-operator-ui/ui/dist")
+		} else {
+			context.Next()
+		}
+	}
 }
 
 // Defining the Playground handler
