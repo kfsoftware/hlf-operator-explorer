@@ -248,7 +248,7 @@ func (s serveCmd) run() error {
 
 	fileSystem := ui.NewFileSystemUI(s.views, "web")
 	serverMux.Use(static.Serve("/", fileSystem))
-	serverMux.NoRoute(ReturnPublic())
+	serverMux.NoRoute(ReturnPublic(s.views))
 
 	graphqlHandler := gin.HandlerFunc(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
@@ -301,11 +301,22 @@ func (s serveCmd) run() error {
 	return http.ListenAndServe(s.address, httpHandler)
 }
 
-func ReturnPublic() gin.HandlerFunc {
+func ReturnPublic(views embed.FS) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		method := context.Request.Method
 		if method == "GET" {
-			context.File("/Users/davidviejo/projects/kfs/hlf-operator-ui/ui/dist")
+			index, err := views.Open("web/index.html")
+			if err != nil {
+				context.AbortWithStatus(http.StatusNotFound)
+				return
+			}
+			defer index.Close()
+			data, err := io.ReadAll(index)
+			if err != nil {
+				context.AbortWithStatus(http.StatusNotFound)
+				return
+			}
+			context.Data(http.StatusOK, "text/html; charset=utf-8", data)
 		} else {
 			context.Next()
 		}
