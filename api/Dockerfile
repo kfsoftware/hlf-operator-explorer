@@ -7,7 +7,7 @@ RUN \
 
 COPY CREDITS /licenses/CREDITS
 COPY LICENSE /licenses/LICENSE
-LABEL name="HLF Operator UI" \
+LABEL name="HLF Operator Explorer" \
       vendor="Kung Fu Software <dviejo@kungfusoftware.es>" \
       maintainer="Kung Fu Software <dviejo@kungfusoftware.es>" \
       version="v1.1.0" \
