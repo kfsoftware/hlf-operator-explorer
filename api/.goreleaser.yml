@@ -1,10 +1,10 @@
-project_name: hlf-operator-ui
+project_name: hlf-operator-explorer
 
 release:
   name_template: "Version {{.Version}}"
   github:
     owner: kfsoftware
-    name: hlf-operator-ui
+    name: hlf-operator-explorer
 
 before:
   hooks:
