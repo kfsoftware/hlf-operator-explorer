@@ -52,23 +52,32 @@ import (
 )
 
 type serveConfig struct {
-	address    string
-	hlfConfig  string
-	user       string
-	mspID      string
-	authJWKS   string
-	authIssuer string
-	config     string
+	address       string
+	hlfConfig     string
+	user          string
+	mspID         string
+	authJWKS      string
+	authIssuer    string
+	config        string
+	authAuthority string
+	authClientId  string
+	authScope     string
+	logoUrl       string
 }
+
 type serveCmd struct {
-	address    string
-	hlfConfig  string
-	user       string
-	mspID      string
-	authJWKS   string
-	authIssuer string
-	config     string
-	views      embed.FS
+	address       string
+	hlfConfig     string
+	user          string
+	mspID         string
+	authJWKS      string
+	authIssuer    string
+	authAuthority string
+	authClientId  string
+	authScope     string
+	logoUrl       string
+	config        string
+	views         embed.FS
 }
 
 type IdentityStruct struct {
@@ -247,6 +256,18 @@ func (s serveCmd) run() error {
 	}))
 
 	fileSystem := ui.NewFileSystemUI(s.views, "web")
+	serverMux.GET("/config.json", func(c *gin.Context) {
+		configJSON := gin.H{
+			"apiUrl":  "/graphql",
+			"logoUrl": s.logoUrl,
+		}
+		if s.authIssuer != "" && s.authJWKS != "" {
+			configJSON["oidcAuthority"] = s.authAuthority
+			configJSON["oidcClientId"] = s.authClientId
+			configJSON["oidcScope"] = s.authScope
+		}
+		c.JSON(http.StatusOK, configJSON)
+	})
 	serverMux.Use(static.Serve("/", fileSystem))
 	serverMux.NoRoute(ReturnPublic(s.views))
 
@@ -359,14 +380,18 @@ func NewServeCommand(cmdConfig cmdconfig.ConfigCMD) *cobra.Command {
 		Long:  "serve",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			s := &serveCmd{
-				address:    conf.address,
-				hlfConfig:  conf.hlfConfig,
-				user:       conf.user,
-				mspID:      conf.mspID,
-				authJWKS:   conf.authJWKS,
-				authIssuer: conf.authIssuer,
-				config:     conf.config,
-				views:      cmdConfig.Views,
+				address:       conf.address,
+				hlfConfig:     conf.hlfConfig,
+				user:          conf.user,
+				mspID:         conf.mspID,
+				authJWKS:      conf.authJWKS,
+				authIssuer:    conf.authIssuer,
+				config:        conf.config,
+				views:         cmdConfig.Views,
+				authAuthority: conf.authAuthority,
+				authScope:     conf.authScope,
+				authClientId:  conf.authClientId,
+				logoUrl:       conf.logoUrl,
 			}
 			return s.run()
 		},
@@ -378,6 +403,10 @@ func NewServeCommand(cmdConfig cmdconfig.ConfigCMD) *cobra.Command {
 	f.StringVar(&conf.user, "user", "", "User to use for the HLF configuration")
 	f.StringVarP(&conf.authJWKS, "auth-jwks", "", "", "auth jwks")
 	f.StringVarP(&conf.authIssuer, "auth-issuer", "", "", "auth issuer")
+	f.StringVarP(&conf.authAuthority, "auth-authority", "", "", "auth authority")
+	f.StringVarP(&conf.authScope, "auth-scope", "", "", "auth OIDC scope")
+	f.StringVarP(&conf.authClientId, "auth-client-id", "", "", "auth OIDC client id")
+	f.StringVarP(&conf.logoUrl, "logo-url", "", "", "Logo URL")
 	f.StringVarP(&conf.config, "config", "", "", "API configuration file")
 	return cmd
 }
