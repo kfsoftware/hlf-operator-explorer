@@ -47,6 +47,7 @@ func mapPeer(peer v1alpha1.FabricPeer) (*models.Peer, error) {
 		Yaml:      string(yamlBytes),
 	}, nil
 }
+
 func (r *queryResolver) Peers(ctx context.Context) ([]*models.Peer, error) {
 	peers, err := r.HLFClient.HlfV1alpha1().FabricPeers("").List(ctx, v1.ListOptions{})
 	if err != nil {

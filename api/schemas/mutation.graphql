@@ -1,19 +1,19 @@
-type Mutation {
-    createPeer(input: CreatePeerInput!): Peer
-    updatePeer(filter: NameAndNamespace!, input: UpdateePeerInput!): Peer
+#type Mutation {
+#    createPeer(input: CreatePeerInput!): Peer
+#    updatePeer(filter: NameAndNamespace!, input: UpdateePeerInput!): Peer
 
-    createOrderer(input: CreateOrdererInput!): Orderer
-    updateOrderer(filter: NameAndNamespace!, input: UpdateeOrdererInput!): Orderer
+#    createOrderer(input: CreateOrdererInput!): Orderer
+#    updateOrderer(filter: NameAndNamespace!, input: UpdateeOrdererInput!): Orderer
 
-    createCA(input: CreateCAInput!): CA
-    updateCA(filter: NameAndNamespace!, input: UpdateCAInput!): CA
+#    createCA(input: CreateCAInput!): CA
+#    updateCA(filter: NameAndNamespace!, input: UpdateCAInput!): CA
 
-    renewPeerCertificates(input: RenewPeerCertificatesInput!): RenewPeerCertificatesResponse!
-    renewOrdererCertificates(input: RenewOrdererCertificatesInput!): RenewOrdererCertificatesResponse!
+#    renewPeerCertificates(input: RenewPeerCertificatesInput!): RenewPeerCertificatesResponse!
+#    renewOrdererCertificates(input: RenewOrdererCertificatesInput!): RenewOrdererCertificatesResponse!
 
-    updateChannel(input: UpdateChannelInput!): UpdateChannelResponse!
-    getUpdateChannelBlock(input: GetUpdateChannelBlockInput!): GetUpdateChannelBlockResponse!
-}
+#    updateChannel(input: UpdateChannelInput!): UpdateChannelResponse!
+#    getUpdateChannelBlock(input: GetUpdateChannelBlockInput!): GetUpdateChannelBlockResponse!
+#}
 type GetUpdateChannelBlockResponse {
     errors: [Error!]
     block: String!

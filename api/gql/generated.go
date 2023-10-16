@@ -39,7 +39,6 @@ type Config struct {
 type ResolverRoot interface {
 	CA() CAResolver
 	Channel() ChannelResolver
-	Mutation() MutationResolver
 	Orderer() OrdererResolver
 	Peer() PeerResolver
 	Query() QueryResolver
@@ -206,19 +205,6 @@ type ComplexityRoot struct {
 	MSPPrincipalRole struct {
 		MspID func(childComplexity int) int
 		Role  func(childComplexity int) int
-	}
-
-	Mutation struct {
-		CreateCa                 func(childComplexity int, input models.CreateCAInput) int
-		CreateOrderer            func(childComplexity int, input models.CreateOrdererInput) int
-		CreatePeer               func(childComplexity int, input models.CreatePeerInput) int
-		GetUpdateChannelBlock    func(childComplexity int, input models.GetUpdateChannelBlockInput) int
-		RenewOrdererCertificates func(childComplexity int, input models.RenewOrdererCertificatesInput) int
-		RenewPeerCertificates    func(childComplexity int, input models.RenewPeerCertificatesInput) int
-		UpdateCa                 func(childComplexity int, filter models.NameAndNamespace, input models.UpdateCAInput) int
-		UpdateChannel            func(childComplexity int, input models.UpdateChannelInput) int
-		UpdateOrderer            func(childComplexity int, filter models.NameAndNamespace, input models.UpdateeOrdererInput) int
-		UpdatePeer               func(childComplexity int, filter models.NameAndNamespace, input models.UpdateePeerInput) int
 	}
 
 	Namespace struct {
@@ -469,18 +455,6 @@ type CAResolver interface {
 type ChannelResolver interface {
 	Chaincodes(ctx context.Context, obj *models.Channel) ([]*models.ChannelChaincode, error)
 	Peers(ctx context.Context, obj *models.Channel) ([]*models.ChannelPeer, error)
-}
-type MutationResolver interface {
-	CreatePeer(ctx context.Context, input models.CreatePeerInput) (*models.Peer, error)
-	UpdatePeer(ctx context.Context, filter models.NameAndNamespace, input models.UpdateePeerInput) (*models.Peer, error)
-	CreateOrderer(ctx context.Context, input models.CreateOrdererInput) (*models.Orderer, error)
-	UpdateOrderer(ctx context.Context, filter models.NameAndNamespace, input models.UpdateeOrdererInput) (*models.Orderer, error)
-	CreateCa(ctx context.Context, input models.CreateCAInput) (*models.Ca, error)
-	UpdateCa(ctx context.Context, filter models.NameAndNamespace, input models.UpdateCAInput) (*models.Ca, error)
-	RenewPeerCertificates(ctx context.Context, input models.RenewPeerCertificatesInput) (*models.RenewPeerCertificatesResponse, error)
-	RenewOrdererCertificates(ctx context.Context, input models.RenewOrdererCertificatesInput) (*models.RenewOrdererCertificatesResponse, error)
-	UpdateChannel(ctx context.Context, input models.UpdateChannelInput) (*models.UpdateChannelResponse, error)
-	GetUpdateChannelBlock(ctx context.Context, input models.GetUpdateChannelBlockInput) (*models.GetUpdateChannelBlockResponse, error)
 }
 type OrdererResolver interface {
 	Storage(ctx context.Context, obj *models.Orderer) (*models.OrdererStorage, error)
@@ -1122,126 +1096,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.MSPPrincipalRole.Role(childComplexity), true
-
-	case "Mutation.createCA":
-		if e.complexity.Mutation.CreateCa == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_createCA_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.CreateCa(childComplexity, args["input"].(models.CreateCAInput)), true
-
-	case "Mutation.createOrderer":
-		if e.complexity.Mutation.CreateOrderer == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_createOrderer_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.CreateOrderer(childComplexity, args["input"].(models.CreateOrdererInput)), true
-
-	case "Mutation.createPeer":
-		if e.complexity.Mutation.CreatePeer == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_createPeer_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.CreatePeer(childComplexity, args["input"].(models.CreatePeerInput)), true
-
-	case "Mutation.getUpdateChannelBlock":
-		if e.complexity.Mutation.GetUpdateChannelBlock == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_getUpdateChannelBlock_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.GetUpdateChannelBlock(childComplexity, args["input"].(models.GetUpdateChannelBlockInput)), true
-
-	case "Mutation.renewOrdererCertificates":
-		if e.complexity.Mutation.RenewOrdererCertificates == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_renewOrdererCertificates_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.RenewOrdererCertificates(childComplexity, args["input"].(models.RenewOrdererCertificatesInput)), true
-
-	case "Mutation.renewPeerCertificates":
-		if e.complexity.Mutation.RenewPeerCertificates == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_renewPeerCertificates_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.RenewPeerCertificates(childComplexity, args["input"].(models.RenewPeerCertificatesInput)), true
-
-	case "Mutation.updateCA":
-		if e.complexity.Mutation.UpdateCa == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_updateCA_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UpdateCa(childComplexity, args["filter"].(models.NameAndNamespace), args["input"].(models.UpdateCAInput)), true
-
-	case "Mutation.updateChannel":
-		if e.complexity.Mutation.UpdateChannel == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_updateChannel_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UpdateChannel(childComplexity, args["input"].(models.UpdateChannelInput)), true
-
-	case "Mutation.updateOrderer":
-		if e.complexity.Mutation.UpdateOrderer == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_updateOrderer_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UpdateOrderer(childComplexity, args["filter"].(models.NameAndNamespace), args["input"].(models.UpdateeOrdererInput)), true
-
-	case "Mutation.updatePeer":
-		if e.complexity.Mutation.UpdatePeer == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_updatePeer_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UpdatePeer(childComplexity, args["filter"].(models.NameAndNamespace), args["input"].(models.UpdateePeerInput)), true
 
 	case "Namespace.name":
 		if e.complexity.Namespace.Name == nil {
@@ -2332,21 +2186,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 				Data: buf.Bytes(),
 			}
 		}
-	case ast.Mutation:
-		return func(ctx context.Context) *graphql.Response {
-			if !first {
-				return nil
-			}
-			first = false
-			ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
-			data := ec._Mutation(ctx, rc.Operation.SelectionSet)
-			var buf bytes.Buffer
-			data.MarshalGQL(&buf)
-
-			return &graphql.Response{
-				Data: buf.Bytes(),
-			}
-		}
 
 	default:
 		return graphql.OneShot(graphql.ErrorResponse(ctx, "unsupported GraphQL operation"))
@@ -2373,22 +2212,22 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "../schemas/mutation.graphql", Input: `type Mutation {
-    createPeer(input: CreatePeerInput!): Peer
-    updatePeer(filter: NameAndNamespace!, input: UpdateePeerInput!): Peer
+	{Name: "../schemas/mutation.graphql", Input: `#type Mutation {
+#    createPeer(input: CreatePeerInput!): Peer
+#    updatePeer(filter: NameAndNamespace!, input: UpdateePeerInput!): Peer
 
-    createOrderer(input: CreateOrdererInput!): Orderer
-    updateOrderer(filter: NameAndNamespace!, input: UpdateeOrdererInput!): Orderer
+#    createOrderer(input: CreateOrdererInput!): Orderer
+#    updateOrderer(filter: NameAndNamespace!, input: UpdateeOrdererInput!): Orderer
 
-    createCA(input: CreateCAInput!): CA
-    updateCA(filter: NameAndNamespace!, input: UpdateCAInput!): CA
+#    createCA(input: CreateCAInput!): CA
+#    updateCA(filter: NameAndNamespace!, input: UpdateCAInput!): CA
 
-    renewPeerCertificates(input: RenewPeerCertificatesInput!): RenewPeerCertificatesResponse!
-    renewOrdererCertificates(input: RenewOrdererCertificatesInput!): RenewOrdererCertificatesResponse!
+#    renewPeerCertificates(input: RenewPeerCertificatesInput!): RenewPeerCertificatesResponse!
+#    renewOrdererCertificates(input: RenewOrdererCertificatesInput!): RenewOrdererCertificatesResponse!
 
-    updateChannel(input: UpdateChannelInput!): UpdateChannelResponse!
-    getUpdateChannelBlock(input: GetUpdateChannelBlockInput!): GetUpdateChannelBlockResponse!
-}
+#    updateChannel(input: UpdateChannelInput!): UpdateChannelResponse!
+#    getUpdateChannelBlock(input: GetUpdateChannelBlockInput!): GetUpdateChannelBlockResponse!
+#}
 type GetUpdateChannelBlockResponse {
     errors: [Error!]
     block: String!
@@ -2514,14 +2353,12 @@ input PolicyInput {
     modPolicy: String!
 }
 
-
-
-
 input RenewOrdererCertificatesInput {
     namespace: String!
     name: String!
     force: Boolean
 }
+
 type RenewOrdererCertificatesResponse {
     orderer: Orderer
     errors: [Error!]
@@ -2531,10 +2368,12 @@ input RenewPeerCertificatesInput {
     namespace: String!
     name: String!
 }
+
 type RenewPeerCertificatesResponse {
     peer: Peer
     errors: [Error!]
 }
+
 type Error {
     message: String!
 }
@@ -2930,7 +2769,7 @@ type ChannelAnchorPeer {
 `, BuiltIn: false},
 	{Name: "../schemas/schema.graphql", Input: `schema {
     query: Query
-    mutation: Mutation
+#    mutation: Mutation
 }
 
 directive @requiresAuth on FIELD_DEFINITION
@@ -2943,183 +2782,6 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
-
-func (ec *executionContext) field_Mutation_createCA_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 models.CreateCAInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNCreateCAInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐCreateCAInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_createOrderer_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 models.CreateOrdererInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNCreateOrdererInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐCreateOrdererInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_createPeer_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 models.CreatePeerInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNCreatePeerInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐCreatePeerInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_getUpdateChannelBlock_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 models.GetUpdateChannelBlockInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNGetUpdateChannelBlockInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐGetUpdateChannelBlockInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_renewOrdererCertificates_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 models.RenewOrdererCertificatesInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNRenewOrdererCertificatesInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐRenewOrdererCertificatesInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_renewPeerCertificates_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 models.RenewPeerCertificatesInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNRenewPeerCertificatesInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐRenewPeerCertificatesInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_updateCA_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 models.NameAndNamespace
-	if tmp, ok := rawArgs["filter"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
-		arg0, err = ec.unmarshalNNameAndNamespace2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐNameAndNamespace(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["filter"] = arg0
-	var arg1 models.UpdateCAInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalNUpdateCAInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐUpdateCAInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_updateChannel_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 models.UpdateChannelInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNUpdateChannelInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐUpdateChannelInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_updateOrderer_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 models.NameAndNamespace
-	if tmp, ok := rawArgs["filter"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
-		arg0, err = ec.unmarshalNNameAndNamespace2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐNameAndNamespace(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["filter"] = arg0
-	var arg1 models.UpdateeOrdererInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalNUpdateeOrdererInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐUpdateeOrdererInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_updatePeer_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 models.NameAndNamespace
-	if tmp, ok := rawArgs["filter"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
-		arg0, err = ec.unmarshalNNameAndNamespace2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐNameAndNamespace(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["filter"] = arg0
-	var arg1 models.UpdateePeerInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalNUpdateePeerInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐUpdateePeerInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg1
-	return args, nil
-}
 
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -7350,624 +7012,6 @@ func (ec *executionContext) fieldContext_MSPPrincipalRole_role(ctx context.Conte
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_createPeer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_createPeer(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreatePeer(rctx, fc.Args["input"].(models.CreatePeerInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*models.Peer)
-	fc.Result = res
-	return ec.marshalOPeer2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPeer(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_createPeer(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "name":
-				return ec.fieldContext_Peer_name(ctx, field)
-			case "namespace":
-				return ec.fieldContext_Peer_namespace(ctx, field)
-			case "yaml":
-				return ec.fieldContext_Peer_yaml(ctx, field)
-			case "storage":
-				return ec.fieldContext_Peer_storage(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Peer", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_createPeer_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_updatePeer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_updatePeer(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdatePeer(rctx, fc.Args["filter"].(models.NameAndNamespace), fc.Args["input"].(models.UpdateePeerInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*models.Peer)
-	fc.Result = res
-	return ec.marshalOPeer2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐPeer(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_updatePeer(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "name":
-				return ec.fieldContext_Peer_name(ctx, field)
-			case "namespace":
-				return ec.fieldContext_Peer_namespace(ctx, field)
-			case "yaml":
-				return ec.fieldContext_Peer_yaml(ctx, field)
-			case "storage":
-				return ec.fieldContext_Peer_storage(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Peer", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_updatePeer_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_createOrderer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_createOrderer(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateOrderer(rctx, fc.Args["input"].(models.CreateOrdererInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*models.Orderer)
-	fc.Result = res
-	return ec.marshalOOrderer2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐOrderer(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_createOrderer(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "name":
-				return ec.fieldContext_Orderer_name(ctx, field)
-			case "namespace":
-				return ec.fieldContext_Orderer_namespace(ctx, field)
-			case "yaml":
-				return ec.fieldContext_Orderer_yaml(ctx, field)
-			case "storage":
-				return ec.fieldContext_Orderer_storage(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Orderer", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_createOrderer_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_updateOrderer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_updateOrderer(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateOrderer(rctx, fc.Args["filter"].(models.NameAndNamespace), fc.Args["input"].(models.UpdateeOrdererInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*models.Orderer)
-	fc.Result = res
-	return ec.marshalOOrderer2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐOrderer(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_updateOrderer(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "name":
-				return ec.fieldContext_Orderer_name(ctx, field)
-			case "namespace":
-				return ec.fieldContext_Orderer_namespace(ctx, field)
-			case "yaml":
-				return ec.fieldContext_Orderer_yaml(ctx, field)
-			case "storage":
-				return ec.fieldContext_Orderer_storage(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Orderer", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_updateOrderer_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_createCA(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_createCA(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateCa(rctx, fc.Args["input"].(models.CreateCAInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*models.Ca)
-	fc.Result = res
-	return ec.marshalOCA2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐCa(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_createCA(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "name":
-				return ec.fieldContext_CA_name(ctx, field)
-			case "namespace":
-				return ec.fieldContext_CA_namespace(ctx, field)
-			case "yaml":
-				return ec.fieldContext_CA_yaml(ctx, field)
-			case "storage":
-				return ec.fieldContext_CA_storage(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type CA", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_createCA_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_updateCA(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_updateCA(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateCa(rctx, fc.Args["filter"].(models.NameAndNamespace), fc.Args["input"].(models.UpdateCAInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*models.Ca)
-	fc.Result = res
-	return ec.marshalOCA2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐCa(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_updateCA(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "name":
-				return ec.fieldContext_CA_name(ctx, field)
-			case "namespace":
-				return ec.fieldContext_CA_namespace(ctx, field)
-			case "yaml":
-				return ec.fieldContext_CA_yaml(ctx, field)
-			case "storage":
-				return ec.fieldContext_CA_storage(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type CA", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_updateCA_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_renewPeerCertificates(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_renewPeerCertificates(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().RenewPeerCertificates(rctx, fc.Args["input"].(models.RenewPeerCertificatesInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*models.RenewPeerCertificatesResponse)
-	fc.Result = res
-	return ec.marshalNRenewPeerCertificatesResponse2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐRenewPeerCertificatesResponse(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_renewPeerCertificates(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "peer":
-				return ec.fieldContext_RenewPeerCertificatesResponse_peer(ctx, field)
-			case "errors":
-				return ec.fieldContext_RenewPeerCertificatesResponse_errors(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type RenewPeerCertificatesResponse", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_renewPeerCertificates_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_renewOrdererCertificates(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_renewOrdererCertificates(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().RenewOrdererCertificates(rctx, fc.Args["input"].(models.RenewOrdererCertificatesInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*models.RenewOrdererCertificatesResponse)
-	fc.Result = res
-	return ec.marshalNRenewOrdererCertificatesResponse2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐRenewOrdererCertificatesResponse(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_renewOrdererCertificates(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "orderer":
-				return ec.fieldContext_RenewOrdererCertificatesResponse_orderer(ctx, field)
-			case "errors":
-				return ec.fieldContext_RenewOrdererCertificatesResponse_errors(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type RenewOrdererCertificatesResponse", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_renewOrdererCertificates_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_updateChannel(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_updateChannel(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateChannel(rctx, fc.Args["input"].(models.UpdateChannelInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*models.UpdateChannelResponse)
-	fc.Result = res
-	return ec.marshalNUpdateChannelResponse2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐUpdateChannelResponse(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_updateChannel(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "errors":
-				return ec.fieldContext_UpdateChannelResponse_errors(ctx, field)
-			case "transactionID":
-				return ec.fieldContext_UpdateChannelResponse_transactionID(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type UpdateChannelResponse", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_updateChannel_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_getUpdateChannelBlock(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_getUpdateChannelBlock(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().GetUpdateChannelBlock(rctx, fc.Args["input"].(models.GetUpdateChannelBlockInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*models.GetUpdateChannelBlockResponse)
-	fc.Result = res
-	return ec.marshalNGetUpdateChannelBlockResponse2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐGetUpdateChannelBlockResponse(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_getUpdateChannelBlock(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "errors":
-				return ec.fieldContext_GetUpdateChannelBlockResponse_errors(ctx, field)
-			case "block":
-				return ec.fieldContext_GetUpdateChannelBlockResponse_block(ctx, field)
-			case "configUpdate":
-				return ec.fieldContext_GetUpdateChannelBlockResponse_configUpdate(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type GetUpdateChannelBlockResponse", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_getUpdateChannelBlock_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
 	}
 	return fc, nil
 }
@@ -19140,108 +18184,6 @@ func (ec *executionContext) _MSPPrincipalRole(ctx context.Context, sel ast.Selec
 	return out
 }
 
-var mutationImplementors = []string{"Mutation"}
-
-func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, mutationImplementors)
-	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
-		Object: "Mutation",
-	})
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		innerCtx := graphql.WithRootFieldContext(ctx, &graphql.RootFieldContext{
-			Object: field.Name,
-			Field:  field,
-		})
-
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Mutation")
-		case "createPeer":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_createPeer(ctx, field)
-			})
-
-		case "updatePeer":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_updatePeer(ctx, field)
-			})
-
-		case "createOrderer":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_createOrderer(ctx, field)
-			})
-
-		case "updateOrderer":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_updateOrderer(ctx, field)
-			})
-
-		case "createCA":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_createCA(ctx, field)
-			})
-
-		case "updateCA":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_updateCA(ctx, field)
-			})
-
-		case "renewPeerCertificates":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_renewPeerCertificates(ctx, field)
-			})
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "renewOrdererCertificates":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_renewOrdererCertificates(ctx, field)
-			})
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "updateChannel":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_updateChannel(ctx, field)
-			})
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "getUpdateChannelBlock":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_getUpdateChannelBlock(ctx, field)
-			})
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
 var namespaceImplementors = []string{"Namespace"}
 
 func (ec *executionContext) _Namespace(ctx context.Context, sel ast.SelectionSet, obj *models.Namespace) graphql.Marshaler {
@@ -21583,21 +20525,6 @@ func (ec *executionContext) marshalNChannelPolicy2ᚖgithubᚗcomᚋkfsoftware�
 	return ec._ChannelPolicy(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNCreateCAInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐCreateCAInput(ctx context.Context, v interface{}) (models.CreateCAInput, error) {
-	res, err := ec.unmarshalInputCreateCAInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNCreateOrdererInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐCreateOrdererInput(ctx context.Context, v interface{}) (models.CreateOrdererInput, error) {
-	res, err := ec.unmarshalInputCreateOrdererInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNCreatePeerInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐCreatePeerInput(ctx context.Context, v interface{}) (models.CreatePeerInput, error) {
-	res, err := ec.unmarshalInputCreatePeerInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) marshalNCryptoConfig2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐCryptoConfig(ctx context.Context, sel ast.SelectionSet, v *models.CryptoConfig) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -21636,25 +20563,6 @@ func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.S
 		}
 	}
 	return graphql.WrapContextMarshaler(ctx, res)
-}
-
-func (ec *executionContext) unmarshalNGetUpdateChannelBlockInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐGetUpdateChannelBlockInput(ctx context.Context, v interface{}) (models.GetUpdateChannelBlockInput, error) {
-	res, err := ec.unmarshalInputGetUpdateChannelBlockInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNGetUpdateChannelBlockResponse2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐGetUpdateChannelBlockResponse(ctx context.Context, sel ast.SelectionSet, v models.GetUpdateChannelBlockResponse) graphql.Marshaler {
-	return ec._GetUpdateChannelBlockResponse(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNGetUpdateChannelBlockResponse2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐGetUpdateChannelBlockResponse(ctx context.Context, sel ast.SelectionSet, v *models.GetUpdateChannelBlockResponse) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._GetUpdateChannelBlockResponse(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
@@ -21897,44 +20805,6 @@ func (ec *executionContext) unmarshalNRawSignature2ᚖgithubᚗcomᚋkfsoftware�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNRenewOrdererCertificatesInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐRenewOrdererCertificatesInput(ctx context.Context, v interface{}) (models.RenewOrdererCertificatesInput, error) {
-	res, err := ec.unmarshalInputRenewOrdererCertificatesInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNRenewOrdererCertificatesResponse2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐRenewOrdererCertificatesResponse(ctx context.Context, sel ast.SelectionSet, v models.RenewOrdererCertificatesResponse) graphql.Marshaler {
-	return ec._RenewOrdererCertificatesResponse(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNRenewOrdererCertificatesResponse2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐRenewOrdererCertificatesResponse(ctx context.Context, sel ast.SelectionSet, v *models.RenewOrdererCertificatesResponse) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._RenewOrdererCertificatesResponse(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNRenewPeerCertificatesInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐRenewPeerCertificatesInput(ctx context.Context, v interface{}) (models.RenewPeerCertificatesInput, error) {
-	res, err := ec.unmarshalInputRenewPeerCertificatesInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNRenewPeerCertificatesResponse2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐRenewPeerCertificatesResponse(ctx context.Context, sel ast.SelectionSet, v models.RenewPeerCertificatesResponse) graphql.Marshaler {
-	return ec._RenewPeerCertificatesResponse(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNRenewPeerCertificatesResponse2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐRenewPeerCertificatesResponse(ctx context.Context, sel ast.SelectionSet, v *models.RenewPeerCertificatesResponse) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._RenewPeerCertificatesResponse(ctx, sel, v)
-}
-
 func (ec *executionContext) marshalNSignaturePolicy2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐSignaturePolicy(ctx context.Context, sel ast.SelectionSet, v *models.SignaturePolicy) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -22053,40 +20923,6 @@ func (ec *executionContext) marshalNTransactionWrite2ᚖgithubᚗcomᚋkfsoftwar
 		return graphql.Null
 	}
 	return ec._TransactionWrite(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNUpdateCAInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐUpdateCAInput(ctx context.Context, v interface{}) (models.UpdateCAInput, error) {
-	res, err := ec.unmarshalInputUpdateCAInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNUpdateChannelInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐUpdateChannelInput(ctx context.Context, v interface{}) (models.UpdateChannelInput, error) {
-	res, err := ec.unmarshalInputUpdateChannelInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNUpdateChannelResponse2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐUpdateChannelResponse(ctx context.Context, sel ast.SelectionSet, v models.UpdateChannelResponse) graphql.Marshaler {
-	return ec._UpdateChannelResponse(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNUpdateChannelResponse2ᚖgithubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐUpdateChannelResponse(ctx context.Context, sel ast.SelectionSet, v *models.UpdateChannelResponse) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._UpdateChannelResponse(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNUpdateeOrdererInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐUpdateeOrdererInput(ctx context.Context, v interface{}) (models.UpdateeOrdererInput, error) {
-	res, err := ec.unmarshalInputUpdateeOrdererInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNUpdateePeerInput2githubᚗcomᚋkfsoftwareᚋhlfᚑoperatorᚑuiᚋapiᚋgqlᚋmodelsᚐUpdateePeerInput(ctx context.Context, v interface{}) (models.UpdateePeerInput, error) {
-	res, err := ec.unmarshalInputUpdateePeerInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

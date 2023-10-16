@@ -1,6 +1,6 @@
 schema {
     query: Query
-    mutation: Mutation
+#    mutation: Mutation
 }
 
 directive @requiresAuth on FIELD_DEFINITION

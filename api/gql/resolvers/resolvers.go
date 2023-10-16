@@ -38,7 +38,7 @@ func (r *Resolver) Peer() gql.PeerResolver {
 }
 
 // Mutation returns gql.MutationResolver implementation.
-func (r *Resolver) Mutation() gql.MutationResolver { return &mutationResolver{r} }
+//func (r *Resolver) Mutation() gql.MutationResolver { return &mutationResolver{r} }
 
 // Query returns gql.QueryResolver implementation.
 func (r *Resolver) Query() gql.QueryResolver     { return &queryResolver{r} }
